@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTask.Server", "TickTask\Server\TickTask.Server.csproj", "{4F171392-00CF-441E-9927-09A66EDCBB2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTask.Client", "TickTask\Client\TickTask.Client.csproj", "{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTask.Shared", "TickTask\Shared\TickTask.Shared.csproj", "{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F171392-00CF-441E-9927-09A66EDCBB2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F171392-00CF-441E-9927-09A66EDCBB2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F171392-00CF-441E-9927-09A66EDCBB2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F171392-00CF-441E-9927-09A66EDCBB2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
