@@ -1,9 +1,92 @@
 ﻿@page "/"
+@using TickTask.Server.Services
+@using TickTask.Shared
+@inject TimerService timerService
 
-<PageTitle>Index</PageTitle>
+<PageTitle>TickTask</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Welcome to TickTask ✔️ !</h1>
 
-Welcome to your new app.
+<div>
+	<!-- Timer Tabs -->
+	<div>
+		<button style="background-color: green">Pomodoro</button>
+		<button style="background-color: green">Short Break</button>
+		<button style="background-color: green">Long Break</button>
+	</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+	<!-- Timer Display -->
+	<div>
+		<h1>@pomodoroTimer.RemainingTime.ToString(@"mm\:ss")</h1>
+		@* <h1>@pomodoroTimer.RemainingTime</h1> *@
+	</div>
+
+	<!-- Timer Control Button -->
+	<div>
+		<button @onclick="() => ToggleTimer()" style="background-color: red">@(pomodoroTimer.IsTimerRunning ? "Stop" : "Start")</button>
+	</div>
+
+	<!-- Tasks Separator -->
+	<h2>Tasks</h2>
+
+	<!-- Tasks List -->
+	<div style="color:blue">
+		@foreach (var task in tasks)
+		{
+			<div>
+				<span>@task.Name</span>
+				<button>...</button>
+			</div>
+		}
+	</div>
+
+	<!-- Add Task -->
+	<div>
+		<button style="background-color: blue">Add Task</button>
+	</div>
+</div>
+
+@code
+{
+	private List<Project> projects = new List<Project>();
+	private List<TaskItem> tasks = new List<TaskItem>();
+
+	private CountdownTimer pomodoroTimer = new PomodoroTimer();
+	// private CountdownTimer shortBreakTimer = new ShortBreakTimer();
+	// private CountdownTimer longBreakTimer = new LongBreakTimer();
+
+	protected override void OnInitialized()
+	{
+		timerService.OnTimerUpdate += async () =>
+		{
+			await InvokeAsync(StateHasChanged);
+		};
+
+		// Initialize timer with duration
+		pomodoroTimer.RemainingTime = pomodoroTimer.Duration;
+
+		// Initialize dummy data for projects and tasks
+		projects.Add(new Project { ProjectId = 1, Title = "Project 1" });
+
+		tasks.Add(new TaskItem { TaskItemId = 1, Name = "Troubleshoot a WLAN connection as a programmer grunt", ProjectId = 1 });
+		tasks.Add(new TaskItem { TaskItemId = 2, Name = "CX50", ProjectId = 1 });
+		tasks.Add(new TaskItem { TaskItemId = 3, Name = "Moqing", ProjectId = 1 });
+	}
+
+	private void ToggleTimer()
+	{
+		if (pomodoroTimer.IsTimerRunning)
+		{
+			timerService.Stop(pomodoroTimer);
+		}
+		else
+		{
+			timerService.Start(pomodoroTimer);
+		}
+	}
+
+	// public List<Project> Projects => projects;
+	// public List<TaskItem> Tasks => tasks;
+
+}
+
