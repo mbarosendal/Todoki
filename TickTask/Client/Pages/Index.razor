@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using TickTask.Client.Enums
 @using TickTask.Server.Services
 @using TickTask.Shared
 @inject TimerService timerService
@@ -10,20 +11,24 @@
 <div>
 	<!-- Timer Tabs -->
 	<div>
-		<button style="background-color: green">Pomodoro</button>
-		<button style="background-color: green">Short Break</button>
-		<button style="background-color: green">Long Break</button>
+		@foreach (TimerType type in Enum.GetValues<TimerType>())
+		{
+			<button @onclick="() => SelectTimer(type)"
+					style="background-color: @(timerType == type ? "darkgreen" : "green")">
+				@type
+			</button>
+		}
 	</div>
 
 	<!-- Timer Display -->
 	<div>
-		<h1>@pomodoroTimer.RemainingTime.ToString(@"mm\:ss")</h1>
+		<h1>@countdownTimer.RemainingTime.ToString(@"mm\:ss")</h1>
 	</div>
 
 	<!-- Timer Control Button -->
 	<div>
-		<button @onclick="() => ToggleTimer()" style="background-color: red">@(pomodoroTimer.IsRunning ? "Stop" : "Start")</button>
-		<button @onclick="() => ResetTimer()" style="background-color: red">Reset</button>
+		<button @onclick="() => ToggleTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
+		<button @onclick="() => ResetTimer(countdownTimer)" style="background-color: red">Reset</button>
 	</div>
 
 	<!-- Tasks Separator -->
@@ -48,14 +53,23 @@
 
 @code
 {
+	// public List<Project> Projects => projects;
+	// public List<TaskItem> Tasks => tasks;
 	private List<Project> projects = new List<Project>();
 	private List<TaskItem> tasks = new List<TaskItem>();
 
-	// private CountdownTimer? TimerType;
-
 	private CountdownTimer pomodoroTimer = new PomodoroTimer();
-	// private CountdownTimer shortBreakTimer = new ShortBreakTimer();
-	// private CountdownTimer longBreakTimer = new LongBreakTimer();
+	private CountdownTimer shortBreakTimer = new ShortBreakTimer();
+	private CountdownTimer longBreakTimer = new LongBreakTimer();
+
+	private TimerType timerType = Enums.TimerType.Pomodoro ;
+	private CountdownTimer countdownTimer => timerType switch
+	{
+		TimerType.Pomodoro => pomodoroTimer,
+		TimerType.ShortBreak => shortBreakTimer,
+		TimerType.LongBreak => longBreakTimer,
+		_ => pomodoroTimer
+	};
 
 	protected override void OnInitialized()
 	{
@@ -77,16 +91,28 @@
 		tasks.Add(new TaskItem { TaskItemId = 3, Name = "Moqing", ProjectId = 1 });
 	}
 
-	private void ToggleTimer()
+	private void TogglePomodoro() =>
+		ToggleTimer(TimerType.Pomodoro, pomodoroTimer);
+
+	private void ToggleShortBreak() =>
+		ToggleTimer(TimerType.ShortBreak, shortBreakTimer);
+
+	private void ToggleLongBreak() =>
+		ToggleTimer(TimerType.LongBreak, longBreakTimer);
+
+	private void SelectTimer(TimerType type)
 	{
-		if (pomodoroTimer.IsRunning)
-		{
-			timerService.Stop(pomodoroTimer);
-		}
+		timerType = type;
+		ResetTimer(countdownTimer);
+	}
+
+
+	private void ToggleTimer(TimerType type, CountdownTimer timer)
+	{
+		if (timer.IsRunning)
+			timerService.Stop(timer);
 		else
-		{
-			timerService.Start(pomodoroTimer);
-		}
+			timerService.Start(type, timer);
 	}
 
 	private void HandleTimerFinish()
@@ -96,13 +122,10 @@
 		// Must then go to break timer (long or short)
 	}
 
-	private void ResetTimer()
+	private void ResetTimer(CountdownTimer timer)
 	{
-		timerService.Reset(pomodoroTimer);
+		timerService.Reset(timer);
 	}
-
-	// public List<Project> Projects => projects;
-	// public List<TaskItem> Tasks => tasks;
 
 }
 

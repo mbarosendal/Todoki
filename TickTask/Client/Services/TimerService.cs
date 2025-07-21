@@ -1,66 +1,64 @@
-﻿using TickTask.Shared;
+﻿using TickTask.Client.Enums;
+using TickTask.Shared;
 
 namespace TickTask.Server.Services
 {
     public class TimerService
     {
         private System.Threading.Timer? _timer;
-        private CountdownTimer _currentTimer;
+        private TimerType? _activeType;
+        private CountdownTimer? _activeTimer;
+
         public event Action? OnTimerUpdate;
         public event Action? OnTimerFinish;
 
-        public void Start(CountdownTimer timer)
+        public void Start(TimerType type, CountdownTimer timer)
         {
-            //if (_timer is not null) _timer.Dispose();
             if (timer.IsRunning) return;
 
             timer.IsRunning = true;
+            timer.RemainingTime = timer.Duration;
 
-            // if timer was not previously paused, start timer anew
-            if (timer.PausedTime == TimeSpan.Zero)
-                timer.PausedTime = timer.Duration;
+            _activeType = type;
+            _activeTimer = timer;
 
-            // otherwise start timer from paused time
-            timer.RemainingTime = timer.PausedTime;
-
-            _currentTimer = timer;
-            _timer = new System.Threading.Timer(Tick, null, 1000, 1000);
+            _timer = new System.Threading.Timer(_ => Tick(), null, 1000, 1000);
         }
 
         public void Stop(CountdownTimer timer)
         {
             timer.IsRunning = false;
-            timer.PausedTime = timer.RemainingTime;
             _timer?.Dispose();
+            _timer = null;
         }
 
         public void Reset(CountdownTimer timer)
         {
-            timer.RemainingTime = timer.Duration;
-            timer.PausedTime = TimeSpan.Zero;
-            timer.IsRunning = false;
             Stop(timer);
+            timer.RemainingTime = timer.Duration;
+            timer.IsRunning = false;
             OnTimerUpdate?.Invoke();
         }
 
-        private void Tick(object? state)
+        private void Tick()
         {
-            if (_currentTimer.RemainingTime > TimeSpan.Zero)
+            if (_activeTimer == null) return;
+
+            if (_activeTimer.RemainingTime > TimeSpan.Zero)
             {
-                _currentTimer.RemainingTime = _currentTimer.RemainingTime.Subtract(TimeSpan.FromSeconds(1));
+                _activeTimer.RemainingTime = _activeTimer.RemainingTime.Subtract(TimeSpan.FromSeconds(1));
                 OnTimerUpdate?.Invoke();
 
-                // when timer finishes
-                if (_currentTimer.RemainingTime == TimeSpan.Zero)
+                if (_activeTimer.RemainingTime == TimeSpan.Zero)
                 {
-                    Stop(_currentTimer);
-                    Reset(_currentTimer);
+                    Stop(_activeTimer);
+                    Reset(_activeTimer);
                     OnTimerFinish?.Invoke();
                 }
             }
             else
             {
-                Stop(_currentTimer);
+                Stop(_activeTimer);
             }
         }
     }
