@@ -44,8 +44,9 @@ namespace TickTask.Shared
 
     public class CountdownTimer
     {
-        public TimeSpan Duration { get; set; } = TimeSpan.FromMinutes(25);
+        public TimeSpan Duration { get; set; }
         public TimeSpan RemainingTime { get; set; }
+        public TimeSpan PausedTime { get; set; } // Used by TimerService - don't modify directly
         public bool IsTimerRunning { get; set; } = false;      
         // field to hold a task?
     }

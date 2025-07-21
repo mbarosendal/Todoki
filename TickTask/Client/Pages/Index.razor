@@ -24,6 +24,7 @@
 	<!-- Timer Control Button -->
 	<div>
 		<button @onclick="() => ToggleTimer()" style="background-color: red">@(pomodoroTimer.IsTimerRunning ? "Stop" : "Start")</button>
+		<button @onclick="() => ResetTimer()" style="background-color: red">Reset</button>
 	</div>
 
 	<!-- Tasks Separator -->
@@ -83,6 +84,11 @@
 		{
 			timerService.Start(pomodoroTimer);
 		}
+	}
+
+	private void ResetTimer()
+	{
+		timerService.Reset(pomodoroTimer);
 	}
 
 	// public List<Project> Projects => projects;

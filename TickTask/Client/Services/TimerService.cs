@@ -11,24 +11,30 @@ namespace TickTask.Server.Services
         public void Start(CountdownTimer timer)
         {
             if (timer.IsTimerRunning) return;
-
             timer.IsTimerRunning = true;
-            timer.RemainingTime = timer.Duration;
-            _currentTimer = timer;
 
+            // if timer was not previously paused, start timer anew
+            if (timer.PausedTime == TimeSpan.Zero)
+                timer.PausedTime = timer.Duration;
+
+            // otherwise start timer from paused time
+            timer.RemainingTime = timer.PausedTime;
+
+            _currentTimer = timer;
             _timer = new System.Threading.Timer(Tick, null, 1000, 1000);
         }
 
         public void Stop(CountdownTimer timer)
         {
             timer.IsTimerRunning = false;
+            timer.PausedTime = timer.RemainingTime;
             _timer?.Dispose();
         }
 
         public void Reset(CountdownTimer timer)
         {
-            Stop(timer);
             timer.RemainingTime = timer.Duration;
+            timer.PausedTime = TimeSpan.Zero;
             OnTimerUpdate?.Invoke();
         }
 
