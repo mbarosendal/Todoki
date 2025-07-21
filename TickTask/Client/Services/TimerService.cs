@@ -7,11 +7,14 @@ namespace TickTask.Server.Services
         private System.Threading.Timer? _timer;
         private CountdownTimer _currentTimer;
         public event Action? OnTimerUpdate;
+        public event Action? OnTimerFinish;
 
         public void Start(CountdownTimer timer)
         {
-            if (timer.IsTimerRunning) return;
-            timer.IsTimerRunning = true;
+            //if (_timer is not null) _timer.Dispose();
+            if (timer.IsRunning) return;
+
+            timer.IsRunning = true;
 
             // if timer was not previously paused, start timer anew
             if (timer.PausedTime == TimeSpan.Zero)
@@ -26,7 +29,7 @@ namespace TickTask.Server.Services
 
         public void Stop(CountdownTimer timer)
         {
-            timer.IsTimerRunning = false;
+            timer.IsRunning = false;
             timer.PausedTime = timer.RemainingTime;
             _timer?.Dispose();
         }
@@ -35,6 +38,8 @@ namespace TickTask.Server.Services
         {
             timer.RemainingTime = timer.Duration;
             timer.PausedTime = TimeSpan.Zero;
+            timer.IsRunning = false;
+            Stop(timer);
             OnTimerUpdate?.Invoke();
         }
 
@@ -44,6 +49,14 @@ namespace TickTask.Server.Services
             {
                 _currentTimer.RemainingTime = _currentTimer.RemainingTime.Subtract(TimeSpan.FromSeconds(1));
                 OnTimerUpdate?.Invoke();
+
+                // when timer finishes
+                if (_currentTimer.RemainingTime == TimeSpan.Zero)
+                {
+                    Stop(_currentTimer);
+                    Reset(_currentTimer);
+                    OnTimerFinish?.Invoke();
+                }
             }
             else
             {

@@ -47,7 +47,8 @@ namespace TickTask.Shared
         public TimeSpan Duration { get; set; }
         public TimeSpan RemainingTime { get; set; }
         public TimeSpan PausedTime { get; set; } // Used by TimerService - don't modify directly
-        public bool IsTimerRunning { get; set; } = false;      
+        public int NumberOfShortBreaksBeforeLongBreak { get; set; } = 4;
+        public bool IsRunning { get; set; } = false;      
         // field to hold a task?
     }
 
@@ -55,7 +56,7 @@ namespace TickTask.Shared
     {
         public PomodoroTimer()
         {
-            Duration = TimeSpan.FromMinutes(25); // Default Pomodoro duration
+            Duration = new TimeSpan(0,0,3); // Default Pomodoro duration (3 seconds for testing, use TimeSpan.FromMinutes(25) later)
         }
     }
 

@@ -18,12 +18,11 @@
 	<!-- Timer Display -->
 	<div>
 		<h1>@pomodoroTimer.RemainingTime.ToString(@"mm\:ss")</h1>
-		@* <h1>@pomodoroTimer.RemainingTime</h1> *@
 	</div>
 
 	<!-- Timer Control Button -->
 	<div>
-		<button @onclick="() => ToggleTimer()" style="background-color: red">@(pomodoroTimer.IsTimerRunning ? "Stop" : "Start")</button>
+		<button @onclick="() => ToggleTimer()" style="background-color: red">@(pomodoroTimer.IsRunning ? "Stop" : "Start")</button>
 		<button @onclick="() => ResetTimer()" style="background-color: red">Reset</button>
 	</div>
 
@@ -52,6 +51,8 @@
 	private List<Project> projects = new List<Project>();
 	private List<TaskItem> tasks = new List<TaskItem>();
 
+	// private CountdownTimer? TimerType;
+
 	private CountdownTimer pomodoroTimer = new PomodoroTimer();
 	// private CountdownTimer shortBreakTimer = new ShortBreakTimer();
 	// private CountdownTimer longBreakTimer = new LongBreakTimer();
@@ -63,7 +64,9 @@
 			await InvokeAsync(StateHasChanged);
 		};
 
-		// Initialize timer with duration
+		timerService.OnTimerFinish += HandleTimerFinish;
+
+		// Initialize displayed timer with duration
 		pomodoroTimer.RemainingTime = pomodoroTimer.Duration;
 
 		// Initialize dummy data for projects and tasks
@@ -76,7 +79,7 @@
 
 	private void ToggleTimer()
 	{
-		if (pomodoroTimer.IsTimerRunning)
+		if (pomodoroTimer.IsRunning)
 		{
 			timerService.Stop(pomodoroTimer);
 		}
@@ -84,6 +87,13 @@
 		{
 			timerService.Start(pomodoroTimer);
 		}
+	}
+
+	private void HandleTimerFinish()
+	{
+		// Handle the timer finish event, e.g., show a notification or log it
+		Console.WriteLine("Pomodoro timer finished!");
+		// Must then go to break timer (long or short)
 	}
 
 	private void ResetTimer()
