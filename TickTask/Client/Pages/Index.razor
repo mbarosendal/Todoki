@@ -14,7 +14,7 @@
 		@foreach (TimerType type in Enum.GetValues<TimerType>())
 		{
 			<button @onclick="() => SelectTimer(type)"
-					style="background-color: @(timerType == type ? "darkgreen" : "green")">
+			style="background-color: @(timerType == type ? "darkgreen" : "green")">
 				@type
 			</button>
 		}
@@ -23,6 +23,7 @@
 	<!-- Timer Display -->
 	<div>
 		<h1>@countdownTimer.RemainingTime.ToString(@"mm\:ss")</h1>
+		<h3>@($"Number of runs until longbreak: {4- numberOfPomodorosRun}")</h3>
 	</div>
 
 	<!-- Timer Control Button -->
@@ -62,7 +63,11 @@
 	private CountdownTimer shortBreakTimer = new ShortBreakTimer();
 	private CountdownTimer longBreakTimer = new LongBreakTimer();
 
-	private TimerType timerType = Enums.TimerType.Pomodoro ;
+	private bool autostart = true;
+	private int numberOfPomodorosRun = 0;
+	private int runsBeforeLongBreak = 4;
+
+	private TimerType timerType = Enums.TimerType.Pomodoro;
 	private CountdownTimer countdownTimer => timerType switch
 	{
 		TimerType.Pomodoro => pomodoroTimer,
@@ -80,8 +85,13 @@
 
 		timerService.OnTimerFinish += HandleTimerFinish;
 
-		// Initialize displayed timer with duration
-		pomodoroTimer.RemainingTime = pomodoroTimer.Duration;
+		if (autostart)
+		{
+			ToggleTimer(timerType, countdownTimer);
+		}
+
+		// Initialize remaining time from duration
+		countdownTimer.RemainingTime = countdownTimer.Duration;
 
 		// Initialize dummy data for projects and tasks
 		projects.Add(new Project { ProjectId = 1, Title = "Project 1" });
@@ -106,7 +116,6 @@
 		ResetTimer(countdownTimer);
 	}
 
-
 	private void ToggleTimer(TimerType type, CountdownTimer timer)
 	{
 		if (timer.IsRunning)
@@ -119,7 +128,19 @@
 	{
 		// Handle the timer finish event, e.g., show a notification or log it
 		Console.WriteLine("Pomodoro timer finished!");
-		// Must then go to break timer (long or short)
+		if (timerType is TimerType.Pomodoro) numberOfPomodorosRun++;
+
+		if (timerType is TimerType.ShortBreak or TimerType.LongBreak)
+			SelectTimer(TimerType.Pomodoro); 
+		else if (timerType is TimerType.Pomodoro && numberOfPomodorosRun < runsBeforeLongBreak)
+			SelectTimer(TimerType.ShortBreak);
+		else if (timerType is TimerType.Pomodoro && numberOfPomodorosRun >= runsBeforeLongBreak)
+		{
+			SelectTimer(TimerType.LongBreak);
+			numberOfPomodorosRun = 0;
+		}
+
+		if (autostart) ToggleTimer(timerType, countdownTimer);
 	}
 
 	private void ResetTimer(CountdownTimer timer)

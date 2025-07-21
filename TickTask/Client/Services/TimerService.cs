@@ -17,7 +17,6 @@ namespace TickTask.Server.Services
             if (timer.IsRunning) return;
 
             timer.IsRunning = true;
-            timer.RemainingTime = timer.Duration;
 
             _activeType = type;
             _activeTimer = timer;
@@ -42,7 +41,7 @@ namespace TickTask.Server.Services
 
         private void Tick()
         {
-            if (_activeTimer == null) return;
+            if (_activeTimer is null) return;
 
             if (_activeTimer.RemainingTime > TimeSpan.Zero)
             {
