@@ -7,7 +7,7 @@
 
 <PageTitle>TickTask</PageTitle>
 
-<h1>Welcome to TickTask ✔️ !</h1>
+<h1>Welcome to TickTask ✔️</h1>
 
 <div>
 	<!-- Timer Tabs -->
@@ -21,8 +21,12 @@
 		}
 	</div>
 
-<button @onclick="OpenSettings">Open Settings</button>
-<SettingsModal @bind-IsOpen="showSettings" Settings="@settings" PomodoroTimer="@pomodoroTimer" ShortBreakTimer="@shortBreakTimer" LongBreakTimer="@longBreakTimer"  />
+	<!-- Settings Menu -->
+	<button @onclick="OpenSettings">Open Settings</button>
+	<SettingsModal @bind-IsOpen="showSettings" Settings="@settings" PomodoroTimer="@pomodoroTimer" ShortBreakTimer="@shortBreakTimer" LongBreakTimer="@longBreakTimer" />
+
+	<!-- FinishModal -->
+	<TimerFinishModal @bind-IsOpen="timerFinish" CountdownTimer="@countdownTimer" />
 
 	<!-- Timer Display -->
 	<div>
@@ -35,6 +39,8 @@
 		<button @onclick="() => ToggleTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
 		<button @onclick="() => ResetTimer(countdownTimer)" style="background-color: red">Reset</button>
 	</div>
+
+	<h4>@($"{countdownTimer.Text}")</h4>
 
 	<!-- Tasks Separator -->
 	<h2>Tasks</h2>
@@ -67,9 +73,7 @@
 	private CountdownTimer shortBreakTimer = new ShortBreakTimer();
 	private CountdownTimer longBreakTimer = new LongBreakTimer();
 
-	private TimerSettings settings = new();
-	private bool showSettings = false;
-	private void OpenSettings() => showSettings = true;
+	private bool timerFinish = false;
 
 	private TimerType timerType = Enums.TimerType.Pomodoro;
 	private CountdownTimer countdownTimer => timerType switch
@@ -80,19 +84,16 @@
 		_ => pomodoroTimer
 	};
 
+	private TimerSettings settings = new();
+	private bool showSettings = false;
+	private void OpenSettings() => showSettings = true;
+
 	protected override void OnInitialized()
 	{
-		timerService.OnTimerUpdate += async () =>
-		{
-			await InvokeAsync(StateHasChanged);
-		};
-
+		timerService.OnTimerUpdate += async () => await InvokeAsync(StateHasChanged);
 		timerService.OnTimerFinish += HandleTimerFinish;
 
-		if (settings.Autostart)
-		{
-			ToggleTimer(timerType, countdownTimer);
-		}
+		if (settings.Autostart) ToggleTimer(timerType, countdownTimer);
 
 		// Initialize remaining time from duration
 		countdownTimer.RemainingTime = countdownTimer.Duration;
@@ -123,7 +124,10 @@
 	private void ToggleTimer(TimerType type, CountdownTimer timer)
 	{
 		if (timer.IsRunning)
+		{
 			timerService.Stop(timer);
+			// timerFinish = true;
+		}
 		else
 			timerService.Start(type, timer);
 	}
@@ -131,6 +135,7 @@
 	private void HandleTimerFinish()
 	{
 		Console.WriteLine("Pomodoro timer finished!");
+		timerFinish = true;
 
 		if (timerType is TimerType.Pomodoro)
 			settings.NumberOfPomodorosRun++;
@@ -153,10 +158,6 @@
 	{
 		timerService.Reset(timer);
 	}
-
-
-
-
 
 }
 

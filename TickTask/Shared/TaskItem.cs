@@ -63,8 +63,8 @@ namespace TickTask.Shared
         public PomodoroTimer()
         {
             // For testing
-            //Duration = new TimeSpan(0,0,3);
-            Duration = TimeSpan.FromMinutes(25); // Default Pomodoro duration
+            Duration = new TimeSpan(0, 0, 3);
+            //Duration = TimeSpan.FromMinutes(25); // Default Pomodoro duration
         }
     }
 

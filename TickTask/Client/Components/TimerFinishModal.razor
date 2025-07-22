@@ -1,0 +1,17 @@
+﻿@using TickTask.Shared
+
+<BaseModal IsOpen="@IsOpen" IsOpenChanged="@IsOpenChanged" Title="Time for a break">
+	<div class="section">
+		@if (!string.IsNullOrEmpty(CountdownTimer.Text))
+		{
+			<h2>@($"{CountdownTimer.Text}")</h2>
+		}
+	</div>
+</BaseModal>
+
+@code {
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+	[Parameter] public CountdownTimer CountdownTimer { get; set; } = default!;
+}

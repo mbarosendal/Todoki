@@ -1,246 +1,242 @@
 ﻿@using TickTask.Shared
 
-@if (IsOpen)
-{
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>SETTING</h3>
-                <button class="close-button" @onclick="Close">×</button>
-            </div>
+<BaseModal IsOpen="@IsOpen" IsOpenChanged="@IsOpenChanged" Title="Settings">
+	<div class="section">
+		<div class="section-title">🕒 TIMER</div>
 
-            <div class="section">
-                <div class="section-title">🕒 TIMER</div>
+		<div class="timer-inputs">
+			<div>
+				<label>Pomodoro</label>
+				<input type="number" min="1" @bind="PomodoroMinutes" />
+			</div>
+			<div>
+				<label>Short Break</label>
+				<input type="number" min="1" @bind="ShortBreakMinutes" />
+			</div>
+			<div>
+				<label>Long Break</label>
+				<input type="number" min="1" @bind="LongBreakMinutes" />
+			</div>
+		</div>
 
-                <div class="timer-inputs">
-                    <div>
-                        <label>Pomodoro</label>
-                        <input type="number" min="1" @bind="PomodoroMinutes" />
-                    </div>
-                    <div>
-                        <label>Short Break</label>
-                        <input type="number" min="1" @bind="ShortBreakMinutes" />
-                    </div>
-                    <div>
-                        <label>Long Break</label>
-                        <input type="number" min="1" @bind="LongBreakMinutes" />
-                    </div>
-                </div>
+		<div>
+			<label>Text for short breaks</label>
+			<input type="text" @bind="ShortBreakTimer.Text" placeholder="Reminder for short breaks, e.g. stretch, walk around, drink water... " />
+		</div>
 
-                <div class="toggle-row">
-                    <span>Auto Start</span>
-                    <label class="switch">
-                        <input type="checkbox" @bind="Settings.Autostart" />
-                        <span class="slider"></span>
-                    </label>
-                </div>
+		<div>
+			<label>Text for long breaks</label>
+			<input type="text" @bind="LongBreakTimer.Text" placeholder="Reminders for long breaks, e.g. grab a snack, walk the dog..." />
+		</div>
 
-                <div class="number-input">
-                    <label>Long Break Interval</label>
-                    <input type="number" min="1" @bind="Settings.RunsBeforeLongBreak" />
-                </div>
-            </div>
+		<div class="toggle-row">
+			<span>Auto Start</span>
+			<label class="switch">
+				<input type="checkbox" @bind="Settings.Autostart" />
+				<span class="slider"></span>
+			</label>
+		</div>
 
-            <div class="section">
-                <div class="section-title">📝 TASK</div>
-                <!-- Placeholder for future content -->
-            </div>
-        </div>
-    </div>
-}
+		<div class="number-input">
+			<label>Long Break Interval</label>
+			<input type="number" min="1" @bind="Settings.RunsBeforeLongBreak" />
+		</div>
+	</div>
+
+	<div class="section">
+		<div class="section-title">📝 TASK</div>
+		<!-- Placeholder for future content -->
+	</div>
+</BaseModal>
+
 
 @code {
-    [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-    [Parameter] public TimerSettings Settings { get; set; } = default!;
+	[Parameter] public TimerSettings Settings { get; set; } = default!;
+	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
+	[Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
+	[Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
 
-    [Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
-    [Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
-    [Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
+	private int PomodoroMinutes
+	{
+		get => (int)PomodoroTimer.Duration.TotalMinutes;
+		set => PomodoroTimer.Duration = TimeSpan.FromMinutes(value);
+	}
 
-    private int PomodoroMinutes
-    {
-        get => (int)PomodoroTimer.Duration.TotalMinutes;
-        set => PomodoroTimer.Duration = TimeSpan.FromMinutes(value);
-    }
+	private int ShortBreakMinutes
+	{
+		get => (int)ShortBreakTimer.Duration.TotalMinutes;
+		set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(value);
+	}
 
-    private int ShortBreakMinutes
-    {
-        get => (int)ShortBreakTimer.Duration.TotalMinutes;
-        set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(value);
-    }
+	private int LongBreakMinutes
+	{
+		get => (int)LongBreakTimer.Duration.TotalMinutes;
+		set => LongBreakTimer.Duration = TimeSpan.FromMinutes(value);
+	}
 
-    private int LongBreakMinutes
-    {
-        get => (int)LongBreakTimer.Duration.TotalMinutes;
-        set => LongBreakTimer.Duration = TimeSpan.FromMinutes(value);
-    }
-
-    private async Task Close() => await IsOpenChanged.InvokeAsync(false);
+	// private async Task Close() => await IsOpenChanged.InvokeAsync(false);
 }
 
 <style>
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1000;
+	}
 
-    .modal-content {
-        background-color: #111;
-        color: white;
-        padding: 1rem;
-        border-radius: 10px;
-        min-width: 340px;
-        max-width: 90%;
-        font-family: sans-serif;
-        box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    }
+	.modal-content {
+		background-color: #111;
+		color: white;
+		padding: 1rem;
+		border-radius: 10px;
+		min-width: 340px;
+		max-width: 90%;
+		font-family: sans-serif;
+		box-shadow: 0 0 20px rgba(0,0,0,0.3);
+	}
 
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #333;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
-    }
+	.modal-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #333;
+		padding-bottom: 0.5rem;
+		margin-bottom: 1rem;
+	}
 
-        .modal-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-        }
+		.modal-header h3 {
+			margin: 0;
+			font-size: 1.1rem;
+			letter-spacing: 1px;
+		}
 
-    .close-button {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
+	.close-button {
+		background: none;
+		border: none;
+		color: white;
+		font-size: 1.5rem;
+		cursor: pointer;
+	}
 
-    .section {
-        margin-bottom: 1.5rem;
-    }
+	.section {
+		margin-bottom: 1.5rem;
+	}
 
-    .section-title {
-        font-weight: bold;
-        margin-bottom: 0.75rem;
-        font-size: 0.95rem;
-        color: #ccc;
-        display: flex;
-        align-items: center;
-    }
+	.section-title {
+		font-weight: bold;
+		margin-bottom: 0.75rem;
+		font-size: 0.95rem;
+		color: #ccc;
+		display: flex;
+		align-items: center;
+	}
 
-    .timer-inputs {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-        .timer-inputs div {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
+	.timer-inputs {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
 
-        .timer-inputs label {
-            font-size: 0.75rem;
-            color: #aaa;
-            margin-bottom: 0.25rem;
-        }
+		.timer-inputs div {
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+		}
 
-        .timer-inputs input {
-            background-color: #222;
-            border: 1px solid #444;
-            color: white;
-            padding: 0.4rem;
-            border-radius: 4px;
-            text-align: center;
-        }
+		.timer-inputs label {
+			font-size: 0.75rem;
+			color: #aaa;
+			margin-bottom: 0.25rem;
+		}
 
-    .number-input {
-        margin-top: 1rem;
-    }
+		.timer-inputs input {
+			background-color: #222;
+			border: 1px solid #444;
+			color: white;
+			padding: 0.4rem;
+			border-radius: 4px;
+			text-align: center;
+		}
 
-        .number-input label {
-            font-size: 0.85rem;
-            display: block;
-            margin-bottom: 0.25rem;
-        }
+	input[type="number"],
+	input[type="text"] {
+		background-color: #222;
+		border: 1px solid #444;
+		color: white;
+		padding: 0.4rem;
+		border-radius: 4px;
+		width: 100%;
+		box-sizing: border-box;
+	}
 
-        .number-input input {
-            width: 100%;
-            background-color: #222;
-            border: 1px solid #444;
-            color: white;
-            padding: 0.4rem;
-            border-radius: 4px;
-        }
+	input[type="text"] {
+		margin-bottom: 1rem;
+	}
 
-    .toggle-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1rem;
-        font-size: 0.9rem;
-    }
+	.toggle-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 1rem;
+		font-size: 0.9rem;
+	}
 
-    /* Toggle Switch Styling */
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 42px;
-        height: 24px;
-    }
+	/* Toggle Switch Styling */
+	.switch {
+		position: relative;
+		display: inline-block;
+		width: 42px;
+		height: 24px;
+	}
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+		.switch input {
+			opacity: 0;
+			width: 0;
+			height: 0;
+		}
 
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #555;
-        transition: .4s;
-        border-radius: 24px;
-    }
+	.slider {
+		position: absolute;
+		cursor: pointer;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #555;
+		transition: .4s;
+		border-radius: 24px;
+	}
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
+		.slider:before {
+			position: absolute;
+			content: "";
+			height: 18px;
+			width: 18px;
+			left: 3px;
+			bottom: 3px;
+			background-color: white;
+			transition: .4s;
+			border-radius: 50%;
+		}
 
-    .switch input:checked + .slider {
-        background-color: #4cd137;
-    }
+	.switch input:checked + .slider {
+		background-color: #4cd137;
+	}
 
-        .switch input:checked + .slider:before {
-            transform: translateX(18px);
-        }
+		.switch input:checked + .slider:before {
+			transform: translateX(18px);
+		}
 </style>
 
 
