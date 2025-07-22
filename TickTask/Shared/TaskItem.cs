@@ -42,6 +42,13 @@ namespace TickTask.Shared
         public int ProjectId { get; set; }
     }
 
+    public class TimerSettings
+    {
+        public bool Autostart { get; set; } = true;
+        public int NumberOfPomodorosRun { get; set; } = 0;
+        public int RunsBeforeLongBreak { get; set; } = 4;
+    }
+
     public class CountdownTimer
     {
         public TimeSpan Duration { get; set; }

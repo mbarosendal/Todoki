@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using TickTask.Client.Enums
 @using TickTask.Server.Services
+@using TickTask.Client.Components
 @using TickTask.Shared
 @inject TimerService timerService
 
@@ -14,22 +15,26 @@
 		@foreach (TimerType type in Enum.GetValues<TimerType>())
 		{
 			<button @onclick="() => SelectTimer(type)"
-			style="background-color: @(timerType == type ? "darkgreen" : "green")">
+					style="background-color: @(timerType == type ? "darkgreen" : "green")">
 				@type
 			</button>
 		}
 	</div>
 
+<button @onclick="OpenSettings">Open Settings</button>
+<SettingsModal @bind-IsOpen="showSettings" />
+
 	<!-- Timer Display -->
 	<div>
 		<h1>@countdownTimer.RemainingTime.ToString(@"mm\:ss")</h1>
-		<h3>@($"Number of runs until longbreak: {4- numberOfPomodorosRun}")</h3>
+		<h3>@($"Number of runs until longbreak: {4 - numberOfPomodorosRun}")</h3>
 	</div>
 
 	<!-- Timer Control Button -->
 	<div>
 		<button @onclick="() => ToggleTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
 		<button @onclick="() => ResetTimer(countdownTimer)" style="background-color: red">Reset</button>
+		<input type="checkbox" @bind="autostart" />
 	</div>
 
 	<!-- Tasks Separator -->
@@ -66,6 +71,9 @@
 	private bool autostart = true;
 	private int numberOfPomodorosRun = 0;
 	private int runsBeforeLongBreak = 4;
+
+	private bool showSettings = false;
+	private void OpenSettings() => showSettings = true;
 
 	private TimerType timerType = Enums.TimerType.Pomodoro;
 	private CountdownTimer countdownTimer => timerType switch
@@ -131,7 +139,7 @@
 		if (timerType is TimerType.Pomodoro) numberOfPomodorosRun++;
 
 		if (timerType is TimerType.ShortBreak or TimerType.LongBreak)
-			SelectTimer(TimerType.Pomodoro); 
+			SelectTimer(TimerType.Pomodoro);
 		else if (timerType is TimerType.Pomodoro && numberOfPomodorosRun < runsBeforeLongBreak)
 			SelectTimer(TimerType.ShortBreak);
 		else if (timerType is TimerType.Pomodoro && numberOfPomodorosRun >= runsBeforeLongBreak)
@@ -147,6 +155,10 @@
 	{
 		timerService.Reset(timer);
 	}
+
+
+
+
 
 }
 
