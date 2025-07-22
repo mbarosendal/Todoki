@@ -53,7 +53,9 @@ namespace TickTask.Shared
     {
         public TimeSpan Duration { get; set; }
         public TimeSpan RemainingTime { get; set; }
-        public bool IsRunning { get; set; } = false;      
+        public bool IsRunning { get; set; } = false;
+        [StringLength(200, MinimumLength = 1)]
+        public string Text { get; set; } = "";
     }
 
     public class PomodoroTimer : CountdownTimer
@@ -61,8 +63,8 @@ namespace TickTask.Shared
         public PomodoroTimer()
         {
             // For testing
-            Duration = new TimeSpan(0,0,3);
-            //Duration = TimeSpan.FromMinutes(25); // Default Pomodoro duration
+            //Duration = new TimeSpan(0,0,3);
+            Duration = TimeSpan.FromMinutes(25); // Default Pomodoro duration
         }
     }
 
@@ -71,8 +73,8 @@ namespace TickTask.Shared
         public ShortBreakTimer()
         {
             // For testing
-            Duration = new TimeSpan(0, 0, 4);
-            //Duration = TimeSpan.FromMinutes(5); // Default Short Break duration
+            //Duration = new TimeSpan(0, 0, 4);
+            Duration = TimeSpan.FromMinutes(5); // Default Short Break duration
         }
     }
 
@@ -81,8 +83,8 @@ namespace TickTask.Shared
         public LongBreakTimer()
         {
             // For testing
-            Duration = new TimeSpan(0, 0, 5);
-            //Duration = TimeSpan.FromMinutes(15); // Default Long Break duration
+            //Duration = new TimeSpan(0, 0, 5);
+            Duration = TimeSpan.FromMinutes(15); // Default Long Break duration
         }
     }
 

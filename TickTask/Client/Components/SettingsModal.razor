@@ -1,21 +1,83 @@
-﻿@if (IsOpen)
+﻿@using TickTask.Shared
+
+@if (IsOpen)
 {
-	<div class="modal-overlay">
-		<div class="modal-content">
-			<h3>Settings</h3>
-			<!-- Your settings options here -->
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>SETTING</h3>
+                <button class="close-button" @onclick="Close">×</button>
+            </div>
 
+            <div class="section">
+                <div class="section-title">🕒 TIMER</div>
 
-			<button @onclick="Close">Close</button>
-		</div>
-	</div>
+                <div class="timer-inputs">
+                    <div>
+                        <label>Pomodoro</label>
+                        <input type="number" min="1" @bind="PomodoroMinutes" />
+                    </div>
+                    <div>
+                        <label>Short Break</label>
+                        <input type="number" min="1" @bind="ShortBreakMinutes" />
+                    </div>
+                    <div>
+                        <label>Long Break</label>
+                        <input type="number" min="1" @bind="LongBreakMinutes" />
+                    </div>
+                </div>
+
+                <div class="toggle-row">
+                    <span>Auto Start</span>
+                    <label class="switch">
+                        <input type="checkbox" @bind="Settings.Autostart" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="number-input">
+                    <label>Long Break Interval</label>
+                    <input type="number" min="1" @bind="Settings.RunsBeforeLongBreak" />
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📝 TASK</div>
+                <!-- Placeholder for future content -->
+            </div>
+        </div>
+    </div>
 }
 
 @code {
-	[Parameter] public bool IsOpen { get; set; }
-	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-	private async Task Close() => await IsOpenChanged.InvokeAsync(false);
+    [Parameter] public TimerSettings Settings { get; set; } = default!;
+
+    [Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
+    [Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
+    [Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
+
+    private int PomodoroMinutes
+    {
+        get => (int)PomodoroTimer.Duration.TotalMinutes;
+        set => PomodoroTimer.Duration = TimeSpan.FromMinutes(value);
+    }
+
+    private int ShortBreakMinutes
+    {
+        get => (int)ShortBreakTimer.Duration.TotalMinutes;
+        set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(value);
+    }
+
+    private int LongBreakMinutes
+    {
+        get => (int)LongBreakTimer.Duration.TotalMinutes;
+        set => LongBreakTimer.Duration = TimeSpan.FromMinutes(value);
+    }
+
+    private async Task Close() => await IsOpenChanged.InvokeAsync(false);
 }
 
 <style>
@@ -33,11 +95,152 @@
     }
 
     .modal-content {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        min-width: 300px;
+        background-color: #111;
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        min-width: 340px;
+        max-width: 90%;
+        font-family: sans-serif;
+        box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+    .close-button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .section {
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+    }
+
+    .timer-inputs {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+        .timer-inputs div {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .timer-inputs label {
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-bottom: 0.25rem;
+        }
+
+        .timer-inputs input {
+            background-color: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 0.4rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+    .number-input {
+        margin-top: 1rem;
+    }
+
+        .number-input label {
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .number-input input {
+            width: 100%;
+            background-color: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 0.4rem;
+            border-radius: 4px;
+        }
+
+    .toggle-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Toggle Switch Styling */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 42px;
+        height: 24px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    .switch input:checked + .slider {
+        background-color: #4cd137;
+    }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(18px);
+        }
 </style>
+
 
