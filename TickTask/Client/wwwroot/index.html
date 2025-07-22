@@ -13,12 +13,18 @@
 
 <body>
     <audio id="clickSound" src="Sounds/click-sound.mp3" preload="auto"></audio>
+    <audio id="alarmSound" src="Sounds/timer-alarm.mp3" preload="auto"></audio>
     <script>
         window.playClickSound = () => {
             const sound = document.getElementById("clickSound");
             if (sound) {
                 sound.play();
             }
+
+        window.playAlarmSound = () => {
+            const sound = document.getElementById("alarmSound");
+            sound?.play();
+        };
         };
     </script>
 
