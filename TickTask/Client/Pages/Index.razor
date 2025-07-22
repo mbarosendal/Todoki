@@ -4,6 +4,7 @@
 @using TickTask.Client.Components
 @using TickTask.Shared
 @inject TimerService timerService
+@inject IJSRuntime JS
 
 <PageTitle>TickTask</PageTitle>
 
@@ -121,7 +122,7 @@
 		ResetTimer(countdownTimer);
 	}
 
-	private void ToggleTimer(TimerType type, CountdownTimer timer)
+	private async void ToggleTimer(TimerType type, CountdownTimer timer)
 	{
 		if (timer.IsRunning)
 		{
@@ -129,7 +130,11 @@
 			// timerFinish = true;
 		}
 		else
+		{
 			timerService.Start(type, timer);
+		}
+
+		await JS.InvokeVoidAsync("playClickSound");
 	}
 
 	private void HandleTimerFinish()
@@ -158,6 +163,7 @@
 	{
 		timerService.Reset(timer);
 	}
+
 
 }
 

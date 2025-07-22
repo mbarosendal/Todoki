@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Shared\TickTask.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Sounds\" />
+  </ItemGroup>
+
 </Project>
