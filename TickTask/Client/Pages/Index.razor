@@ -5,6 +5,7 @@
 @using TickTask.Shared
 @inject TimerService timerService
 @inject IJSRuntime JS
+@implements IDisposable
 
 <PageTitle>TickTask</PageTitle>
 
@@ -26,7 +27,7 @@
 	<button @onclick="OpenSettings">Open Settings</button>
 	<SettingsModal @bind-IsOpen="showSettings" Settings="@settings" PomodoroTimer="@pomodoroTimer" ShortBreakTimer="@shortBreakTimer" LongBreakTimer="@longBreakTimer" />
 
-	<!-- FinishModal -->
+	<!-- TimerFinishModal -->
 	<TimerFinishModal @bind-IsOpen="timerFinish" CountdownTimer="@countdownTimer" />
 
 	<!-- Timer Display -->
@@ -35,14 +36,13 @@
 		<h3>@($"{settings.NumberOfPomodorosRun} / {settings.RunsBeforeLongBreak}")</h3>
 	</div>
 
-	<!-- Timer Control Button -->
+	<!-- Timer Control Buttons -->
 	<div>
 		<button @onclick="() => ToggleTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
 		<button @onclick="() => RestartTimer(countdownTimer)" style="background-color: red">Restart</button>
 		<button @onclick="() => ResetTimer()">Reset </button>
+		<button @onclick="() => HandleTimerFinish(wasSkipped : true)">Skip</button>
 	</div>
-
-	<h4>@($"{countdownTimer.Text}")</h4>
 
 	<!-- Tasks Separator -->
 	<h2>Tasks</h2>
@@ -75,8 +75,6 @@
 	private CountdownTimer shortBreakTimer = new ShortBreakTimer();
 	private CountdownTimer longBreakTimer = new LongBreakTimer();
 
-	private bool timerFinish = false;
-
 	private TimerType timerType = Enums.TimerType.Pomodoro;
 	private CountdownTimer countdownTimer => timerType switch
 	{
@@ -86,18 +84,19 @@
 		_ => pomodoroTimer
 	};
 
+	private bool timerFinish = false;
+
 	private TimerSettings settings = new();
 	private bool showSettings = false;
 	private void OpenSettings() => showSettings = true;
 
 	protected override void OnInitialized()
 	{
-		timerService.OnTimerUpdate += async () => await InvokeAsync(StateHasChanged);
-		timerService.OnTimerFinish += HandleTimerFinish;
+		timerService.OnTimerUpdate += HandleTimerUpdate; 
+		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
 		if (settings.Autostart) ToggleTimer(timerType, countdownTimer);
 
-		// Initialize remaining time from duration
 		countdownTimer.RemainingTime = countdownTimer.Duration;
 
 		// Initialize dummy data for projects and tasks
@@ -138,12 +137,17 @@
 		await JS.InvokeVoidAsync("playClickSound");
 	}
 
-	private async void HandleTimerFinish()
+	private async void HandleTimerUpdate()
+	{
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async void HandleTimerFinish(bool wasSkipped = false)
 	{
 		Console.WriteLine("Pomodoro timer finished!");
 		timerFinish = true;
 
-		if (timerType is TimerType.Pomodoro)
+		if (timerType is TimerType.Pomodoro && !wasSkipped)
 			settings.NumberOfPomodorosRun++;
 
 		if (timerType is TimerType.ShortBreak or TimerType.LongBreak)
@@ -156,7 +160,7 @@
 			settings.NumberOfPomodorosRun = 0;
 		}
 
-		await JS.InvokeVoidAsync("playAlarmSound");
+		if (!wasSkipped) await JS.InvokeVoidAsync("playAlarmSound");
 
 		if (settings.Autostart)
 			ToggleTimer(timerType, countdownTimer);
@@ -166,6 +170,12 @@
 
 	private void ResetTimer() => settings.NumberOfPomodorosRun = 0;	
 
+
+	public void Dispose()
+	{
+		timerService.OnTimerUpdate -= HandleTimerUpdate;
+		timerService.OnTimerFinish -= HandleTimerFinish;
+	}
 
 }
 

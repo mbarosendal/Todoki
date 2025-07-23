@@ -1,12 +1,13 @@
 ﻿@using TickTask.Shared
 
 <BaseModal IsOpen="@IsOpen" IsOpenChanged="@IsOpenChanged" Title="Time for a break">
-	<div class="section">
-		@if (!string.IsNullOrEmpty(CountdownTimer.Text))
-		{
+	@if (!string.IsNullOrEmpty(CountdownTimer.Text))
+	{
+		<div class="section">
+
 			<h2>@($"{CountdownTimer.Text}")</h2>
-		}
-	</div>
+		</div>
+	}
 </BaseModal>
 
 @code {
@@ -15,3 +16,16 @@
 
 	[Parameter] public CountdownTimer CountdownTimer { get; set; } = default!;
 }
+
+
+<style>
+
+	<!-- Prevent overflow -->
+	h2 {
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		max-width: 100%;
+		white-space: normal;
+	}
+
+</style>

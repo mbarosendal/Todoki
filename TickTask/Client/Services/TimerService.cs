@@ -10,7 +10,7 @@ namespace TickTask.Server.Services
         private CountdownTimer? _activeTimer;
 
         public event Action? OnTimerUpdate;
-        public event Action? OnTimerFinish;
+        public event Action<bool>? OnTimerFinish;
 
         public void Start(TimerType type, CountdownTimer timer)
         {
@@ -52,7 +52,7 @@ namespace TickTask.Server.Services
                 {
                     Stop(_activeTimer);
                     Reset(_activeTimer);
-                    OnTimerFinish?.Invoke();
+                    OnTimerFinish?.Invoke(false);
                 }
             }
             else
