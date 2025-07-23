@@ -42,7 +42,7 @@
 		<button @onclick="() => ToggleStartStopTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
 		<button @onclick="() => RestartTimer(countdownTimer)" style="background-color: red">Restart</button>
 		<button @onclick="() => ResetPomodoroCount()">Reset </button>
-		<button @onclick="() => HandleTimerFinish(wasSkipped : true)">Skip</button>
+		<button @onclick="() => HandleTimerFinish(timerWasSkipped : true)">Skip</button>
 		<button @onclick="() => AddTimeToTimer()">+1</button>
 	</div>
 
@@ -110,10 +110,7 @@
 	}
 
 
-	private async void HandleTimerUpdate()
-	{
-		await InvokeAsync(StateHasChanged);
-	}
+	private async void HandleTimerUpdate() => await InvokeAsync(StateHasChanged);
 
 	private void TogglePomodoro() =>
 		ToggleStartStopTimer(TimerType.Pomodoro, pomodoroTimer);
@@ -147,26 +144,34 @@
 		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, countdownTimer);
 	}
 
-	// TODO: Refactor into switch
-	private async void HandleTimerFinish(bool wasSkipped = false)
+	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
-		Console.WriteLine("Pomodoro timer finished!");
 		timerFinish = true;
 
-		if (timerType is TimerType.Pomodoro)
-			settings.NumberOfPomodorosRun++;
-
-		if (timerType is TimerType.ShortBreak or TimerType.LongBreak)
-			SelectAndResetTimer(TimerType.Pomodoro);
-		else if (timerType is TimerType.Pomodoro && settings.NumberOfPomodorosRun < settings.RunsBeforeLongBreak)
-			SelectAndResetTimer(TimerType.ShortBreak);
-		else if (timerType is TimerType.Pomodoro && settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
+		switch (timerType)
 		{
-			SelectAndResetTimer(TimerType.LongBreak);
-			settings.NumberOfPomodorosRun = 0;
-		}
+			case TimerType.Pomodoro:
+				settings.NumberOfPomodorosRun++;
 
-		if (!wasSkipped) await JS.InvokeVoidAsync("playAlarmSound");
+				if (!timerWasSkipped)
+					await JS.InvokeVoidAsync("playAlarmSound");
+
+				if (settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
+				{
+					SelectAndResetTimer(TimerType.LongBreak);
+					settings.NumberOfPomodorosRun = 0;
+				}
+				else
+				{
+					SelectAndResetTimer(TimerType.ShortBreak);
+				}
+				break;
+
+			case TimerType.ShortBreak:
+			case TimerType.LongBreak:
+				SelectAndResetTimer(TimerType.Pomodoro);
+				break;
+		}
 	}
 
 	private void RestartTimer(CountdownTimer timer)

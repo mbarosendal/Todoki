@@ -74,8 +74,8 @@ namespace TickTask.Shared
         public ShortBreakTimer()
         {
             // For testing
-            //Duration = new TimeSpan(0, 0, 4);
-            Duration = TimeSpan.FromMinutes(5); // Default Short Break duration
+            Duration = new TimeSpan(0, 0, 4);
+            //Duration = TimeSpan.FromMinutes(5); // Default Short Break duration
         }
     }
 
