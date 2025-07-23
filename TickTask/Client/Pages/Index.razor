@@ -185,6 +185,14 @@
 			countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
 	}
 
+	private void AddTimeToTimer()
+	{
+		bool isMoreThanDuration = countdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > countdownTimer.Duration;
+
+		if (!isMoreThanDuration)
+			countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
+	}
+
 
 	public void Dispose()
 	{
