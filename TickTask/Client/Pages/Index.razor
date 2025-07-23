@@ -29,7 +29,7 @@
 	<SettingsModal @bind-IsOpen="showSettings" Settings="@settings" PomodoroTimer="@pomodoroTimer" ShortBreakTimer="@shortBreakTimer" LongBreakTimer="@longBreakTimer" />
 
 	<!-- TimerFinishModal -->
-	<TimerFinishModal @bind-IsOpen="timerFinish" CountdownTimer="@countdownTimer" />
+	<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@countdownTimer" />
 
 	<!-- Timer Display -->
 	<div>
@@ -86,7 +86,7 @@
 		_ => pomodoroTimer
 	};
 
-	private bool timerFinish = false;
+	private bool isTimerFinished = false;
 
 	private TimerSettings settings = new();
 	private bool showSettings = false;
@@ -146,7 +146,7 @@
 
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
-		timerFinish = true;
+		isTimerFinished = true;
 
 		switch (timerType)
 		{
