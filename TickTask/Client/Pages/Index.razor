@@ -95,7 +95,7 @@
 		timerService.OnTimerUpdate += HandleTimerUpdate; 
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
-		if (settings.Autostart) ToggleTimer(timerType, countdownTimer);
+		if (settings.IsAutoStart) ToggleTimer(timerType, countdownTimer);
 
 		countdownTimer.RemainingTime = countdownTimer.Duration;
 
@@ -142,12 +142,13 @@
 		await InvokeAsync(StateHasChanged);
 	}
 
+	// TODO: Refactor into switch
 	private async void HandleTimerFinish(bool wasSkipped = false)
 	{
 		Console.WriteLine("Pomodoro timer finished!");
 		timerFinish = true;
 
-		if (timerType is TimerType.Pomodoro && !wasSkipped)
+		if (timerType is TimerType.Pomodoro)
 			settings.NumberOfPomodorosRun++;
 
 		if (timerType is TimerType.ShortBreak or TimerType.LongBreak)
@@ -162,7 +163,7 @@
 
 		if (!wasSkipped) await JS.InvokeVoidAsync("playAlarmSound");
 
-		if (settings.Autostart)
+		if (settings.IsAutoStart)
 			ToggleTimer(timerType, countdownTimer);
 	}
 

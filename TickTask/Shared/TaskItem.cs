@@ -44,7 +44,7 @@ namespace TickTask.Shared
 
     public class TimerSettings
     {
-        public bool Autostart { get; set; } = true;
+        public bool IsAutoStart { get; set; } = true;
         public int NumberOfPomodorosRun { get; set; } = 0;
         public int RunsBeforeLongBreak { get; set; } = 4;
     }
