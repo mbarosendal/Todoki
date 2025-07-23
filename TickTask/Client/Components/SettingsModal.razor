@@ -21,7 +21,7 @@
 
 		<div>
 			<label>Text for short breaks</label>
-			<input type="text" @bind="ShortBreakTimer.Text" placeholder="Reminder for short breaks, e.g. stretch, walk around, drink water... " />
+			<input type="text" @bind="ShortBreakTimer.Text" placeholder="Reminders for short breaks, e.g. stretch, walk around, drink water... " />
 		</div>
 
 		<div>
@@ -37,7 +37,15 @@
 			</label>
 		</div>
 
-		<div class="number-input">
+		<div class="toggle-row">
+			<span>Auto Start after restart</span>
+			<label class="switch">
+				<input type="checkbox" @bind="Settings.IsAutoStartAfterRestart" />
+				<span class="slider"></span>
+			</label>
+		</div>
+
+		<div class="toggle-row">
 			<label>Long Break Interval</label>
 			<input type="number" min="1" @bind="Settings.RunsBeforeLongBreak" />
 		</div>

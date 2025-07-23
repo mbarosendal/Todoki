@@ -17,7 +17,7 @@
 		@foreach (TimerType type in Enum.GetValues<TimerType>())
 		{
 			<button @onclick="() => SelectTimer(type)"
-			style="background-color: @(timerType == type ? "darkgreen" : "green")">
+					style="background-color: @(timerType == type ? "darkgreen" : "green")">
 				@type
 			</button>
 		}
@@ -42,6 +42,7 @@
 		<button @onclick="() => RestartTimer(countdownTimer)" style="background-color: red">Restart</button>
 		<button @onclick="() => ResetTimer()">Reset </button>
 		<button @onclick="() => HandleTimerFinish(wasSkipped : true)">Skip</button>
+		<button @onclick="() => AddTimeToTimer()">+1</button>
 	</div>
 
 	<!-- Tasks Separator -->
@@ -92,7 +93,7 @@
 
 	protected override void OnInitialized()
 	{
-		timerService.OnTimerUpdate += HandleTimerUpdate; 
+		timerService.OnTimerUpdate += HandleTimerUpdate;
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
 		if (settings.IsAutoStart) ToggleTimer(timerType, countdownTimer);
@@ -167,9 +168,22 @@
 			ToggleTimer(timerType, countdownTimer);
 	}
 
-	private void RestartTimer(CountdownTimer timer) => timerService.Reset(timer);	
+	private void RestartTimer(CountdownTimer timer)
+	{
+		timerService.Reset(timer);
 
-	private void ResetTimer() => settings.NumberOfPomodorosRun = 0;	
+		if (settings.IsAutoStartAfterRestart) ToggleTimer(timerType, countdownTimer);
+	}
+
+	private void ResetTimer() => settings.NumberOfPomodorosRun = 0;
+
+	private void AddTimeToTimer()
+	{
+		bool isMoreThanDuration = countdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > countdownTimer.Duration;
+
+		if (!isMoreThanDuration)
+			countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
+	}
 
 
 	public void Dispose()
