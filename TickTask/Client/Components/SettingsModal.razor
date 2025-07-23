@@ -29,7 +29,7 @@
 			<input type="text" @bind="LongBreakTimer.Text" placeholder="Reminders for long breaks, e.g. grab a snack, walk the dog..." />
 		</div>
 
-		<div class="toggle-row">
+		<div class="row">
 			<span>Auto Start</span>
 			<label class="switch">
 				<input type="checkbox" @bind="Settings.IsAutoStart" />
@@ -37,7 +37,7 @@
 			</label>
 		</div>
 
-		<div class="toggle-row">
+		<div class="row">
 			<span>Auto Start after restart</span>
 			<label class="switch">
 				<input type="checkbox" @bind="Settings.IsAutoStartAfterRestart" />
@@ -45,7 +45,7 @@
 			</label>
 		</div>
 
-		<div class="toggle-row">
+		<div class="row">
 			<label>Long Break Interval</label>
 			<input type="number" min="1" @bind="Settings.RunsBeforeLongBreak" />
 		</div>
@@ -190,7 +190,7 @@
 		margin-bottom: 1rem;
 	}
 
-	.toggle-row {
+	.row {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;

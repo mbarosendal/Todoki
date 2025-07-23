@@ -6,6 +6,7 @@
 @inject TimerService timerService
 @inject IJSRuntime JS
 @implements IDisposable
+@inject ILogger<Index> Logger
 
 <PageTitle>TickTask</PageTitle>
 
@@ -16,8 +17,8 @@
 	<div>
 		@foreach (TimerType type in Enum.GetValues<TimerType>())
 		{
-			<button @onclick="() => SelectTimer(type)"
-					style="background-color: @(timerType == type ? "darkgreen" : "green")">
+			<button @onclick="() => SelectAndResetTimer(type)"
+			style="background-color: @(timerType == type ? "darkgreen" : "green")">
 				@type
 			</button>
 		}
@@ -38,9 +39,9 @@
 
 	<!-- Timer Control Buttons -->
 	<div>
-		<button @onclick="() => ToggleTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
+		<button @onclick="() => ToggleStartStopTimer(timerType, countdownTimer)" style="background-color: red">@(countdownTimer.IsRunning ? "Stop" : "Start")</button>
 		<button @onclick="() => RestartTimer(countdownTimer)" style="background-color: red">Restart</button>
-		<button @onclick="() => ResetTimer()">Reset </button>
+		<button @onclick="() => ResetPomodoroCount()">Reset </button>
 		<button @onclick="() => HandleTimerFinish(wasSkipped : true)">Skip</button>
 		<button @onclick="() => AddTimeToTimer()">+1</button>
 	</div>
@@ -96,7 +97,7 @@
 		timerService.OnTimerUpdate += HandleTimerUpdate;
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
-		if (settings.IsAutoStart) ToggleTimer(timerType, countdownTimer);
+		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, countdownTimer);
 
 		countdownTimer.RemainingTime = countdownTimer.Duration;
 
@@ -108,22 +109,22 @@
 		tasks.Add(new TaskItem { TaskItemId = 3, Name = "Moqing", ProjectId = 1 });
 	}
 
-	private void TogglePomodoro() =>
-		ToggleTimer(TimerType.Pomodoro, pomodoroTimer);
 
-	private void ToggleShortBreak() =>
-		ToggleTimer(TimerType.ShortBreak, shortBreakTimer);
-
-	private void ToggleLongBreak() =>
-		ToggleTimer(TimerType.LongBreak, longBreakTimer);
-
-	private void SelectTimer(TimerType type)
+	private async void HandleTimerUpdate()
 	{
-		timerType = type;
-		RestartTimer(countdownTimer);
+		await InvokeAsync(StateHasChanged);
 	}
 
-	private async void ToggleTimer(TimerType type, CountdownTimer timer)
+	private void TogglePomodoro() =>
+		ToggleStartStopTimer(TimerType.Pomodoro, pomodoroTimer);
+
+	private void ToggleShortBreak() =>
+		ToggleStartStopTimer(TimerType.ShortBreak, shortBreakTimer);
+
+	private void ToggleLongBreak() =>
+		ToggleStartStopTimer(TimerType.LongBreak, longBreakTimer);
+
+	private async void ToggleStartStopTimer(TimerType type, CountdownTimer timer)
 	{
 		if (timer.IsRunning)
 		{
@@ -138,9 +139,12 @@
 		await JS.InvokeVoidAsync("playClickSound");
 	}
 
-	private async void HandleTimerUpdate()
+	private void SelectAndResetTimer(TimerType type)
 	{
-		await InvokeAsync(StateHasChanged);
+		timerType = type;
+		timerService.Reset(countdownTimer);
+
+		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, countdownTimer);
 	}
 
 	// TODO: Refactor into switch
@@ -153,46 +157,33 @@
 			settings.NumberOfPomodorosRun++;
 
 		if (timerType is TimerType.ShortBreak or TimerType.LongBreak)
-			SelectTimer(TimerType.Pomodoro);
+			SelectAndResetTimer(TimerType.Pomodoro);
 		else if (timerType is TimerType.Pomodoro && settings.NumberOfPomodorosRun < settings.RunsBeforeLongBreak)
-			SelectTimer(TimerType.ShortBreak);
+			SelectAndResetTimer(TimerType.ShortBreak);
 		else if (timerType is TimerType.Pomodoro && settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
 		{
-			SelectTimer(TimerType.LongBreak);
+			SelectAndResetTimer(TimerType.LongBreak);
 			settings.NumberOfPomodorosRun = 0;
 		}
 
 		if (!wasSkipped) await JS.InvokeVoidAsync("playAlarmSound");
-
-		if (settings.IsAutoStart)
-			ToggleTimer(timerType, countdownTimer);
 	}
 
 	private void RestartTimer(CountdownTimer timer)
 	{
 		timerService.Reset(timer);
 
-		if (settings.IsAutoStartAfterRestart) ToggleTimer(timerType, countdownTimer);
+		if (settings.IsAutoStartAfterRestart) ToggleStartStopTimer(timerType, countdownTimer);
 	}
 
-	private void ResetTimer() => settings.NumberOfPomodorosRun = 0;
+	private void ResetPomodoroCount() => settings.NumberOfPomodorosRun = 0;
 
 	private void AddTimeToTimer()
 	{
 		bool isMoreThanDuration = countdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > countdownTimer.Duration;
 
-		if (!isMoreThanDuration)
-			countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
+		if (!isMoreThanDuration) countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
 	}
-
-	private void AddTimeToTimer()
-	{
-		bool isMoreThanDuration = countdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > countdownTimer.Duration;
-
-		if (!isMoreThanDuration)
-			countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
-	}
-
 
 	public void Dispose()
 	{
