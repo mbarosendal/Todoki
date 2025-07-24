@@ -1,7 +1,7 @@
 ﻿using TickTask.Client.Enums;
 using TickTask.Shared;
 
-namespace TickTask.Server.Services
+namespace TickTask.Client.Services
 {
     public class TimerService
     {

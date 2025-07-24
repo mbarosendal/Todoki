@@ -1,9 +1,10 @@
 ﻿@page "/"
 @using TickTask.Client.Enums
-@using TickTask.Server.Services
+@using TickTask.Client.Services
 @using TickTask.Client.Components
 @using TickTask.Shared
 @inject TimerService timerService
+@inject TaskService taskService
 @inject IJSRuntime JS
 @implements IDisposable
 @inject ILogger<Index> Logger
@@ -18,7 +19,7 @@
 		@foreach (TimerType type in Enum.GetValues<TimerType>())
 		{
 			<button @onclick="() => SelectAndResetTimer(type)"
-			style="background-color: @(timerType == type ? "darkgreen" : "green")">
+					style="background-color: @(timerType == type ? "darkgreen" : "green")">
 				@type
 			</button>
 		}
@@ -49,22 +50,90 @@
 	<!-- Tasks Separator -->
 	<h2>Tasks</h2>
 
-	<!-- Tasks List -->
 	<div style="color:blue">
 		@foreach (var task in tasks)
 		{
-			<div>
-				<span>@task.Name</span>
-				<button>...</button>
+			<div class="task-item">
+				@if (editingTaskId == task.TaskItemId)
+				{
+					<input @bind="task.Name" @onblur="() => editingTaskId = null" @ref="editingInput" />
+				}
+				else
+				{
+					<span>@task.Name</span>
+				}
+
+				<div class="task-information">
+					<span>0/@task.EstimatedNumberOfPomodoros</span>
+				</div>
+
+				<div class="task-actions">
+					<button class="task-button" title="Edit" @onclick="() => EditTask(task.TaskItemId)">✎</button>
+					<button class="task-button" title="Delete" @onclick="() => DeleteTask(task.TaskItemId)">❌</button>
+					<button class="task-button" title="More">⋯</button>
+				</div>
 			</div>
 		}
 	</div>
+
+
+	<!-- Task logic -->
+	@code
+	{
+		
+		private int? editingTaskId = null;
+		private ElementReference editingInput;
+
+		private void EditTask(int taskId)
+		{
+			editingTaskId = taskId;
+
+			_ = Task.Run(async () =>
+			{
+				await Task.Delay(50);
+				await InvokeAsync(() => editingInput.FocusAsync());
+			});
+		}
+
+		private void DeleteTask(int taskItemId)
+		{
+			tasks.RemoveAll(t => t.TaskItemId == taskItemId);
+		}
+	}
+
+	<style>
+		.task-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.task-item:hover .task-information {
+			display: none;
+		}
+			
+		.task-actions {
+			display: none;
+		}
+
+		.task-item:hover .task-actions {
+			display: flex;
+		}
+
+		.task-button {
+			background: none;
+			border: none;
+			cursor: pointer;
+		}
+	</style>
 
 	<!-- Add Task -->
 	<div>
 		<button style="background-color: blue">Add Task</button>
 	</div>
 </div>
+
+
 
 @code
 {
@@ -105,8 +174,8 @@
 		projects.Add(new Project { ProjectId = 1, Title = "Project 1" });
 
 		tasks.Add(new TaskItem { TaskItemId = 1, Name = "Troubleshoot a WLAN connection as a programmer grunt", ProjectId = 1 });
-		tasks.Add(new TaskItem { TaskItemId = 2, Name = "CX50", ProjectId = 1 });
-		tasks.Add(new TaskItem { TaskItemId = 3, Name = "Moqing", ProjectId = 1 });
+		tasks.Add(new TaskItem { TaskItemId = 2, Name = "CX50", ProjectId = 1, EstimatedNumberOfPomodoros = 10 });
+		tasks.Add(new TaskItem { TaskItemId = 3, Name = "Moqing", ProjectId = 1, EstimatedNumberOfPomodoros = 2 });
 	}
 
 
@@ -195,6 +264,8 @@
 		timerService.OnTimerUpdate -= HandleTimerUpdate;
 		timerService.OnTimerFinish -= HandleTimerFinish;
 	}
+
+
 
 }
 

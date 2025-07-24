@@ -36,6 +36,7 @@ namespace TickTask.Shared
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
         public bool isDone { get; set; } = false;
+        public int EstimatedNumberOfPomodoros { get; set; }
         //[ForeignKey("ProjectId")]
         public Project Project { get; set; }
         [Required]
@@ -44,7 +45,7 @@ namespace TickTask.Shared
 
     public class TimerSettings
     {
-        public bool IsAutoStart { get; set; } = true;
+        public bool IsAutoStart { get; set; } = false;
         public bool IsAutoStartAfterRestart { get; set; } = true;
         public int NumberOfPomodorosRun { get; set; } = 0;
         public int RunsBeforeLongBreak { get; set; } = 4;
