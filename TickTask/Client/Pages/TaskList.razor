@@ -1,0 +1,117 @@
+﻿@using TickTask.Shared
+@inject TaskService TaskService
+
+<h2>Tasks</h2>
+
+@if (tasks == null)
+{
+    <p>Loading tasks...</p>
+}
+else
+{
+    <div style="color:blue">
+        @foreach (var task in tasks)
+        {
+            <div class="task-item">
+                @if (editingTaskId == task.TaskItemId)
+                {
+                    <input @bind="task.Name"
+                           @bind:event="oninput"
+                           @onblur="() => FinishEdit(task)"
+                           placeholder="Edit task..." />
+                }
+                else
+                {
+                    <span>@task.Name</span>
+                }
+
+                <div class="task-information">
+                    <span>0/@task.EstimatedNumberOfPomodoros</span>
+                </div>
+
+                <div class="task-actions">
+                    <button class="task-button" @onclick="() => StartEdit(task.TaskItemId)">✎</button>
+                    <button class="task-button" @onclick="() => Delete(task.TaskItemId)">❌</button>
+                    <button class="task-button">⋯</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div>
+        <button @onclick="AddTask" style="background-color: blue">Add Task</button>
+    </div>
+}
+
+<style>
+    .task-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .task-item:hover .task-information {
+            display: none;
+        }
+
+    .task-actions {
+        display: none;
+    }
+
+    .task-item:hover .task-actions {
+        display: flex;
+    }
+
+    .task-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    private List<TaskItem>? tasks;
+    private int? editingTaskId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = await TaskService.GetAllAsync();
+    }
+
+    private async Task AddTask()
+    {
+        var newTask = new TaskItem { Name = "New Task"/*, ProjectId = 1 */};
+        var created = await TaskService.CreateAsync(newTask);
+
+        if (created != null)
+        {
+            tasks!.Add(created);
+            editingTaskId = created.TaskItemId;
+            StateHasChanged();
+        }
+    }
+
+    private void StartEdit(int taskId) => editingTaskId = taskId;
+
+    private async Task FinishEdit(TaskItem task)
+    {
+        editingTaskId = null;
+
+        if (string.IsNullOrWhiteSpace(task.Name))
+        {
+            await Delete(task.TaskItemId);
+            return;
+        }
+
+        await TaskService.UpdateAsync(task);
+    }
+
+    private async Task Delete(int taskItemId)
+    {
+        var success = await TaskService.DeleteAsync(taskItemId);
+        if (success)
+        {
+            tasks!.RemoveAll(t => t.TaskItemId == taskItemId);
+        }
+    }
+}

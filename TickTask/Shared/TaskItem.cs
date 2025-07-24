@@ -12,17 +12,19 @@ namespace TickTask.Shared
     {
         [Key]
         public int ProjectId { get; set; }
+
         [Required]
         [StringLength(200, MinimumLength = 1)]
         public string Title { get; set; } = "";
+
         public string Description { get; set; } = "";
+
         [DataType(DataType.Date)]
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
-        // Clarifies that the Project property in the TaskItem class is the inverse of the Tasks property in the Project class. This helps EF Core understand how these entities are related to each other.
-        [InverseProperty("Project")] 
+
+        // Navigation property kept here only
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
-        //[ForeignKey("UserId")]
-        public User User { get; set; }
+
         [Required]
         public int UserId { get; set; }
     }
@@ -31,16 +33,19 @@ namespace TickTask.Shared
     {
         [Key]
         public int TaskItemId { get; set; }
+
         [Required]
         [StringLength(200, MinimumLength = 1)]
         public string Name { get; set; } = "";
+
         public string Description { get; set; } = "";
+
         public bool isDone { get; set; } = false;
-        public int EstimatedNumberOfPomodoros { get; set; }
-        //[ForeignKey("ProjectId")]
-        public Project Project { get; set; }
-        [Required]
-        public int ProjectId { get; set; }
+
+        public int EstimatedNumberOfPomodoros { get; set; } = 1;
+
+        //[Required]
+        //public int ProjectId { get; set; }
     }
 
     public class TimerSettings

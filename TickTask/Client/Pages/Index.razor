@@ -6,8 +6,8 @@
 @inject TimerService timerService
 @inject TaskService taskService
 @inject IJSRuntime JS
-@implements IDisposable
 @inject ILogger<Index> Logger
+@implements IDisposable
 
 <PageTitle>TickTask</PageTitle>
 
@@ -19,7 +19,7 @@
 		@foreach (TimerType type in Enum.GetValues<TimerType>())
 		{
 			<button @onclick="() => SelectAndResetTimer(type)"
-					style="background-color: @(timerType == type ? "darkgreen" : "green")">
+			style="background-color: @(timerType == type ? "darkgreen" : "green")">
 				@type
 			</button>
 		}
@@ -48,100 +48,13 @@
 	</div>
 
 	<!-- Tasks Separator -->
-	<h2>Tasks</h2>
+	<!-- Task List Component -->
+	<TaskList />
 
-	<div style="color:blue">
-		@foreach (var task in tasks)
-		{
-			<div class="task-item">
-				@if (editingTaskId == task.TaskItemId)
-				{
-					<input @bind="task.Name" @onblur="() => editingTaskId = null" @ref="editingInput" />
-				}
-				else
-				{
-					<span>@task.Name</span>
-				}
-
-				<div class="task-information">
-					<span>0/@task.EstimatedNumberOfPomodoros</span>
-				</div>
-
-				<div class="task-actions">
-					<button class="task-button" title="Edit" @onclick="() => EditTask(task.TaskItemId)">✎</button>
-					<button class="task-button" title="Delete" @onclick="() => DeleteTask(task.TaskItemId)">❌</button>
-					<button class="task-button" title="More">⋯</button>
-				</div>
-			</div>
-		}
-	</div>
-
-
-	<!-- Task logic -->
-	@code
-	{
-		
-		private int? editingTaskId = null;
-		private ElementReference editingInput;
-
-		private void EditTask(int taskId)
-		{
-			editingTaskId = taskId;
-
-			_ = Task.Run(async () =>
-			{
-				await Task.Delay(50);
-				await InvokeAsync(() => editingInput.FocusAsync());
-			});
-		}
-
-		private void DeleteTask(int taskItemId)
-		{
-			tasks.RemoveAll(t => t.TaskItemId == taskItemId);
-		}
-	}
-
-	<style>
-		.task-item {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
-
-		.task-item:hover .task-information {
-			display: none;
-		}
-			
-		.task-actions {
-			display: none;
-		}
-
-		.task-item:hover .task-actions {
-			display: flex;
-		}
-
-		.task-button {
-			background: none;
-			border: none;
-			cursor: pointer;
-		}
-	</style>
-
-	<!-- Add Task -->
-	<div>
-		<button style="background-color: blue">Add Task</button>
-	</div>
 </div>
-
-
 
 @code
 {
-	// public List<Project> Projects => projects;
-	// public List<TaskItem> Tasks => tasks;
-	private List<Project> projects = new List<Project>();
-	private List<TaskItem> tasks = new List<TaskItem>();
-
 	private CountdownTimer pomodoroTimer = new PomodoroTimer();
 	private CountdownTimer shortBreakTimer = new ShortBreakTimer();
 	private CountdownTimer longBreakTimer = new LongBreakTimer();
@@ -169,15 +82,7 @@
 		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, countdownTimer);
 
 		countdownTimer.RemainingTime = countdownTimer.Duration;
-
-		// Initialize dummy data for projects and tasks
-		projects.Add(new Project { ProjectId = 1, Title = "Project 1" });
-
-		tasks.Add(new TaskItem { TaskItemId = 1, Name = "Troubleshoot a WLAN connection as a programmer grunt", ProjectId = 1 });
-		tasks.Add(new TaskItem { TaskItemId = 2, Name = "CX50", ProjectId = 1, EstimatedNumberOfPomodoros = 10 });
-		tasks.Add(new TaskItem { TaskItemId = 3, Name = "Moqing", ProjectId = 1, EstimatedNumberOfPomodoros = 2 });
 	}
-
 
 	private async void HandleTimerUpdate() => await InvokeAsync(StateHasChanged);
 
@@ -264,8 +169,4 @@
 		timerService.OnTimerUpdate -= HandleTimerUpdate;
 		timerService.OnTimerFinish -= HandleTimerFinish;
 	}
-
-
-
 }
-
