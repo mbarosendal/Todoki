@@ -3,115 +3,223 @@
 
 <h2>Tasks</h2>
 
-@if (tasks == null)
+<!-- Three-dots button to toggle pop-up menu -->
+<button @onclick="ToggleMenu">⋮</button>
+
+<!-- Popup menu -->
+@if (showMenu)
 {
-    <p>Loading tasks...</p>
+	<div class="menu">
+		<button @onclick="ClearFinished">Clear finished tasks</button>
+		<button @onclick="ClearAll">Clear all tasks</button>
+		<button @onclick="HideTasks">Hide tasks</button>
+		@* <button @onclick="HideActiveTask">Hide active task</button> *@
+	</div>
+}
+
+<!-- Popup menu logic-->
+@code
+{
+	private bool showMenu;
+	private bool hideTasks = false;
+
+	private void ToggleMenu() => showMenu = !showMenu;
+	private void HideTasks() => hideTasks = !hideTasks;
+
+	private void ClearFinished()
+	{
+		foreach (var task in tasks!.Where(t => t.IsDone).ToList())
+		{
+			_ = TaskService.DeleteAsync(task.TaskItemId);
+			tasks.Remove(task);
+		}
+	}
+
+	private void ClearAll()
+	{
+		foreach (var task in tasks!.ToList())
+		{
+			_ = TaskService.DeleteAsync(task.TaskItemId);
+		}
+	}
+}
+
+<!-- Active task display-->
+@if (activeTask != null)
+{
+	<div style="color:green">
+		<h3>Active Task: @activeTask.Name</h3>
+		<p>@activeTask.PomodorosRanOnTask/@activeTask.EstimatedNumberOfPomodoros</p>
+	</div>
 }
 else
 {
-    <div style="color:blue">
-        @foreach (var task in tasks)
-        {
-            <div class="task-item">
-                @if (editingTaskId == task.TaskItemId)
-                {
-                    <input @bind="task.Name"
-                           @bind:event="oninput"
-                           @onblur="() => FinishEdit(task)"
-                           placeholder="Edit task..." />
-                }
-                else
-                {
-                    <span>@task.Name</span>
-                }
+	<p>No active task.</p>
+}
 
-                <div class="task-information">
-                    <span>0/@task.EstimatedNumberOfPomodoros</span>
-                </div>
-
-                <div class="task-actions">
-                    <button class="task-button" @onclick="() => StartEdit(task.TaskItemId)">✎</button>
-                    <button class="task-button" @onclick="() => Delete(task.TaskItemId)">❌</button>
-                    <button class="task-button">⋯</button>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div>
-        <button @onclick="AddTask" style="background-color: blue">Add Task</button>
-    </div>
+<!-- Tasks display -->
+@if (tasks == null)
+{
+	<p>Loading tasks...</p>
+}
+else if (hideTasks == true)
+{
+	<p>Tasks are hidden.</p>
+}
+else
+{
+	<div style="color:blue">
+		@foreach (var task in tasks)
+		{
+			<div class="task-item @(task.IsActiveTask ? "active" : "") @(task.IsDone ? "completed" : "")" @onclick="() => SetActiveTask(task.TaskItemId)">
+				<input type="checkbox" @onclick="() => FinishTask(task.TaskItemId)" checked="@task.IsDone" @onclick:stopPropagation="true">
+				@if (editingTaskId == task.TaskItemId)
+				{
+					<input class="@(task.IsDone ? "completed" : "")"
+						   @bind="task.Name"
+						   @bind:event="oninput"
+						   @onblur="() => FinishEdit(task)"
+						   @onclick:stopPropagation="true"
+						   placeholder="Edit task..." />
+				}
+				else
+				{
+					<span class="@(task.IsDone ? "completed" : "")">@task.Name</span>
+				}
+				<div class="task-information">
+					<span>0/@task.EstimatedNumberOfPomodoros</span>
+				</div>
+				<div class="task-actions">
+					<button class="task-button" @onclick="() => StartEdit(task.TaskItemId)" @onclick:stopPropagation="true">✎</button>
+					<button class="task-button" @onclick="() => Delete(task.TaskItemId)" @onclick:stopPropagation="true">❌</button>
+					<button class="task-button" @onclick:stopPropagation="true">⋯</button>
+				</div>
+			</div>
+		}
+	</div>
+	<div>
+		<button @onclick="AddTask" style="background-color: blue">Add Task</button>
+	</div>
 }
 
 <style>
-    .task-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+	.task-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 8px;
+		margin: 4px 0;
+		border-radius: 4px;
+		transition: background-color 0.2s ease;
+	}
 
-        .task-item:hover .task-information {
-            display: none;
-        }
+		.task-item.active {
+			background-color: #e3f2fd;
+			border-left: 4px solid #1976d2;
+			font-weight: 500;
+		}
 
-    .task-actions {
-        display: none;
-    }
+		.task-item.completed {
+			opacity: 0.6;
+			text-decoration: line-through;
+		}
 
-    .task-item:hover .task-actions {
-        display: flex;
-    }
+		.task-item:hover .task-information {
+			display: none;
+		}
 
-    .task-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-    }
+	.task-actions {
+		display: none;
+	}
+
+	.task-item:hover .task-actions {
+		display: flex;
+	}
+
+	.task-button {
+		background: none;
+		border: none;
+		cursor: pointer;
+	}
 </style>
 
 @code {
-    private List<TaskItem>? tasks;
-    private int? editingTaskId;
+	private List<TaskItem>? tasks;
+	private TaskItem? activeTask => tasks?.FirstOrDefault(t => t.IsActiveTask && !t.IsDone);
 
-    protected override async Task OnInitializedAsync()
-    {
-        tasks = await TaskService.GetAllAsync();
-    }
+	private int? editingTaskId;
 
-    private async Task AddTask()
-    {
-        var newTask = new TaskItem { Name = "New Task"/*, ProjectId = 1 */};
-        var created = await TaskService.CreateAsync(newTask);
+	protected override async Task OnInitializedAsync()
+	{
+		tasks = await TaskService.GetAllAsync();
+	}
 
-        if (created != null)
-        {
-            tasks!.Add(created);
-            editingTaskId = created.TaskItemId;
-            StateHasChanged();
-        }
-    }
+	private async Task AddTask()
+	{
+		var newTask = new TaskItem { Name = "New Task"/*, ProjectId = 1 */};
+		var created = await TaskService.CreateAsync(newTask);
 
-    private void StartEdit(int taskId) => editingTaskId = taskId;
+		if (created != null)
+		{
+			tasks!.Add(created);
+			editingTaskId = created.TaskItemId;
+			StateHasChanged();
+		}
+	}
 
-    private async Task FinishEdit(TaskItem task)
-    {
-        editingTaskId = null;
+	private async Task SetActiveTask(int taskId)
+	{
+		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
+		if (task == null || task.IsDone) return;
 
-        if (string.IsNullOrWhiteSpace(task.Name))
-        {
-            await Delete(task.TaskItemId);
-            return;
-        }
+		foreach (var t in tasks!.ToList())
+		{
+			if (t.IsActiveTask)
+			{
+				t.IsActiveTask = false;
+				await TaskService.UpdateAsync(t);
+			}
+		}
 
-        await TaskService.UpdateAsync(task);
-    }
+		task.IsActiveTask = true;
+		await TaskService.UpdateAsync(task);
 
-    private async Task Delete(int taskItemId)
-    {
-        var success = await TaskService.DeleteAsync(taskItemId);
-        if (success)
-        {
-            tasks!.RemoveAll(t => t.TaskItemId == taskItemId);
-        }
-    }
+		StateHasChanged();
+	}
+
+	private void FinishTask(int taskId)
+	{
+		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
+
+		if (task != null)
+		{
+			task.IsDone = !task.IsDone;
+			_ = TaskService.UpdateAsync(task);
+		}
+	}
+
+	private void StartEdit(int taskId) => editingTaskId = taskId;
+
+	private async Task FinishEdit(TaskItem task)
+	{
+		editingTaskId = null;
+
+		if (string.IsNullOrWhiteSpace(task.Name))
+		{
+			await Delete(task.TaskItemId);
+			return;
+		}
+
+		await TaskService.UpdateAsync(task);
+	}
+
+	private async Task Delete(int taskItemId)
+	{
+		var success = await TaskService.DeleteAsync(taskItemId);
+
+		if (success)
+		{
+			tasks!.RemoveAll(t => t.TaskItemId == taskItemId);
+		}
+	}
 }

@@ -39,10 +39,11 @@ namespace TickTask.Shared
         public string Name { get; set; } = "";
 
         public string Description { get; set; } = "";
-
-        public bool isDone { get; set; } = false;
+        public bool IsActiveTask { get; set; } = false;
+        public bool IsDone { get; set; } = false;
 
         public int EstimatedNumberOfPomodoros { get; set; } = 1;
+        public int PomodorosRanOnTask { get; set; } = 0;
 
         //[Required]
         //public int ProjectId { get; set; }
