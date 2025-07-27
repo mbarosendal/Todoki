@@ -53,8 +53,10 @@
 	</div>
 
 	<!-- Task List Component -->
-	<TaskList OnResetPomodoros="ResetPomodoroCount" />
-
+	<TaskList OnResetPomodoros="ResetPomodoroCount"
+			  ActivePomodoro="pomodoroTimer"
+			  ShortBreakTimer="shortBreakTimer"
+			  LongBreakTimer="longBreakTimer" />
 
 	<!-- Modals -->
 	<SettingsModal @bind-IsOpen="showSettings" Settings="@settings"
