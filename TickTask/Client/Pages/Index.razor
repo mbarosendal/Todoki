@@ -12,7 +12,7 @@
 <PageTitle>TickTask</PageTitle>
 
 <div class="timer-container">
-	<button class="control-btn" @onclick="OpenSettings">⚙️</button>
+	<button class="control-btn" @onclick="OpenSettings">⚙️Settings</button>
 
 	<!-- Timer Tabs -->
 	<div class="timer-tabs">
@@ -32,6 +32,11 @@
 	<!-- Timer Display -->
 	<div class="timer-display">
 		<h1 class="timer-time">@countdownTimer.RemainingTime.ToString(@"mm\:ss")</h1>
+		<button class="plus-one-btn"
+				title="Add one minute to the current timer (not above max duration set in settings)"
+				@onclick="() => AddTimeToTimer()">
+			+1
+		</button>
 	</div>
 
 	<!-- Timer Control Buttons -->
@@ -47,16 +52,6 @@
 		</button>
 	</div>
 
-	<!-- Additional Controls -->
-	<div class="additional-controls">
-		@* <button class="control-btn" @onclick="() => ResetPomodoroCount()">Reset Count</button> *@
-		<button class="control-btn"
-				title="Add one minute to the current timer (can't go above maximum duration)"
-				@onclick="() => AddTimeToTimer()">
-			+1
-		</button>
-	</div>
-
 	<!-- Task List Component -->
 	<TaskList OnResetPomodoros="ResetPomodoroCount" />
 
@@ -65,7 +60,12 @@
 	<SettingsModal @bind-IsOpen="showSettings" Settings="@settings"
 				   PomodoroTimer="@pomodoroTimer" ShortBreakTimer="@shortBreakTimer"
 				   LongBreakTimer="@longBreakTimer" />
-	<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@countdownTimer" />
+
+	@if (countdownTimer is not PomodoroTimer)
+	{
+		<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@countdownTimer" />
+	}
+
 </div>
 
 <style>
@@ -113,9 +113,20 @@
 			background: rgba(255,255,255,0.15);
 		}
 
+	.pomodoro-count {
+		font-size: 0.8rem;
+		opacity: 0.9;
+		background: rgba(0,0,0,0.2);
+		padding: 2px 6px;
+		border-radius: 4px;
+	}
+
 	.timer-display {
-		text-align: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 		margin-bottom: 20px;
+		position: relative;
 	}
 
 	.timer-time {
@@ -125,22 +136,24 @@
 		letter-spacing: 0.1em;
 	}
 
-	.timer-info {
-		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-		margin-top: 15px;
-		font-size: 1.1rem;
-		opacity: 0.8;
+	.plus-one-btn {
+		background: rgba(0,0,0,0.3);
+		border: none;
+		color: white;
+		padding: 6px 10px;
+		border-radius: 4px;
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		position: absolute;
+		left: 125px;
+		top: 50%;
+		transform: translateY(-50%);
 	}
 
-	.pomodoro-count {
-		font-size: 0.8rem;
-		opacity: 0.9;
-		background: rgba(0,0,0,0.2);
-		padding: 2px 6px;
-		border-radius: 4px;
-	}
+		.plus-one-btn:hover {
+			background: rgba(0,0,0,0.5);
+		}
 
 	.timer-controls {
 		display: flex;
@@ -150,8 +163,9 @@
 		margin-bottom: 20px;
 	}
 
+	/* Primary button styles */
 	.timer-main-btn, .btn-primary {
-		background: #228B22 !important;
+		background: rgba(56, 210, 35, 0.84) !important;
 		border: none;
 		color: white;
 		padding: 12px 24px;
@@ -173,82 +187,30 @@
 			background: #1e7a1e !important;
 		}
 
-	.timer-control-btn, .btn-secondary {
+	/* Secondary button styles (skip and restart) */
+	.timer-control-btn, .btn-secondary, .restart-btn {
 		background: none;
 		border: none;
 		color: white;
-		font-size: 2rem;
 		cursor: pointer;
 		opacity: 0.7;
 		transition: all 0.3s ease;
 	}
 
-		.timer-control-btn:hover, .btn-secondary:hover {
-			opacity: 1;
-			transform: scale(1.1);
-		}
+	.timer-control-btn, .btn-secondary {
+		font-size: 2rem;
+	}
 
 	.restart-btn {
-		background: none;
-		border: none;
-		color: white;
 		font-size: 1.8rem;
-		cursor: pointer;
-		opacity: 0.7;
-		transition: all 0.3s ease;
 	}
 
-		.restart-btn:hover {
+		.timer-control-btn:hover, .btn-secondary:hover, .restart-btn:hover {
 			opacity: 1;
 			transform: scale(1.1);
 		}
 
-	.timer-main-btn, .btn-primary {
-		background: #228B22 !important;
-		border: none;
-		color: white;
-		padding: 12px 24px;
-		border-radius: 8px;
-		cursor: pointer;
-		transition: background 0.2s ease;
-	}
-
-		.timer-main-btn:hover, .btn-primary:hover {
-			background: #1e7a1e !important;
-		}
-
-		.timer-main-btn:active, .btn-primary:active {
-			background: #1a6b1a !important;
-			transform: translateY(1px);
-		}
-
-		.timer-main-btn.running, .btn-primary.running {
-			background: #1e7a1e !important;
-		}
-
-	.timer-control-btn, .btn-secondary {
-		background: none;
-		border: none;
-		color: white;
-		font-size: 2rem;
-		cursor: pointer;
-		opacity: 0.7;
-		transition: all 0.3s ease;
-	}
-
-		.timer-control-btn:hover, .btn-secondary:hover {
-			opacity: 1;
-			transform: scale(1.1);
-		}
-
-	.additional-controls {
-		display: flex;
-		justify-content: center;
-		gap: 10px;
-		margin-bottom: 20px;
-		flex-wrap: wrap;
-	}
-
+	/* Control buttons (settings, etc.) */
 	.control-btn {
 		background: rgba(255,255,255,0.1);
 		border: none;
@@ -265,6 +227,8 @@
 			background: rgba(255,255,255,0.2);
 		}
 
+		/* Tooltip styles for buttons with title attribute */
+		.plus-one-btn[title]:hover::after,
 		.control-btn[title]:hover::after {
 			content: attr(title);
 			position: absolute;
@@ -279,7 +243,18 @@
 			white-space: nowrap;
 			z-index: 1000;
 			margin-bottom: 5px;
+			opacity: 1;
+			transition: opacity 0.3s ease;
 		}
+
+	.timer-info {
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		margin-top: 15px;
+		font-size: 1.1rem;
+		opacity: 0.8;
+	}
 </style>
 
 @code
@@ -369,7 +344,6 @@
 					SelectAndResetTimer(TimerType.ShortBreak);
 				}
 				break;
-
 			case TimerType.ShortBreak:
 			case TimerType.LongBreak:
 				SelectAndResetTimer(TimerType.Pomodoro);

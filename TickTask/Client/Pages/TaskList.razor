@@ -1,9 +1,22 @@
 ﻿@using TickTask.Shared
 @inject TaskService TaskService
 
+<!-- Active Task Section -->
+@if (activeTask != null && !hideActiveTask)
+{
+	<div class="active-task-section">
+		<div class="section-label">Active Task</div>
+		<div class="active-task-content">
+			<div class="active-task-name">@activeTask.Name</div>
+			<div class="active-task-progress">@activeTask.PomodorosRanOnTask/@activeTask.EstimatedNumberOfPomodoros</div>
+		</div>
+	</div>
+}
+
+<!-- Tasks Section -->
 <div class="tasks-section">
 	<div class="tasks-header">
-		<h2>Tasks</h2>
+		<div class="section-label">Tasks</div>
 		<button class="menu-btn" @onclick="ToggleMenu">⋮</button>
 	</div>
 
@@ -13,18 +26,9 @@
 		<div class="menu-popup">
 			<button class="menu-item" @onclick="ClearFinished">Clear finished tasks</button>
 			<button class="menu-item" @onclick="ClearAll">Clear all tasks</button>
+			<button class="menu-item" @onclick="HideActiveTask">@(hideActiveTask ? "Show active task" : "Hide active task")</button>
 			<button class="menu-item" @onclick="HideTasks">@(hideTasks ? "Show tasks" : "Hide tasks")</button>
 			<button class="menu-item" @onclick="OnResetPomodoros">Reset Pomodoro</button>
-		</div>
-	}
-
-	<!-- Active task display -->
-	@if (activeTask != null && !hideTasks)
-	{
-		<div class="active-task">
-			<div class="active-task-label">Active Task:</div>
-			<div class="active-task-name">@activeTask.Name</div>
-			<div class="active-task-progress">@activeTask.PomodorosRanOnTask/@activeTask.EstimatedNumberOfPomodoros</div>
 		</div>
 	}
 
@@ -43,13 +47,19 @@
 			@foreach (var task in tasks)
 			{
 				<div class="task-item @(task.IsActiveTask ? "active" : "") @(task.IsDone ? "completed" : "")"
-				@onclick="() => SetActiveTask(task.TaskItemId)">
+				@onclick="() => SetActiveTask(task.TaskItemId)"
+					 @onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
+					 @onwheel:preventDefault="true">
 
 					<input type="checkbox"
 					class="task-checkbox"
 					@onclick="() => FinishTask(task.TaskItemId)"
 					checked="@task.IsDone"
 					@onclick:stopPropagation="true">
+
+					<div class="task-info">
+						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
+					</div>
 
 					@if (editingTaskId == task.TaskItemId)
 					{
@@ -64,10 +74,6 @@
 					{
 						<span class="task-name @(task.IsDone ? "completed" : "")">@task.Name</span>
 					}
-
-					<div class="task-info">
-						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
-					</div>
 
 					<div class="task-actions">
 						<button class="task-btn" @onclick="() => StartEdit(task.TaskItemId)" @onclick:stopPropagation="true">✎</button>
@@ -85,37 +91,77 @@
 </div>
 
 <style>
-	.tasks-section {
-	background: rgba(0,0,0,0.2);
-	border-radius: 12px;
-	padding: 20px;
+	/* Active Task Section */
+	.active-task-section {
+	background: rgba(56, 210, 35, 0.84);
+	border-radius: 12px 12px 0 0;
+	padding: 16px 20px;
 	margin-top: 20px;
+	position: relative;
 	}
 
+	/* Tasks Section */
+	.tasks-section {
+	background: rgba(89, 8, 8, 0.28);
+	border-radius: 0 0 12px 12px;
+	padding: 16px 20px 20px 20px;
+	margin-top: 0;
+	}
+
+	/* When no active task, give tasks section full rounded corners */
+	/* .tasks-section:first-child { */
+	/* border-radius: 12px; */
+	/* margin-top: 20px; */
+	/* } */
+
+	/* Section labels */
+	.section-label {
+	font-size: 1.1rem;
+	font-weight: 500;
+	margin-bottom: 12px;
+	opacity: 0.9;
+	}
+
+	/* Tasks header */
 	.tasks-header {
 	display: flex;
 	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-	border-bottom: 1px solid rgba(255,255,255,0.1);
-	padding-bottom: 10px;
+	align-items: flex-start;
+	margin-bottom: 16px;
 	}
 
-	.tasks-header h2 {
-	margin: 0;
-	font-size: 1.3rem;
+	/* Active task content */
+	.active-task-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	min-height: 40px;
+	}
+
+	.active-task-name {
+	font-size: 1.1rem;
 	font-weight: 500;
+	flex: 1;
+	}
+
+	.active-task-progress {
+	font-size: 0.9rem;
+	margin-left: 12px;
+	}
+
+	/* Menu and buttons */
+	.menu-btn, .task-btn, .add-task-btn {
+	border: none;
+	color: white;
+	cursor: pointer;
+	transition: all 0.3s ease;
 	}
 
 	.menu-btn {
 	background: rgba(255,255,255,0.1);
-	border: none;
-	color: white;
-	padding: 8px 12px;
+	padding: 6px 10px;
 	border-radius: 6px;
-	cursor: pointer;
 	font-size: 1.2rem;
-	transition: all 0.3s ease;
 	}
 
 	.menu-btn:hover {
@@ -149,32 +195,7 @@
 	background: rgba(255,255,255,0.1);
 	}
 
-	.active-task {
-	background: rgba(34, 139, 34, 0.3);
-	border: 1px solid rgba(34, 139, 34, 0.6);
-	border-radius: 8px;
-	padding: 15px;
-	margin-bottom: 20px;
-	min-height: 70px;
-	}
-
-	.active-task-label {
-	font-size: 0.9rem;
-	opacity: 0.8;
-	margin-bottom: 5px;
-	}
-
-	.active-task-name {
-	font-size: 1.1rem;
-	font-weight: 500;
-	margin-bottom: 8px;
-	}
-
-	.active-task-progress {
-	font-size: 0.9rem;
-	opacity: 0.7;
-	}
-
+	/* Loading and hidden states */
 	.loading, .tasks-hidden {
 	text-align: center;
 	padding: 20px;
@@ -182,10 +203,7 @@
 	font-style: italic;
 	}
 
-	.tasks-list {
-	space-y: 8px;
-	}
-
+	/* Task items */
 	.task-item {
 	display: flex;
 	align-items: center;
@@ -204,7 +222,6 @@
 	}
 
 	.task-item.active {
-	background: rgba(34, 139, 34, 0.25);
 	border-left: 4px solid #228B22;
 	}
 
@@ -219,25 +236,23 @@
 	cursor: pointer;
 	}
 
-	.task-name {
+	/* Task text content */
+	.task-name, .task-edit-input {
 	flex: 1;
 	color: white;
 	font-size: 1rem;
 	}
 
-	.task-name.completed {
+	.task-name.completed, .task-edit-input.completed {
 	text-decoration: line-through;
 	opacity: 0.7;
 	}
 
 	.task-edit-input {
-	flex: 1;
 	background: rgba(255,255,255,0.1);
 	border: 1px solid rgba(255,255,255,0.2);
 	border-radius: 4px;
 	padding: 6px 8px;
-	color: white;
-	font-size: 1rem;
 	}
 
 	.task-edit-input:focus {
@@ -245,20 +260,12 @@
 	border-color: rgba(255,255,255,0.4);
 	}
 
-	.task-edit-input.completed {
-	text-decoration: line-through;
-	opacity: 0.7;
-	}
-
+	/* Task info and actions */
 	.task-info {
 	opacity: 0.7;
 	font-size: 0.9rem;
 	min-width: 40px;
 	transition: opacity 0.2s ease;
-	}
-
-	.task-item:hover .task-info {
-	opacity: 0;
 	}
 
 	.task-actions {
@@ -270,40 +277,38 @@
 	justify-content: flex-end;
 	}
 
+	/* .task-item:hover .task-info { */
+	/* opacity: 0; */
+	/* } */
+
 	.task-item:hover .task-actions {
 	opacity: 1;
 	}
 
 	.task-btn {
 	background: rgba(255,255,255,0.1);
-	border: none;
-	color: white;
 	padding: 4px 6px;
 	border-radius: 4px;
-	cursor: pointer;
 	font-size: 0.8rem;
-	transition: all 0.2s ease;
 	min-width: 24px;
+	transition: all 0.2s ease;
 	}
 
 	.task-btn:hover {
 	background: rgba(255,255,255,0.2);
 	}
 
+	/* Add task section */
 	.add-task-section {
 	margin-top: 16px;
 	text-align: center;
 	}
 
 	.add-task-btn {
-	background: rgba(33, 150, 243, 0.3);
-	border: 1px solid rgba(33, 150, 243, 0.5);
-	color: white;
+	background: rgba(214, 38, 38, 1);
 	padding: 12px 24px;
 	border-radius: 8px;
-	cursor: pointer;
 	font-size: 1rem;
-	transition: all 0.3s ease;
 	}
 
 	.add-task-btn:hover {
@@ -321,6 +326,7 @@
 	private int? editingTaskId;
 	private bool showMenu;
 	private bool hideTasks = false;
+	private bool hideActiveTask = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -329,6 +335,7 @@
 
 	private void ToggleMenu() => showMenu = !showMenu;
 	private void HideTasks() => hideTasks = !hideTasks;
+	private void HideActiveTask() => hideActiveTask = !hideActiveTask;
 
 	private void ClearFinished()
 	{
@@ -354,7 +361,8 @@
 	{
 		var newTask = new TaskItem
 			{
-				Name = "New Task"/*, ProjectId = 1*/};
+				Name = "New Task"/*, ProjectId = 1*/
+			};
 		var created = await TaskService.CreateAsync(newTask);
 
 		if (created != null)
@@ -418,6 +426,22 @@
 		if (success)
 		{
 			tasks!.RemoveAll(t => t.TaskItemId == taskItemId);
+		}
+	}
+
+	private async Task AdjustEstimatedPomodoros(int taskId, double deltaY)
+	{
+		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
+		if (task == null) return;
+
+		int change = deltaY < 0 ? 1 : -1;
+		int newValue = Math.Max(1, task.EstimatedNumberOfPomodoros + change);
+
+		if (newValue != task.EstimatedNumberOfPomodoros)
+		{
+			task.EstimatedNumberOfPomodoros = newValue;
+			await TaskService.UpdateAsync(task);
+			StateHasChanged();
 		}
 	}
 }
