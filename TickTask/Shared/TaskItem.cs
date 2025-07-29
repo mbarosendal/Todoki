@@ -53,6 +53,8 @@ namespace TickTask.Shared
     {
         public bool IsAutoStart { get; set; } = false;
         public bool IsAutoStartAfterRestart { get; set; } = true;
+        public bool AutomaticallyMarkDoneTasks { get; set; } = false;
+        public bool AutomaticallyProceedToNextTaskAfterDone { get; set; } = false;
         public int NumberOfPomodorosRun { get; set; } = 0;
         public int RunsBeforeLongBreak { get; set; } = 4;
     }

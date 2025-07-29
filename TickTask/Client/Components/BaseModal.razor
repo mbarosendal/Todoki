@@ -6,7 +6,7 @@
         <div class="modal-content" @onclick:stopPropagation>
             <div class="modal-header">
                 <h3>@Title</h3>
-                <button class="close-button" @onclick="Close">×</button>
+                <button class="close-btn" @onclick="Close">×</button>
             </div>
             @ChildContent
         </div>
@@ -29,3 +29,27 @@
         await OnClose.InvokeAsync();
     }
 }
+
+<style>
+    .modal-content .close-btn,
+    .modal-content button[aria-label="Close"] {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: #aaa;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s, color 0.2s;
+        line-height: 1;
+        padding: 4px 8px;
+    }
+
+        .modal-content .close-btn:hover,
+        .modal-content button[aria-label="Close"]:hover {
+            opacity: 1;
+            color: white;
+        }
+</style>

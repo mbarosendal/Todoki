@@ -430,12 +430,13 @@
 
 		if (ActiveTask.PomodorosRanOnTask >= ActiveTask.EstimatedNumberOfPomodoros)
 		{
-			// Mark done (set settings condition)
-			ActiveTask.IsDone = true;
+			if (TimerSettings.AutomaticallyMarkDoneTasks)
+				ActiveTask.IsDone = true;
+
 			await TaskService.UpdateAsync(ActiveTask);
 
-			// Set next task as active (set settings condition)
-			SetNextTaskAsActive();
+			if (TimerSettings.AutomaticallyProceedToNextTaskAfterDone)
+				SetNextTaskAsActive();
 		}
 
 		StateHasChanged();
