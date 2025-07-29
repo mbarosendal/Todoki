@@ -1,6 +1,10 @@
 ﻿@using TickTask.Shared
 
-<BaseModal IsOpen="@IsOpen" IsOpenChanged="@IsOpenChanged" Title="Settings">
+<BaseModal IsOpen="@IsOpen" 
+		   IsOpenChanged="@IsOpenChanged" 
+		   Title="Settings" 
+		   OnClose="@OnClose">
+	
 	<div class="section">
 		<div class="section-title">🕒 TIMER</div>
 
@@ -61,6 +65,7 @@
 @code {
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+	[Parameter] public EventCallback OnClose { get; set; }
 
 	[Parameter] public TimerSettings Settings { get; set; } = default!;
 	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;

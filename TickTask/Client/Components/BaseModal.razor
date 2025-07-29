@@ -18,12 +18,14 @@
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
 
     private async Task HandleOverlayClick() => await Close();
 
-    private async Task Close()
+    protected virtual async Task Close()
     {
         await JS.InvokeVoidAsync("stopAlarmSound");
         await IsOpenChanged.InvokeAsync(false);
+        await OnClose.InvokeAsync();
     }
 }

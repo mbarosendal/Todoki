@@ -84,7 +84,7 @@ namespace TickTask.Client.Services
 
             var estimatedTime = DateTime.UtcNow + TimeSpan.FromMinutes(remainingCurrentPomodoroTime + remainingPomodorosTime + shortBreaksTime + longBreaksTime);
 
-            return estimatedTime < DateTime.UtcNow ? "Overdue" : estimatedTime.ToLocalTime().ToString("HH:mm");
+            return estimatedTime < DateTime.UtcNow ? "Due" : estimatedTime.ToLocalTime().ToString("HH:mm");
         }
 
     }
