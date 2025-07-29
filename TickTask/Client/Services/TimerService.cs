@@ -82,8 +82,9 @@ namespace TickTask.Client.Services
             var shortBreaksTime = shortBreaksCount * shortBreakTimer.Duration.TotalMinutes;
             var longBreaksTime = longBreaksCount * longBreakTimer.Duration.TotalMinutes;
 
-            return (DateTime.UtcNow + TimeSpan.FromMinutes(remainingCurrentPomodoroTime + remainingPomodorosTime + shortBreaksTime + longBreaksTime))
-                .ToLocalTime().ToString("HH:mm");
+            var estimatedTime = DateTime.UtcNow + TimeSpan.FromMinutes(remainingCurrentPomodoroTime + remainingPomodorosTime + shortBreaksTime + longBreaksTime);
+
+            return estimatedTime < DateTime.UtcNow ? "Overdue" : estimatedTime.ToLocalTime().ToString("HH:mm");
         }
 
     }

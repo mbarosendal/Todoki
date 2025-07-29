@@ -18,7 +18,7 @@
 					🍅 @activeTask.PomodorosRanOnTask/@activeTask.EstimatedNumberOfPomodoros
 				</div>
 				<div class="task-info-row" title="Your estimated minutes of work left on task">
-					⏳ @((activeTask.EstimatedNumberOfPomodoros * ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+					⏳ @((((activeTask.EstimatedNumberOfPomodoros - activeTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes) + ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
 				</div>
 				<div class="task-info-row" title="The estimated time of curent task completion (breaks included)">
 					🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ShortBreakTimer, LongBreakTimer, activeTask, TimerSettings)  
@@ -372,6 +372,18 @@
 	private void ToggleMenu() => showMenu = !showMenu;
 	private void HideTasks() => hideTasks = !hideTasks;
 	private void HideActiveTask() => hideActiveTask = !hideActiveTask;
+
+	public async Task IncrementActivePomodoroCount()
+	{
+		var taskToIncrement = tasks.FirstOrDefault(t => t.TaskItemId == activeTask.TaskItemId);
+
+		if (taskToIncrement != null)
+		{
+			taskToIncrement.PomodorosRanOnTask++;
+			await TaskService.UpdateAsync(taskToIncrement);
+			StateHasChanged();
+		}
+	}
 
 	private void ClearFinished()
 	{

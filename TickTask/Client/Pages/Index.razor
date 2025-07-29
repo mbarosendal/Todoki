@@ -53,7 +53,8 @@
 	</div>
 
 	<!-- Task List Component -->
-	<TaskList TimerSettings="settings"
+	<TaskList @ref="taskListRef" 
+			  TimerSettings="settings"
 			  OnResetPomodoros="ResetPomodoroCount"
 			  ActivePomodoro="pomodoroTimer"
 			  ShortBreakTimer="shortBreakTimer"
@@ -266,6 +267,8 @@
 	private ShortBreakTimer shortBreakTimer = new ShortBreakTimer();
 	private LongBreakTimer longBreakTimer = new LongBreakTimer();
 
+	private TaskList? taskListRef;
+
 	private TimerType timerType = Enums.TimerType.Pomodoro;
 	private CountdownTimer countdownTimer => timerType switch
 	{
@@ -335,7 +338,10 @@
 				settings.NumberOfPomodorosRun++;
 
 				if (!timerWasSkipped)
+				{
 					await JS.InvokeVoidAsync("playAlarmSound");
+					await IncrementActiveTaskPomodoroCount();
+				}
 
 				if (settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
 				{
@@ -352,6 +358,12 @@
 				SelectAndResetTimer(TimerType.Pomodoro);
 				break;
 		}
+	}
+
+	private async Task IncrementActiveTaskPomodoroCount()
+	{
+		if (taskListRef != null)
+			await taskListRef.IncrementActivePomodoroCount();
 	}
 
 	private void RestartTimer(CountdownTimer timer)
