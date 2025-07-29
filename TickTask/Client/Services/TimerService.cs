@@ -60,5 +60,31 @@ namespace TickTask.Client.Services
                 Stop(_activeTimer);
             }
         }
+
+        public string CalculateEstimatedTimeOfTaskCompletion(PomodoroTimer activePomodoro, ShortBreakTimer shortBreakTimer, LongBreakTimer longBreakTimer, TaskItem activeTask, TimerSettings timerSettings)
+        {
+            var remainingCurrentPomodoroTime = activePomodoro.RemainingTime.TotalMinutes;
+            var remainingPomodorosTime = (activeTask.EstimatedNumberOfPomodoros - activeTask.PomodorosRanOnTask - 1) * activePomodoro.Duration.TotalMinutes;
+
+            var remainingPomodoros = activeTask.EstimatedNumberOfPomodoros - activeTask.PomodorosRanOnTask;
+            var breaksNeeded = remainingPomodoros - 1;
+
+            var longBreaksCount = 0;
+            var currentTimerPosition = timerSettings.NumberOfPomodorosRun + 1;
+
+            for (int i = 0; i < breaksNeeded; i++)
+            {
+                if ((currentTimerPosition + i) % timerSettings.RunsBeforeLongBreak == 0)
+                    longBreaksCount++;
+            }
+
+            var shortBreaksCount = breaksNeeded - longBreaksCount;
+            var shortBreaksTime = shortBreaksCount * shortBreakTimer.Duration.TotalMinutes;
+            var longBreaksTime = longBreaksCount * longBreakTimer.Duration.TotalMinutes;
+
+            return (DateTime.UtcNow + TimeSpan.FromMinutes(remainingCurrentPomodoroTime + remainingPomodorosTime + shortBreaksTime + longBreaksTime))
+                .ToLocalTime().ToString("HH:mm");
+        }
+
     }
 }
