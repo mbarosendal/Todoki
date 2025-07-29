@@ -4,29 +4,34 @@
 @inject TimerService TimerService
 
 <!-- Active Task Section -->
-@if (activeTask != null && !hideActiveTask)
-{
-	<div class="active-task-section">
-		<div class="active-task-content">
-			<div class="active-task-left">
-				<div class="section-label">Active Task</div>
-				<div class="active-task-name">@activeTask.Name</div>
-			</div>
+<div class="active-task-section">
+	@if (!hideActiveTask)
+	{
+		<div class="active-task-content" style="@((ActiveTask == null) ? "visibility:hidden; min-height:60px" : "")">
+			@if (ActiveTask != null)
+			{
+				<div class="active-task-left">
+					<div class="section-label">Active Task</div>
+					<div class="active-task-name">@ActiveTask.Name</div>
+				</div>
 
-			<div class="active-task-right">
-				<div class="task-info-row" title="Pomodoro progress on task">
-					🍅 @activeTask.PomodorosRanOnTask/@activeTask.EstimatedNumberOfPomodoros
+				<div class="active-task-right">
+					<div class="task-info-row">
+						🍅 @ActiveTask.PomodorosRanOnTask/@ActiveTask.EstimatedNumberOfPomodoros
+					</div>
+					<div class="task-info-row">
+						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes) + ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+					</div>
+					<div class="task-info-row">
+						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ShortBreakTimer, LongBreakTimer, ActiveTask, TimerSettings)
+					</div>
 				</div>
-				<div class="task-info-row" title="Your estimated minutes of work left on task">
-					⏳ @((((activeTask.EstimatedNumberOfPomodoros - activeTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes) + ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
-				</div>
-				<div class="task-info-row" title="The estimated time of curent task completion (breaks included)">
-					🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ShortBreakTimer, LongBreakTimer, activeTask, TimerSettings)  
-				</div>
-			</div>
+			}
 		</div>
-	</div>
-}
+	}
+</div>
+
+
 
 <!-- Tasks Section -->
 <div class="tasks-section">
@@ -62,15 +67,15 @@
 			@foreach (var task in tasks)
 			{
 				<div class="task-item @(task.IsActiveTask ? "active" : "") @(task.IsDone ? "completed" : "")"
-				@onclick="() => SetActiveTask(task.TaskItemId)"
-				@onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
-				@onwheel:preventDefault="true">
+					 @onclick="() => SetActiveTask(task.TaskItemId)"
+					 @onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
+					 @onwheel:preventDefault="true">
 
 					<input type="checkbox"
-					class="task-checkbox"
-					@onclick="() => FinishTask(task.TaskItemId)"
-					checked="@task.IsDone"
-					@onclick:stopPropagation="true">
+						   class="task-checkbox"
+						   @onclick="() => FinishTask(task.TaskItemId)"
+						   checked="@task.IsDone"
+						   @onclick:stopPropagation="true">
 
 					<div class="task-info">
 						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
@@ -79,11 +84,11 @@
 					@if (editingTaskId == task.TaskItemId)
 					{
 						<input class="task-edit-input @(task.IsDone ? "completed" : "")"
-						@bind="task.Name"
-						@bind:event="oninput"
-						@onblur="() => FinishEdit(task)"
-						@onclick:stopPropagation="true"
-						placeholder="Edit task..." />
+							   @bind="task.Name"
+							   @bind:event="oninput"
+							   @onblur="() => FinishEdit(task)"
+							   @onclick:stopPropagation="true"
+							   placeholder="Edit task..." />
 					}
 					else
 					{
@@ -108,19 +113,19 @@
 <style>
 	/* Active Task Section */
 	.active-task-section {
-	background: rgba(10, 137, 18, 1);
-	border-radius: 12px 12px 0 0;
-	padding: 16px 20px;
-	margin-top: 20px;
-	position: relative;
+		background: rgba(10, 137, 18, 1);
+		border-radius: 12px 12px 0 0;
+		padding: 16px 20px;
+		margin-top: 20px;
+		position: relative;
 	}
 
 	/* Tasks Section */
 	.tasks-section {
-	background: rgba(89, 8, 8, 0.28);
-	border-radius: 0 0 12px 12px;
-	padding: 16px 20px 20px 20px;
-	margin-top: 0;
+		background: rgba(89, 8, 8, 0.28);
+		border-radius: 0 0 12px 12px;
+		padding: 16px 20px 20px 20px;
+		margin-top: 0;
 	}
 
 	/* When no active task, give tasks section full rounded corners */
@@ -131,183 +136,217 @@
 
 	/* Section labels */
 	.section-label {
-	font-size: 1.1rem;
-	font-weight: 500;
-	margin-bottom: 12px;
-	opacity: 0.9;
+		font-size: 1.1rem;
+		font-weight: 500;
+		margin-bottom: 12px;
+		opacity: 0.9;
 	}
 
 	/* Tasks header */
 	.tasks-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	margin-bottom: 16px;
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		margin-bottom: 16px;
 	}
 
 	/* Active task content */
 	.active-task-content {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: 16px;
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 16px;
 	}
 
 	.active-task-left {
-	display: flex;
-	flex-direction: column;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.active-task-right {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	justify-content: center;
-	gap: 6px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 6px;
 	}
 
 	.task-info-row {
-	font-size: 0.9rem;
-	opacity: 0.9;
+		font-size: 0.9rem;
+		opacity: 0.9;
 	}
 
 	.active-task-name {
-	font-size: 1.1rem;
-	font-weight: 500;
-	flex: 1;
+		font-size: 1.1rem;
+		font-weight: 500;
+		flex: 1;
 	}
 
 	.active-task-progress {
-	font-size: 0.9rem;
-	margin-left: 12px;
+		font-size: 0.9rem;
+		margin-left: 12px;
 	}
 
 	/* Menu and buttons */
 	.menu-btn, .task-btn, .add-task-btn {
-	border: none;
-	color: white;
-	cursor: pointer;
-	transition: all 0.3s ease;
+		border: none;
+		color: white;
+		cursor: pointer;
+		transition: all 0.3s ease;
 	}
 
 	.menu-btn {
-	background: rgba(255,255,255,0.1);
-	padding: 6px 10px;
-	border-radius: 6px;
-	font-size: 1.2rem;
+		background: rgba(255,255,255,0.1);
+		padding: 6px 10px;
+		border-radius: 6px;
+		font-size: 1.2rem;
 	}
 
-	.menu-btn:hover {
-	background: rgba(255,255,255,0.2);
-	}
+		.menu-btn:hover {
+			background: rgba(255,255,255,0.2);
+		}
 
 	.menu-popup {
-	position: absolute;
-	right: 20px;
-	background: rgba(0,0,0,0.8);
-	border-radius: 8px;
-	padding: 8px 0;
-	margin-top: 5px;
-	min-width: 180px;
-	z-index: 1000;
-	box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+		position: absolute;
+		right: 20px;
+		background: rgba(0,0,0,0.8);
+		border-radius: 8px;
+		padding: 8px 0;
+		margin-top: 5px;
+		min-width: 180px;
+		z-index: 1000;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 	}
 
 	.menu-item {
-	width: 100%;
-	background: none;
-	border: none;
-	color: white;
-	padding: 10px 16px;
-	text-align: left;
-	cursor: pointer;
-	transition: background 0.2s ease;
+		width: 100%;
+		background: none;
+		border: none;
+		color: white;
+		padding: 10px 16px;
+		text-align: left;
+		cursor: pointer;
+		transition: background 0.2s ease;
 	}
 
-	.menu-item:hover {
-	background: rgba(255,255,255,0.1);
-	}
+		.menu-item:hover {
+			background: rgba(255,255,255,0.1);
+		}
 
 	/* Loading and hidden states */
 	.loading, .tasks-hidden {
-	text-align: center;
-	padding: 20px;
-	opacity: 0.7;
-	font-style: italic;
+		text-align: center;
+		padding: 20px;
+		opacity: 0.7;
+		font-style: italic;
 	}
 
 	/* Task items */
 	.task-item {
-	display: flex;
-	align-items: center;
-	background: rgba(0,0,0,0.2);
-	padding: 12px 16px;
-	border-radius: 8px;
-	margin-bottom: 8px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	gap: 12px;
-	min-height: 50px;
+		display: flex;
+		align-items: center;
+		background: rgba(0,0,0,0.2);
+		padding: 12px 16px;
+		border-radius: 8px;
+		margin-bottom: 8px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		gap: 12px;
+		min-height: 50px;
 	}
 
-	.task-item:hover {
-	background: rgba(0,0,0,0.3);
-	}
+		.task-item:hover {
+			background: rgba(0,0,0,0.3);
+		}
 
-	.task-item.active {
-	border-left: 4px solid #228B22;
-	}
+		.task-item.active {
+			border-left: 4px solid #228B22;
+		}
 
-	.task-item.completed {
-	opacity: 0.6;
-	}
+		.task-item.completed {
+			opacity: 0.6;
+		}
 
 	.task-checkbox {
-	flex-shrink: 0;
-	width: 18px;
-	height: 18px;
-	cursor: pointer;
+		flex-shrink: 0;
+		width: 18px;
+		height: 18px;
+		cursor: pointer;
+		appearance: none;
+		border: 2px solid black;
+		border-radius: 4px;
+		position: relative;
+		background-color: white;
+		transition: background-color 0.2s, transform 0.2s;
 	}
+
+		.task-checkbox::after {
+			content: '';
+			position: absolute;
+			width: 4px;
+			height: 8px;
+			border-right: 2px solid white;
+			border-bottom: 2px solid white;
+			top: 2px;
+			left: 6px;
+			transform: rotate(45deg) scale(0);
+			transition: transform 0.2s ease;
+		}
+
+		.task-checkbox:checked {
+			background-color: #007f3f;
+			border-color: #007f3f;
+			transform: scale(1.15);
+		}
+
+			.task-checkbox:checked::after {
+				transform: rotate(45deg) scale(1);
+			}
+
+		.task-checkbox:not(:checked) {
+			transform: scale(1);
+		}
+
 
 	/* Task text content */
 	.task-name, .task-edit-input {
-	flex: 1;
-	color: white;
-	font-size: 1rem;
+		flex: 1;
+		color: white;
+		font-size: 1rem;
 	}
 
-	.task-name.completed, .task-edit-input.completed {
-	text-decoration: line-through;
-	opacity: 0.7;
-	}
+		.task-name.completed, .task-edit-input.completed {
+			text-decoration: line-through;
+			opacity: 0.7;
+		}
 
 	.task-edit-input {
-	background: rgba(255,255,255,0.1);
-	border: 1px solid rgba(255,255,255,0.2);
-	border-radius: 4px;
-	padding: 6px 8px;
+		background: rgba(255,255,255,0.1);
+		border: 1px solid rgba(255,255,255,0.2);
+		border-radius: 4px;
+		padding: 6px 8px;
 	}
 
-	.task-edit-input:focus {
-	outline: none;
-	border-color: rgba(255,255,255,0.4);
-	}
+		.task-edit-input:focus {
+			outline: none;
+			border-color: rgba(255,255,255,0.4);
+		}
 
 	/* Task info and actions */
 	.task-info {
-	opacity: 0.7;
-	font-size: 0.9rem;
-	min-width: 40px;
-	transition: opacity 0.2s ease;
+		opacity: 0.7;
+		font-size: 0.9rem;
+		min-width: 40px;
+		transition: opacity 0.2s ease;
 	}
 
 	.task-actions {
-	opacity: 0;
-	transition: opacity 0.2s ease;
-	min-width: 80px;
-	display: flex;
-	gap: 4px;
-	justify-content: flex-end;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+		min-width: 80px;
+		display: flex;
+		gap: 4px;
+		justify-content: flex-end;
 	}
 
 	/* .task-item:hover .task-info { */
@@ -315,54 +354,65 @@
 	/* } */
 
 	.task-item:hover .task-actions {
-	opacity: 1;
+		opacity: 1;
 	}
 
 	.task-btn {
-	background: rgba(255,255,255,0.1);
-	padding: 4px 6px;
-	border-radius: 4px;
-	font-size: 0.8rem;
-	min-width: 24px;
-	transition: all 0.2s ease;
+		background: rgba(255,255,255,0.1);
+		padding: 4px 6px;
+		border-radius: 4px;
+		font-size: 0.8rem;
+		min-width: 24px;
+		transition: all 0.2s ease;
 	}
 
-	.task-btn:hover {
-	background: rgba(255,255,255,0.2);
-	}
+		.task-btn:hover {
+			background: rgba(255,255,255,0.2);
+		}
 
 	/* Add task section */
 	.add-task-section {
-	margin-top: 16px;
-	text-align: center;
+		margin-top: 16px;
+		text-align: center;
 	}
 
 	.add-task-btn {
-	background: rgba(214, 38, 38, 1);
-	padding: 12px 24px;
-	border-radius: 8px;
-	font-size: 1rem;
+		background: rgba(214, 38, 38, 1);
+		padding: 12px 24px;
+		border-radius: 8px;
+		font-size: 1rem;
 	}
 
-	.add-task-btn:hover {
-	background: rgba(33, 150, 243, 0.4);
-	transform: translateY(-1px);
-	}
+		.add-task-btn:hover {
+			background: rgba(33, 150, 243, 0.4);
+			transform: translateY(-1px);
+		}
 </style>
 
 @code {
-	private List<TaskItem>? tasks = new List<TaskItem>();
-	private TaskItem? activeTask => tasks?.FirstOrDefault(t => t.IsActiveTask && !t.IsDone);
+	private List<TaskItem>? tasks = new();
+	private TaskItem? activeTask = new TaskItem();
+
+	private TaskItem? ActiveTask
+	{
+		get => activeTask;
+		set
+		{
+			activeTask = value;
+			StateHasChanged();
+		}
+	}
+
 	[Parameter] public PomodoroTimer ActivePomodoro { get; set; } = default!;
 	[Parameter] public ShortBreakTimer ShortBreakTimer { get; set; } = default!;
 	[Parameter] public LongBreakTimer LongBreakTimer { get; set; } = default!;
-	[Parameter]	public EventCallback OnResetPomodoros { get; set; }
+	[Parameter] public EventCallback OnResetPomodoros { get; set; }
 	[Parameter] public TimerSettings TimerSettings { get; set; } = default!;
 
 	private int? editingTaskId;
 	private bool showMenu;
 	private bool hideTasks = false;
-	private bool hideActiveTask = false;	
+	private bool hideActiveTask = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -375,15 +425,48 @@
 
 	public async Task IncrementActivePomodoroCount()
 	{
-		var taskToIncrement = tasks.FirstOrDefault(t => t.TaskItemId == activeTask.TaskItemId);
+		ActiveTask.PomodorosRanOnTask++;
+		await TaskService.UpdateAsync(ActiveTask);
 
-		if (taskToIncrement != null)
+		if (ActiveTask.PomodorosRanOnTask >= ActiveTask.EstimatedNumberOfPomodoros)
 		{
-			taskToIncrement.PomodorosRanOnTask++;
-			await TaskService.UpdateAsync(taskToIncrement);
-			StateHasChanged();
+			// Mark done (set settings condition)
+			ActiveTask.IsDone = true;
+			await TaskService.UpdateAsync(ActiveTask);
+
+			// Set next task as active (set settings condition)
+			SetNextTaskAsActive();
+		}
+
+		StateHasChanged();
+	}
+
+	private async void SetNextTaskAsActive()
+	{
+		var currentIndex = tasks!.FindIndex(t => t.TaskItemId == ActiveTask?.TaskItemId);
+
+		if (ActiveTask != null)
+		{
+			ActiveTask.IsActiveTask = false;
+			await TaskService.UpdateAsync(ActiveTask);
+		}
+
+		var nextTask = tasks!.Skip(currentIndex + 1).FirstOrDefault(t => !t.IsDone);
+
+		if (nextTask != null)
+		{
+			nextTask.IsActiveTask = true;
+			await TaskService.UpdateAsync(nextTask);
+			ActiveTask = nextTask;
+		}
+		else
+		{
+			// needs to do a fanfare or something, the user is done with all tasks!
+			ActiveTask = null; // there are no more tasks
 		}
 	}
+
+
 
 	private void ClearFinished()
 	{
@@ -423,22 +506,19 @@
 
 	private async Task SetActiveTask(int taskId)
 	{
-		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
-		if (task == null || task.IsDone) return;
-
-		foreach (var t in tasks!.ToList())
+		if (ActiveTask != null)
 		{
-			if (t.IsActiveTask)
-			{
-				t.IsActiveTask = false;
-				await TaskService.UpdateAsync(t);
-			}
+			ActiveTask.IsActiveTask = false;
+			await TaskService.UpdateAsync(ActiveTask);
 		}
 
-		task.IsActiveTask = true;
-		await TaskService.UpdateAsync(task);
-
-		StateHasChanged();
+		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
+		if (task != null && !task.IsDone)
+		{
+			task.IsActiveTask = true;
+			await TaskService.UpdateAsync(task);
+			ActiveTask = task;
+		}
 	}
 
 	private void FinishTask(int taskId)
