@@ -2,6 +2,7 @@
 @using TickTask.Shared
 @inject TaskService TaskService
 @inject TimerService TimerService
+@inject IJSRuntime JSRuntime
 
 <!-- Active Task Section -->
 <div class="active-task-section">
@@ -43,9 +44,9 @@
 	<!-- Popup menu -->
 	@if (showMenu)
 	{
-		<div class="menu-popup">
+		<div class="menu-popup" @onclick="() => showMenu = false">
 			<button class="menu-item" @onclick="ClearFinished">Clear finished tasks</button>
-			<button class="menu-item" @onclick="ClearAll">Clear all tasks</button>
+			<button class="menu-item" @onclick="ConfirmClearAll">Clear all tasks</button>
 			<button class="menu-item" @onclick="HideActiveTask">@(hideActiveTask ? "Show active task" : "Hide active task")</button>
 			<button class="menu-item" @onclick="HideTasks">@(hideTasks ? "Show tasks" : "Hide tasks")</button>
 			<button class="menu-item" @onclick="OnResetPomodoros">Reset Pomodoro</button>
@@ -390,8 +391,19 @@
 </style>
 
 @code {
+	[Parameter] public PomodoroTimer ActivePomodoro { get; set; } = default!;
+	[Parameter] public ShortBreakTimer ShortBreakTimer { get; set; } = default!;
+	[Parameter] public LongBreakTimer LongBreakTimer { get; set; } = default!;
+	[Parameter] public EventCallback OnResetPomodoros { get; set; }
+	[Parameter] public TimerSettings TimerSettings { get; set; } = default!;
+
 	private List<TaskItem>? tasks = new();
 	private TaskItem? activeTask = new TaskItem();
+	private int? editingTaskId;
+
+	private bool showMenu;
+	private bool hideTasks = false;
+	private bool hideActiveTask = false;
 
 	private TaskItem? ActiveTask
 	{
@@ -403,25 +415,15 @@
 		}
 	}
 
-	[Parameter] public PomodoroTimer ActivePomodoro { get; set; } = default!;
-	[Parameter] public ShortBreakTimer ShortBreakTimer { get; set; } = default!;
-	[Parameter] public LongBreakTimer LongBreakTimer { get; set; } = default!;
-	[Parameter] public EventCallback OnResetPomodoros { get; set; }
-	[Parameter] public TimerSettings TimerSettings { get; set; } = default!;
-
-	private int? editingTaskId;
-	private bool showMenu;
-	private bool hideTasks = false;
-	private bool hideActiveTask = false;
-
 	protected override async Task OnInitializedAsync()
 	{
 		tasks = await TaskService.GetAllAsync();
 	}
 
 	private void ToggleMenu() => showMenu = !showMenu;
+
 	private void HideTasks() => hideTasks = !hideTasks;
-	private void HideActiveTask() => hideActiveTask = !hideActiveTask;
+	private void HideActiveTask() => hideActiveTask = !hideActiveTask;	
 
 	public async Task IncrementActivePomodoroCount()
 	{
@@ -467,7 +469,15 @@
 		}
 	}
 
+	private async Task ConfirmClearAll()
+	{
+		bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to clear all tasks? This cannot be undone.");
 
+		if (confirmed)
+		{
+			ClearAll();
+		}
+	}
 
 	private void ClearFinished()
 	{
@@ -476,7 +486,6 @@
 			_ = TaskService.DeleteAsync(task.TaskItemId);
 			tasks.Remove(task);
 		}
-		showMenu = false;
 	}
 
 	private void ClearAll()
@@ -486,7 +495,6 @@
 			_ = TaskService.DeleteAsync(task.TaskItemId);
 		}
 		tasks!.Clear();
-		showMenu = false;
 	}
 
 	private async Task AddTask()
