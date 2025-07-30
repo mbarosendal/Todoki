@@ -11,71 +11,73 @@
 
 <PageTitle>TickTask</PageTitle>
 
-<div class="timer-container">
-	<button class="control-btn" @onclick="OpenSettings">⚙️Settings</button>
+<div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
+	<div class="timer-container">
+		<button class="control-btn" @onclick="OpenSettings">⚙️Settings</button>
 
-	<!-- Timer Tabs -->
-	<div class="timer-tabs">
-		@foreach (TimerType type in Enum.GetValues<TimerType>())
-		{
-			<button class="timer-tab @(timerType == type ? "active" : "")"
-					@onclick="() => SelectAndResetTimer(type)">
-				@type
-				@if (type == TimerType.Pomodoro)
-				{
-					<span class="pomodoro-count">@settings.NumberOfPomodorosRun/@settings.RunsBeforeLongBreak</span>
-				}
+		<!-- Timer Tabs -->
+		<div class="timer-tabs">
+			@foreach (TimerType type in Enum.GetValues<TimerType>())
+			{
+				<button class="timer-tab @(timerType == type ? "active" : "")"
+						@onclick="() => SelectAndResetTimer(type)">
+					@type
+					@if (type == TimerType.Pomodoro)
+					{
+						<span class="pomodoro-count">@settings.NumberOfPomodorosRun/@settings.RunsBeforeLongBreak</span>
+					}
+				</button>
+			}
+		</div>
+
+		<!-- Timer Display -->
+		<div class="timer-display">
+			<h1 class="timer-time">@($"{(int)countdownTimer.RemainingTime.TotalMinutes:00}:{countdownTimer.RemainingTime.Seconds:00}")</h1>
+			@if (countdownTimer.RemainingTime.TotalMinutes + 1 <= countdownTimer.Duration.TotalMinutes)
+			{
+				<button class="plus-one-btn"
+						title="Add one minute to the current timer (not above max duration set in settings)"
+						@onclick="() => AddTimeToTimer()">
+					+1
+				</button>
+			}
+		</div>
+
+		<!-- Timer Control Buttons -->
+		<div class="timer-controls">
+			<button class="restart-btn" @onclick="() => RestartTimer(countdownTimer)">⟲</button>
+			<button class="btn-primary timer-main-btn @(countdownTimer.IsRunning ? "running" : "")"
+					@onclick="() => ToggleStartStopTimer(timerType, countdownTimer)">
+				@(countdownTimer.IsRunning ? "PAUSE" : "START")
 			</button>
-		}
-	</div>
-
-	<!-- Timer Display -->
-	<div class="timer-display">
-		<h1 class="timer-time">@($"{(int)countdownTimer.RemainingTime.TotalMinutes:00}:{countdownTimer.RemainingTime.Seconds:00}")</h1>
-		@if (countdownTimer.RemainingTime.TotalMinutes + 1 <= countdownTimer.Duration.TotalMinutes)
-		{
-			<button class="plus-one-btn"
-					title="Add one minute to the current timer (not above max duration set in settings)"
-					@onclick="() => AddTimeToTimer()">
-				+1
+			<button class="btn-secondary timer-control-btn"
+					@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
+				→
 			</button>
+		</div>
+
+		<!-- Task List Component -->
+		<TaskList @ref="taskListRef"
+				  TimerSettings="settings"
+				  OnResetPomodoros="ResetPomodoroCount"
+				  ActivePomodoro="pomodoroTimer"
+				  ShortBreakTimer="shortBreakTimer"
+				  LongBreakTimer="longBreakTimer" />
+
+		<!-- Modals -->
+		<SettingsModal @bind-IsOpen="showSettings"
+					   Settings="@settings"
+					   PomodoroTimer="@pomodoroTimer"
+					   ShortBreakTimer="@shortBreakTimer"
+					   LongBreakTimer="@longBreakTimer"
+					   OnClose="HandleSettingsClosed" />
+
+		@if (countdownTimer is not PomodoroTimer)
+		{
+			<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@countdownTimer" />
 		}
+
 	</div>
-
-	<!-- Timer Control Buttons -->
-	<div class="timer-controls">
-		<button class="restart-btn" @onclick="() => RestartTimer(countdownTimer)">⟲</button>
-		<button class="btn-primary timer-main-btn @(countdownTimer.IsRunning ? "running" : "")"
-				@onclick="() => ToggleStartStopTimer(timerType, countdownTimer)">
-			@(countdownTimer.IsRunning ? "PAUSE" : "START")
-		</button>
-		<button class="btn-secondary timer-control-btn"
-				@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
-			→
-		</button>
-	</div>
-
-	<!-- Task List Component -->
-	<TaskList @ref="taskListRef"
-			  TimerSettings="settings"
-			  OnResetPomodoros="ResetPomodoroCount"
-			  ActivePomodoro="pomodoroTimer"
-			  ShortBreakTimer="shortBreakTimer"
-			  LongBreakTimer="longBreakTimer" />
-
-	<!-- Modals -->
-	<SettingsModal @bind-IsOpen="showSettings"
-				   Settings="@settings"
-				   PomodoroTimer="@pomodoroTimer"
-				   ShortBreakTimer="@shortBreakTimer"
-				   LongBreakTimer="@longBreakTimer"
-				   OnClose="HandleSettingsClosed" />
-
-	@if (countdownTimer is not PomodoroTimer)
-	{
-		<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@countdownTimer" />
-	}
-
 </div>
 
 <style>
@@ -283,6 +285,15 @@
 		_ => pomodoroTimer
 	};
 
+	private string GetBackgroundColor() => timerType switch
+	{
+		TimerType.Pomodoro => "rgba(227, 18, 10, 1)",     // Red
+		TimerType.ShortBreak => "rgba(34, 139, 34, 1)",   // Green
+		TimerType.LongBreak => "rgba(0, 100, 0, 1)",      // Dark Green
+		_ => "rgba(227, 18, 10, 1)"
+	};
+
+
 	private bool isTimerFinished = false;
 
 	private TimerSettings settings = new();
@@ -314,13 +325,13 @@
 	private async void HandleTimerUpdate() => await InvokeAsync(StateHasChanged);
 
 	private void TogglePomodoro() =>
-		ToggleStartStopTimer(TimerType.Pomodoro, pomodoroTimer);
+	ToggleStartStopTimer(TimerType.Pomodoro, pomodoroTimer);
 
 	private void ToggleShortBreak() =>
-		ToggleStartStopTimer(TimerType.ShortBreak, shortBreakTimer);
+	ToggleStartStopTimer(TimerType.ShortBreak, shortBreakTimer);
 
 	private void ToggleLongBreak() =>
-		ToggleStartStopTimer(TimerType.LongBreak, longBreakTimer);
+	ToggleStartStopTimer(TimerType.LongBreak, longBreakTimer);
 
 	private async void ToggleStartStopTimer(TimerType type, CountdownTimer timer)
 	{
@@ -408,4 +419,4 @@
 		timerService.OnTimerUpdate -= HandleTimerUpdate;
 		timerService.OnTimerFinish -= HandleTimerFinish;
 	}
-}
+	}
