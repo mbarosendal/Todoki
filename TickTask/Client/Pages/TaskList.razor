@@ -15,14 +15,14 @@
 					<div class="active-task-name">@ActiveTask.Name</div>
 				</div>
 
-				<div class="active-task-right">
+				<div class="active-task-right" title="Pomodoro progress on current task">
 					<div class="task-info-row">
 						🍅 @ActiveTask.PomodorosRanOnTask/@ActiveTask.EstimatedNumberOfPomodoros
 					</div>
-					<div class="task-info-row">
+					<div class="task-info-row" title="Your estimated minutes of work left on current task (breaks excluded)">
 						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes) + ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
 					</div>
-					<div class="task-info-row">
+					<div class="task-info-row" title="The estimated time of current task completion (breaks included)">
 						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ShortBreakTimer, LongBreakTimer, ActiveTask, TimerSettings)
 					</div>
 				</div>

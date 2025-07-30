@@ -56,11 +56,13 @@ namespace TickTask.Shared
         public bool AutomaticallyMarkDoneTasks { get; set; } = false;
         public bool AutomaticallyProceedToNextTaskAfterDone { get; set; } = false;
         public int NumberOfPomodorosRun { get; set; } = 0;
+        [Range(1, 99, ErrorMessage = "Must be between 1 and 99")]
         public int RunsBeforeLongBreak { get; set; } = 4;
     }
 
     public class CountdownTimer
     {
+        [Range(1, long.MaxValue, ErrorMessage = "Duration must be at least 1 minute")]
         public TimeSpan Duration { get; set; }
         public TimeSpan RemainingTime { get; set; }
         public bool IsRunning { get; set; } = false;
@@ -115,5 +117,7 @@ namespace TickTask.Shared
 
         [InverseProperty("User")]
         public ICollection<Project> Projects { get; set; } = new List<Project>();
+        // Needs to save users timer settings (durations)
+        //public CountdownTimer CountDownTimer { get; set; } = new CountdownTimer();
     }
 }

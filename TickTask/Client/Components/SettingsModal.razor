@@ -28,31 +28,31 @@
 					<div class="timer-inputs">
 						<div>
 							<label>Pomodoro</label>
-							<input type="number" min="1" @bind="PomodoroMinutes" />
+							<input type="number" min="1" max="999" @bind="PomodoroMinutes" />
 						</div>
 						<div>
 							<label>Short Break</label>
-							<input type="number" min="1" @bind="ShortBreakMinutes" />
+                            <input type="number" min="1" max="999" @bind="ShortBreakMinutes" />
 						</div>
 						<div>
 							<label>Long Break</label>
-							<input type="number" min="1" @bind="LongBreakMinutes" />
+                            <input type="number" min="1" max="999" @bind="LongBreakMinutes" />
 						</div>
 					</div>
 
 					<!-- Pomodoros per long break -->
 					<div>
 						<label>Pomodoros per long break</label>
-						<input type="number" min="1" @bind="Settings.RunsBeforeLongBreak" />
+						<input type="number" min="1" max="99" @bind="RunsBeforeLongBreak" />
 					</div>
 
 					<!-- Break Texts -->
 					<div>
-						<label>Text for short breaks</label>
+						<label>Reminder for short breaks</label>
 						<input type="text" @bind="ShortBreakTimer.Text" placeholder="E.g. stretch, drink water..." />
 					</div>
 					<div>
-						<label>Text for long breaks</label>
+                        <label>Reminder for long breaks</label>
 						<input type="text" @bind="LongBreakTimer.Text" placeholder="E.g. snack, walk the dog..." />
 					</div>
 
@@ -108,23 +108,29 @@
 	[Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
 
-	private int PomodoroMinutes
-	{
-		get => (int)PomodoroTimer.Duration.TotalMinutes;
-		set => PomodoroTimer.Duration = TimeSpan.FromMinutes(value);
-	}
+    private int PomodoroMinutes
+    {
+        get => (int)PomodoroTimer.Duration.TotalMinutes;
+        set => PomodoroTimer.Duration = TimeSpan.FromMinutes(Math.Max(1, Math.Min(999, value)));
+    }
 
-	private int ShortBreakMinutes
-	{
-		get => (int)ShortBreakTimer.Duration.TotalMinutes;
-		set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(value);
-	}
+    private int ShortBreakMinutes
+    {
+        get => (int)ShortBreakTimer.Duration.TotalMinutes;
+        set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(Math.Max(1, Math.Min(999, value)));
+    }
 
-	private int LongBreakMinutes
-	{
-		get => (int)LongBreakTimer.Duration.TotalMinutes;
-		set => LongBreakTimer.Duration = TimeSpan.FromMinutes(value);
-	}
+    private int LongBreakMinutes
+    {
+        get => (int)LongBreakTimer.Duration.TotalMinutes;
+        set => LongBreakTimer.Duration = TimeSpan.FromMinutes(Math.Max(1, Math.Min(999, value)));
+    }
+
+    public int RunsBeforeLongBreak
+    {
+        get => Settings.RunsBeforeLongBreak;
+        set => Settings.RunsBeforeLongBreak = Math.Max(1, Math.Min(99, value));
+    }
 }
 
 
