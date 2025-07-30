@@ -1,7 +1,10 @@
 ﻿@using TickTask.Client.Enums
 @using TickTask.Shared
 
-<BaseModal IsOpen="@IsOpen" IsOpenChanged="@IsOpenChanged" Title="Time for a break">
+<BaseModal IsOpen="@IsOpen" 
+		   IsOpenChanged="@IsOpenChanged" 
+		   Title="Time for a break">
+
 	@if (!string.IsNullOrEmpty(CountdownTimer.Text))
 	{
 		<div class="section">
@@ -20,6 +23,19 @@
 
 
 <style>
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.6);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1000;
+		padding: 20px;
+	}
 
 	<!-- Prevent overflow -->
 	h2 {

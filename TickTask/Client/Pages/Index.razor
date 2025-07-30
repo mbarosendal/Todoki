@@ -51,7 +51,7 @@
 		</button>
 		<button class="btn-secondary timer-control-btn"
 				@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
-			⏭
+			→
 		</button>
 	</div>
 
@@ -83,7 +83,6 @@
 		max-width: 600px;
 		margin: 0 auto;
 		padding: 20px;
-		background: rgba(227, 18, 10, 1);
 		min-height: 100vh;
 		color: white;
 		font-family: Arial, sans-serif;
@@ -349,6 +348,10 @@
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
 		isTimerFinished = true;
+
+		// hide break modal when skipped?
+		// if (!timerWasSkipped)
+		// 	isTimerFinished = true;
 
 		switch (timerType)
 		{
