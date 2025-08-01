@@ -9,7 +9,11 @@
 @inject ILogger<Index> Logger
 @implements IDisposable
 
-<PageTitle>TickTask</PageTitle>
+<PageTitle>
+	@(timerType == TimerType.Pomodoro
+		? $"🍅 {GetCountdownTimer.RemainingTime}"
+		: $"🌴 {GetCountdownTimer.RemainingTime}")
+</PageTitle>
 
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
 	<div class="timer-container">
@@ -32,8 +36,8 @@
 
 		<!-- Timer Display -->
 		<div class="timer-display">
-			<h1 class="timer-time">@($"{(int)countdownTimer.RemainingTime.TotalMinutes:00}:{countdownTimer.RemainingTime.Seconds:00}")</h1>
-			@if (countdownTimer.RemainingTime.TotalMinutes + 1 <= countdownTimer.Duration.TotalMinutes)
+			<h1 class="timer-time">@($"{(int)GetCountdownTimer.RemainingTime.TotalMinutes:00}:{GetCountdownTimer.RemainingTime.Seconds:00}")</h1>
+			@if (GetCountdownTimer.RemainingTime.TotalMinutes + 1 <= GetCountdownTimer.Duration.TotalMinutes)
 			{
 				<button class="plus-one-btn"
 						title="Add one minute to the current timer (not above max duration set in settings)"
@@ -45,10 +49,10 @@
 
 		<!-- Timer Control Buttons -->
 		<div class="timer-controls">
-			<button class="restart-btn" @onclick="() => RestartTimer(countdownTimer)">⟲</button>
-			<button class="btn-primary timer-main-btn @(countdownTimer.IsRunning ? "running" : "")"
-					@onclick="() => ToggleStartStopTimer(timerType, countdownTimer)">
-				@(countdownTimer.IsRunning ? "PAUSE" : "START")
+			<button class="restart-btn" @onclick="() => RestartTimer(GetCountdownTimer)">⟲</button>
+			<button class="btn-primary timer-main-btn @(GetCountdownTimer.IsRunning ? "running" : "")"
+					@onclick="() => ToggleStartStopTimer(timerType, GetCountdownTimer)">
+				@(GetCountdownTimer.IsRunning ? "PAUSE" : "START")
 			</button>
 			<button class="btn-secondary timer-control-btn"
 					@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
@@ -72,9 +76,9 @@
 					   LongBreakTimer="@longBreakTimer"
 					   OnClose="HandleSettingsClosed" />
 
-		@if (countdownTimer is not PomodoroTimer)
+		@if (GetCountdownTimer is not PomodoroTimer)
 		{
-			<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@countdownTimer" />
+			<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@GetCountdownTimer" />
 		}
 
 	</div>
@@ -277,7 +281,7 @@
 	private TaskList? taskListRef;
 
 	private TimerType timerType = Enums.TimerType.Pomodoro;
-	private CountdownTimer countdownTimer => timerType switch
+	private CountdownTimer GetCountdownTimer => timerType switch
 	{
 		TimerType.Pomodoro => pomodoroTimer,
 		TimerType.ShortBreak => shortBreakTimer,
@@ -288,7 +292,7 @@
 	private string GetBackgroundColor() => timerType switch
 	{
 		TimerType.Pomodoro => "rgba(227, 18, 10, 1)",     // Red
-		TimerType.ShortBreak => "rgba(34, 139, 34, 1)",   // Green
+		TimerType.ShortBreak => "rgba(34, 139, 34, 1)",   // Green --- move to long break, make this a light blue?
 		TimerType.LongBreak => "rgba(0, 100, 0, 1)",      // Dark Green
 		_ => "rgba(227, 18, 10, 1)"
 	};
@@ -306,7 +310,7 @@
 		shortBreakTimer.RemainingTime = shortBreakTimer.Duration;
 		longBreakTimer.RemainingTime = longBreakTimer.Duration;
 
-		if (!countdownTimer.IsRunning)
+		if (!GetCountdownTimer.IsRunning)
 		{
 			InvokeAsync(StateHasChanged);
 		}
@@ -317,9 +321,9 @@
 		timerService.OnTimerUpdate += HandleTimerUpdate;
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
-		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, countdownTimer);
+		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, GetCountdownTimer);
 
-		countdownTimer.RemainingTime = countdownTimer.Duration;
+		GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
 	}
 
 	private async void HandleTimerUpdate() => await InvokeAsync(StateHasChanged);
@@ -351,9 +355,9 @@
 	private void SelectAndResetTimer(TimerType type)
 	{
 		timerType = type;
-		timerService.Reset(countdownTimer);
+		timerService.Reset(GetCountdownTimer);
 
-		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, countdownTimer);
+		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, GetCountdownTimer);
 	}
 
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
@@ -396,7 +400,7 @@
 	{
 		timerService.Reset(timer);
 
-		if (settings.IsAutoStartAfterRestart) ToggleStartStopTimer(timerType, countdownTimer);
+		if (settings.IsAutoStartAfterRestart) ToggleStartStopTimer(timerType, GetCountdownTimer);
 	}
 
 	private async Task IncrementActiveTaskPomodoroCount()
@@ -409,9 +413,9 @@
 
 	private void AddTimeToTimer()
 	{
-		bool isMoreThanDuration = countdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > countdownTimer.Duration;
+		bool isMoreThanDuration = GetCountdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > GetCountdownTimer.Duration;
 
-		if (!isMoreThanDuration) countdownTimer.RemainingTime = countdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
+		if (!isMoreThanDuration) GetCountdownTimer.RemainingTime = GetCountdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
 	}
 
 	public void Dispose()
