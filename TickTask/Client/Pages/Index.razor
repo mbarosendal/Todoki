@@ -346,6 +346,11 @@
 		}
 		else
 		{
+			if (type == TimerType.Pomodoro)
+			{
+				await taskListRef.SetNextAvailableTaskIfNoneActive();
+			}
+
 			timerService.Start(type, timer);
 		}
 
@@ -413,9 +418,9 @@
 
 	private void AddTimeToTimer()
 	{
-		bool isMoreThanDuration = GetCountdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > GetCountdownTimer.Duration;
+		bool DoesAddedTimeExceedMaxDuration = GetCountdownTimer.RemainingTime + TimeSpan.FromMinutes(1) > GetCountdownTimer.Duration;
 
-		if (!isMoreThanDuration) GetCountdownTimer.RemainingTime = GetCountdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
+		if (!DoesAddedTimeExceedMaxDuration) GetCountdownTimer.RemainingTime = GetCountdownTimer.RemainingTime.Add(TimeSpan.FromMinutes(1));
 	}
 
 	public void Dispose()
@@ -423,4 +428,4 @@
 		timerService.OnTimerUpdate -= HandleTimerUpdate;
 		timerService.OnTimerFinish -= HandleTimerFinish;
 	}
-	}
+}
