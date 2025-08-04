@@ -379,10 +379,10 @@
 				settings.NumberOfPomodorosRun++;
 				await IncrementActiveTaskPomodoroCount();
 
-				if (!taskListRef.HasMoreTasks() && taskListRef.HasAddedTasksSinceLastCompletion)
+				if (!taskListRef.HasMoreTasks() && taskListRef.ShouldPlaySoundAfterAllTasksDone)
 				{
 					await JS.InvokeVoidAsync("playTasksDoneSound");
-					taskListRef.HasAddedTasksSinceLastCompletion = false;
+					taskListRef.ShouldPlaySoundAfterAllTasksDone = false;
 				}
 				else if (!timerWasSkipped)
 				{

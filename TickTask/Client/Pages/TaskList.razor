@@ -411,7 +411,7 @@
 	private bool hideActiveTask = false;
 
 	public bool AreAllTasksDone = false;
-	public bool HasAddedTasksSinceLastCompletion = false;
+	public bool ShouldPlaySoundAfterAllTasksDone = false;
 
 	private TaskItem? ActiveTask
 	{
@@ -427,7 +427,7 @@
 	{
 		tasks = await TaskService.GetAllAsync();
 
-		HasAddedTasksSinceLastCompletion = HasMoreTasks();
+		ShouldPlaySoundAfterAllTasksDone = HasMoreTasks();
 	}
 
 	private void ToggleMenu() => showMenu = !showMenu;
@@ -560,7 +560,7 @@
 			tasks!.Add(created);
 			editingTaskId = created.TaskItemId;
 
-			HasAddedTasksSinceLastCompletion = true;
+			ShouldPlaySoundAfterAllTasksDone = true;
 			StateHasChanged();
 		}
 	}
