@@ -293,8 +293,8 @@
 	private string GetBackgroundColor() => timerType switch
 	{
 		TimerType.Pomodoro => "rgba(227, 18, 10, 1)",     // Red
-		TimerType.ShortBreak => "rgba(34, 139, 34, 1)",   // Green --- move to long break, make this a light blue?
-		TimerType.LongBreak => "rgba(0, 100, 0, 1)",      // Dark Green
+		TimerType.ShortBreak => "rgba(9, 180, 237, 1)",   // Blue
+		TimerType.LongBreak => "rgba(0, 191, 0, 0.8)",      // Green
 		_ => "rgba(227, 18, 10, 1)"
 	};
 

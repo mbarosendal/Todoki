@@ -43,7 +43,7 @@
 		{
 			<div class="checkin-buttons">
 				<button class="checkin-btn on-time" @onclick="HandleOnTime">
-					<div class="btn-icon">✅</div>
+					<div class="btn-icon">👍</div>
 					<div class="btn-text">
 						<div class="btn-title">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings))</div>
 					</div>
@@ -55,7 +55,7 @@
 					</div>
 				</button>
 				<button class="checkin-btn task-done" @onclick="HandleTaskDone">
-					<div class="btn-icon">🎉</div>
+					<div class="btn-icon">✅</div>
 					<div class="btn-text">
 						<div class="btn-title">I'm done with this task (Mark done & move to next)</div>
 					</div>
@@ -64,8 +64,6 @@
 		}
 	}
 </div>
-
-
 
 <!-- Tasks Section -->
 <div class="tasks-section">
@@ -167,11 +165,7 @@
 <style>
 	.break-screen {
 		text-align: center;
-		padding: 40px 20px;
-	}
-
-	.break-message {
-		margin-bottom: 40px;
+		padding: 20px 20px;
 	}
 
 	.break-icon {
@@ -179,20 +173,16 @@
 		margin-bottom: 16px;
 	}
 
-	.break-title {
-		font-size: 2rem;
-		font-weight: 300;
-		margin: 0 0 16px 0;
-		color: white;
-	}
-
 	.break-text {
 		font-size: 1.1rem;
-		background: rgba(0,0,0,0.2);
+		background: rgba(0, 0, 0, 0.2);
 		opacity: 0.9;
-		line-height: 1.5;
-		max-width: 400px;
+		line-height: 1.6;
+		max-width: 600px;
 		margin: 0 auto;
+		padding: 15px;
+		word-wrap: break-word;
+		border-radius: 10px;
 	}
 
 	.checkin-buttons {
@@ -258,17 +248,11 @@
 
 	/* Tasks Section */
 	.tasks-section {
-		background: rgba(89, 8, 8, 0.28);
+		background: rgba(89, 8, 8, 0.25);
 		border-radius: 0 0 12px 12px;
 		padding: 16px 20px 20px 20px;
 		margin-top: 0;
 	}
-
-	/* When no active task, give tasks section full rounded corners */
-	/* .tasks-section:first-child { */
-	/* border-radius: 12px; */
-	/* margin-top: 20px; */
-	/* } */
 
 	/* Section labels */
 	.section-label {
