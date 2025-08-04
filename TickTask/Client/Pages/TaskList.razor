@@ -9,14 +9,13 @@
 <div class="active-task-section">
 	@if (!hideActiveTask)
 	{
-		<div class="active-task-content" style="@((ActiveTask == null) ? "visibility:hidden; min-height:60px" : "")">
+		<div class="active-task-content" style="min-height:60px">
 			@if (ActiveTask != null)
 			{
 				<div class="active-task-left">
 					<div class="section-label">Active Task</div>
 					<div class="active-task-name">@ActiveTask.Name</div>
 				</div>
-
 				<div class="active-task-right" title="Pomodoro progress on current task">
 					<div class="task-info-row">
 						🍅 @ActiveTask.PomodorosRanOnTask/@ActiveTask.EstimatedNumberOfPomodoros
@@ -27,6 +26,13 @@
 					<div class="task-info-row" title="The estimated time of current task completion (breaks included)">
 						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ShortBreakTimer, LongBreakTimer, ActiveTask, TimerSettings)
 					</div>
+				</div>
+			}
+			else
+			{
+				<div class="active-task-left">
+					<div class="section-label">Active Task</div>
+					<div class="active-task-name">No active task set</div>
 				</div>
 			}
 		</div>
@@ -97,7 +103,7 @@
 
 					<div class="task-actions">
 						<button class="task-btn" @onclick="() => StartEdit(task.TaskItemId)" @onclick:stopPropagation="true">✎</button>
-						<button class="task-btn" @onclick="() => Delete(task.TaskItemId)" @onclick:stopPropagation="true">❌</button>
+						<button class="task-btn" @onclick="() => DeleteTask(task.TaskItemId)" @onclick:stopPropagation="true">❌</button>
 						<button class="task-btn" @onclick:stopPropagation="true">⋯</button>
 					</div>
 				</div>
@@ -567,19 +573,21 @@
 
 		if (string.IsNullOrWhiteSpace(task.Name))
 		{
-			await Delete(task.TaskItemId);
+			await DeleteTask(task.TaskItemId);
 			return;
 		}
 
 		await TaskService.UpdateAsync(task);
 	}
 
-	private async Task Delete(int taskItemId)
+	private async Task DeleteTask(int taskItemId)
 	{
 		var success = await TaskService.DeleteAsync(taskItemId);
 
 		if (success)
 		{
+			activeTask = null;
+
 			tasks!.RemoveAll(t => t.TaskItemId == taskItemId);
 		}
 	}
