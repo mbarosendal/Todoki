@@ -53,8 +53,8 @@ namespace TickTask.Shared
     {
         public bool IsAutoStart { get; set; } = false;
         public bool IsAutoStartAfterRestart { get; set; } = true;
-        public bool AutomaticallyMarkDoneTasks { get; set; } = false;
-        public bool AutomaticallyProceedToNextTaskAfterDone { get; set; } = false;
+        public bool AutomaticallyMarkDoneTasks { get; set; } = true;
+        public bool AutomaticallyProceedToNextTaskAfterDone { get; set; } = true;
         public int NumberOfPomodorosRun { get; set; } = 0;
         [Range(1, 99, ErrorMessage = "Must be between 1 and 99")]
         public int RunsBeforeLongBreak { get; set; } = 4;

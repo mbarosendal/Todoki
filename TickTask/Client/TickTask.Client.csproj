@@ -21,4 +21,10 @@
     <Folder Include="wwwroot\Sounds\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\Sounds\timer-alarm.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

@@ -13,7 +13,10 @@
 
 <body>
     <audio id="clickSound" src="Sounds/click-sound.mp3" preload="auto"></audio>
-    <audio id="alarmSound" src="Sounds/timer-alarm.mp3" preload="auto"></audio>
+    <audio id="alarmSound" src="Sounds/timer-alarmv2.mp3" preload="auto"></audio>
+    <audio id="breakOverSound" src="Sounds/back-to-work-alarm.mp3" preload="auto"></audio>
+    <audio id="tasksDoneSound" src="Sounds/tasks-done.mp3" preload="auto"></audio>
+
 
     <script>
         window.playClickSound = () => {
@@ -25,6 +28,20 @@
 
         window.playAlarmSound = () => {
             const sound = document.getElementById("alarmSound");
+            if (sound) {
+                sound.play();
+            }
+        };
+
+        window.playBreakOverSound = () => {
+            const sound = document.getElementById("breakOverSound");
+            if (sound) {
+                sound.play();
+            }
+        };
+
+        window.playTasksDoneSound = () => {
+            const sound = document.getElementById("tasksDoneSound");
             if (sound) {
                 sound.play();
             }

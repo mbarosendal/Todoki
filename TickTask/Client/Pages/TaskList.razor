@@ -2,7 +2,7 @@
 @using TickTask.Shared
 @inject TaskService TaskService
 @inject TimerService TimerService
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JS
 @inject ILogger<TaskList> Logger
 
 <!-- Active Task Section -->
@@ -410,6 +410,9 @@
 	private bool hideTasks = false;
 	private bool hideActiveTask = false;
 
+	public bool AreAllTasksDone = false;
+	public bool HasAddedTasksSinceLastCompletion = false;
+
 	private TaskItem? ActiveTask
 	{
 		get => activeTask;
@@ -423,12 +426,16 @@
 	protected override async Task OnInitializedAsync()
 	{
 		tasks = await TaskService.GetAllAsync();
+
+		HasAddedTasksSinceLastCompletion = HasMoreTasks();
 	}
 
 	private void ToggleMenu() => showMenu = !showMenu;
 
 	private void HideTasks() => hideTasks = !hideTasks;
 	private void HideActiveTask() => hideActiveTask = !hideActiveTask;
+
+	public bool HasMoreTasks() => tasks?.Any(t => !t.IsDone) == true;
 
 	public async Task IncrementActivePomodoroCount()
 	{
@@ -455,7 +462,7 @@
 
 	public async Task SetNextAvailableTaskIfNoneActive()
 	{
-		if (ActiveTask == null && tasks?.Any(t => !t.IsDone) == true)
+		if (ActiveTask == null && HasMoreTasks())
 		{
 			var nextTask = tasks.FirstOrDefault(t => !t.IsDone);
 			if (nextTask != null)
@@ -470,32 +477,51 @@
 
 	public async void SetNextTaskAsActive()
 	{
-		var currentIndex = tasks!.FindIndex(t => t.TaskItemId == ActiveTask?.TaskItemId);
-
 		if (ActiveTask != null)
 		{
 			ActiveTask.IsActiveTask = false;
 			await TaskService.UpdateAsync(ActiveTask);
 		}
 
-		var nextTask = tasks!.Skip(currentIndex + 1).FirstOrDefault(t => !t.IsDone);
-
-		if (nextTask != null)
+		if (HasMoreTasks())
 		{
-			nextTask.IsActiveTask = true;
-			await TaskService.UpdateAsync(nextTask);
-			ActiveTask = nextTask;
+			var nextTask = await GetNextTask();
+			if (nextTask != null)
+			{
+				nextTask.IsActiveTask = true;
+				await TaskService.UpdateAsync(nextTask);
+				ActiveTask = nextTask;
+			}
+			else
+			{
+				ActiveTask = null;
+			}
 		}
 		else
 		{
-			// needs to do a fanfare or something, the user is done with all tasks!
-			ActiveTask = null; // there are no more tasks
+			ActiveTask = null;
 		}
 	}
 
+	public async Task<TaskItem?> GetNextTask()
+	{
+		var nextTask = tasks?.FirstOrDefault(t => !t.IsDone && !t.IsActiveTask);
+
+		// var currentIndex = tasks!.FindIndex(t => t.TaskItemId == ActiveTask?.TaskItemId);
+		// var nextTask = tasks!.Skip(currentIndex + 1).FirstOrDefault(t => !t.IsDone);
+
+		if (nextTask != null)
+		{
+			await SetActiveTask(nextTask.TaskItemId);
+			return nextTask;
+		}
+		return null;
+	}
+
+
 	private async Task ConfirmClearAll()
 	{
-		bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to clear all tasks? This cannot be undone.");
+		bool confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to clear all tasks? This cannot be undone.");
 
 		if (confirmed)
 		{
@@ -533,6 +559,8 @@
 		{
 			tasks!.Add(created);
 			editingTaskId = created.TaskItemId;
+
+			HasAddedTasksSinceLastCompletion = true;
 			StateHasChanged();
 		}
 	}
