@@ -5,6 +5,8 @@
 @inject IJSRuntime JS
 @inject ILogger<TaskList> Logger
 
+
+
 <!-- Active Task Section -->
 <div class="active-task-section">
 	@if (!hideActiveTask)
@@ -49,7 +51,7 @@
 				<button class="checkin-btn need-time" @onclick="HandleNeedMoreTime">
 					<div class="btn-icon">⏰</div>
 					<div class="btn-text">
-						<div class="btn-title">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min</div>
+						<div class="btn-title">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
 					</div>
 				</button>
 				<button class="checkin-btn task-done" @onclick="HandleTaskDone">
@@ -619,9 +621,13 @@
 		if (isTaskDone)
 		{
 			if (TimerSettings.AutomaticallyMarkDoneTasks)
+			{
 				ActiveTask.IsDone = true;
+				await TaskService.UpdateAsync(ActiveTask);
+			}
 
-			await TaskService.UpdateAsync(ActiveTask);
+			if (TimerSettings.AutomaticallyClearDoneTasks)
+				await DeleteTask(ActiveTask.TaskItemId);
 
 			if (TimerSettings.AutomaticallyProceedToNextTaskAfterDone)
 				SetNextTaskAsActive();
