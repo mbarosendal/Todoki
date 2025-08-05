@@ -15,7 +15,7 @@
 			@if (ActiveTask != null)
 			{
 				<div class="active-task-left">
-					<div class="section-label">@(IsOnBreak ? "How is it going?" : "Current task")</div>
+					<div class="section-label">Current task</div>
 					<div class="active-task-name">@ActiveTask.Name</div>
 				</div>
 				<div class="active-task-right" title="Pomodoro progress on current task">
@@ -41,25 +41,28 @@
 		<!-- Active Task Check-in-->
 		@if (IsOnBreak && ActiveTask != null)
 		{
-			<div class="checkin-buttons">
-				<button class="checkin-btn on-time" @onclick="HandleOnTime">
-					<div class="btn-icon">👍</div>
-					<div class="btn-text">
-						<div class="btn-title">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings))</div>
-					</div>
-				</button>
-				<button class="checkin-btn need-time" @onclick="HandleNeedMoreTime">
-					<div class="btn-icon">⏰</div>
-					<div class="btn-text">
-						<div class="btn-title">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
-					</div>
-				</button>
-				<button class="checkin-btn task-done" @onclick="HandleTaskDone">
-					<div class="btn-icon">✅</div>
-					<div class="btn-text">
-						<div class="btn-title">I'm done with this task (Mark done & move to next)</div>
-					</div>
-				</button>
+			<div class="checkin-container">
+				<div class="question-label">How is it going?</div>
+				<div class="checkin-buttons">
+					<button class="checkin-btn on-time" @onclick="HandleOnTime">
+						<div class="btn-icon">👍</div>
+						<div class="btn-text">
+							<div class="btn-title">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings))</div>
+						</div>
+					</button>
+					<button class="checkin-btn need-time" @onclick="HandleNeedMoreTime">
+						<div class="btn-icon">⏰</div>
+						<div class="btn-text">
+							<div class="btn-title">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
+						</div>
+					</button>
+					<button class="checkin-btn task-done" @onclick="HandleTaskDone">
+						<div class="btn-icon">✅</div>
+						<div class="btn-text">
+							<div class="btn-title">I'm done with this task (Mark done & move to next)</div>
+						</div>
+					</button>
+				</div>
 			</div>
 		}
 	}
@@ -186,12 +189,28 @@
 		border-radius: 10px;
 	}
 
+	.checkin-container {
+		background: rgba(0, 0, 0, 0.2);
+		opacity: 0.9;
+		border-radius: 10px;
+		padding: 10px;
+		display: flex;
+		align-items: center;
+		max-width: 350px;
+		margin: 25px auto auto auto;
+	}
+
+	.question-label {
+		font-size: 1.1rem;
+		margin: 0px 35px 0px 10px;
+		white-space: nowrap;
+	}
+
 	.checkin-buttons {
 		display: flex;
 		flex-direction: row;
 		gap: 10px;
-		justify-content: center;
-		margin-top: 10px;
+		flex: 1;
 	}
 
 	.checkin-btn {

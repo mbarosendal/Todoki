@@ -78,10 +78,12 @@
 					   LongBreakTimer="@longBreakTimer"
 					   OnClose="HandleSettingsClosed" />
 
-		@if (GetCountdownTimer is not PomodoroTimer)
+		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
 		{
-			<TimerFinishModal @bind-IsOpen="shouldShowTimerFinishModal" CountdownTimer="@GetCountdownTimer" />
+			<TimerFinishModal @bind-IsOpen="showFinishModal"
+							  OnClose="@(() => showFinishModal = false)" />
 		}
+
 
 	</div>
 </div>
@@ -300,7 +302,7 @@
 	};
 
 
-	private bool shouldShowTimerFinishModal = false;
+	private bool showFinishModal = false;
 
 	private TimerSettings settings = new();
 	private bool showSettings = false;
@@ -362,7 +364,7 @@
 	private void SelectAndResetTimer(TimerType type, bool userSwitchedTimersUsingTabs = false)
 	{
 		if (userSwitchedTimersUsingTabs == true)
-			shouldShowTimerFinishModal = false;
+			showFinishModal = false;
 
 		timerType = type;
 		timerService.Reset(GetCountdownTimer);
@@ -373,9 +375,9 @@
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
 		if (timerWasSkipped == true)
-			shouldShowTimerFinishModal = false;
+			showFinishModal = false;
 		else
-			shouldShowTimerFinishModal = true;
+			showFinishModal = true;
 
 		switch (timerType)
 		{
