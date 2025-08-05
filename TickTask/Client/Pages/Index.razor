@@ -49,13 +49,14 @@
 
 		<!-- Timer Control Buttons -->
 		<div class="timer-controls">
-			<button class="restart-btn" @onclick="() => RestartTimer(GetCountdownTimer)">⟲</button>
+			<button class="restart-btn" @onclick="() => RestartTimer(GetCountdownTimer)" title="Restart the current timer">⟲</button>
 			<button class="btn-primary timer-main-btn @(GetCountdownTimer.IsRunning ? "running" : "")"
 					@onclick="() => ToggleStartStopTimer(timerType, GetCountdownTimer)">
 				@(GetCountdownTimer.IsRunning ? "PAUSE" : "START")
 			</button>
 			<button class="btn-secondary timer-control-btn"
-					@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
+					@onclick="() => HandleTimerFinish(timerWasSkipped : true)"
+					title="Skip the current timer">
 				→
 			</button>
 		</div>
