@@ -1,4 +1,5 @@
 ﻿@using TickTask.Shared
+@inject IJSRuntime JS
 
 <BaseModal IsOpen="@IsOpen"
 		   IsOpenChanged="@IsOpenChanged"
@@ -71,6 +72,16 @@
 							<span class="slider"></span>
 						</label>
 					</div>
+					<div class="switch-row">
+						<span>
+							Enable browser notifications
+							<span class="info-icon" data-title="If notifications aren't showing, check that you are allowing them in your OS for your browser">❔</span>
+						</span>
+						<button class="notify-btn @(Settings.EnableNotifications ? "enabled" : "")"
+								@onclick="RequestNotificationPermission"
+								title="@(Settings.EnableNotifications ? "Managed via browser settings" : "")">
+						</button>
+					</div>
 				</div>
 			}
 			else
@@ -97,6 +108,7 @@
 							<span class="slider"></span>
 						</label>
 					</div>
+
 				</div>
 			}
 		</div>
@@ -109,6 +121,7 @@
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 	[Parameter] public EventCallback OnClose { get; set; }
+	// define onclose to save settings in database when settings are set up to be persisted
 
 	[Parameter] public TimerSettings Settings { get; set; } = default!;
 	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
@@ -138,8 +151,22 @@
 		get => Settings.RunsBeforeLongBreak;
 		set => Settings.RunsBeforeLongBreak = Math.Max(1, Math.Min(99, value));
 	}
-}
 
+	protected override async Task OnInitializedAsync()
+	{
+		var permission = await JS.InvokeAsync<string>("getNotificationPermission");
+		Settings.EnableNotifications = permission == "granted";
+	}
+
+	private async Task RequestNotificationPermission()
+	{
+		var permission = await JS.InvokeAsync<string>("requestNotificationPermission");
+		Settings.EnableNotifications = permission == "granted";
+		StateHasChanged();
+	}
+
+
+}
 
 <style>
 	.modal-overlay {
@@ -291,4 +318,67 @@
 		.switch input:checked + .slider:before {
 			transform: translateX(24px);
 		}
+
+	.notify-btn {
+		background-color: #333;
+		border: none;
+		color: white;
+		padding: 6px 14px;
+		font-size: 0.95rem;
+		border-radius: 13px;
+		cursor: pointer;
+		user-select: none;
+		transition: background-color 0.3s;
+		min-width: 50px;
+		height: 25px;
+	}
+
+		.notify-btn:hover {
+			background-color: #4cd137;
+			color: black;
+		}
+
+		.notify-btn.enabled {
+			background-color: #4cd137;
+			color: black;
+		}
+
+			.notify-btn.enabled:hover {
+				background-color: #4cd137;
+				color: black;
+			}
+
+	.info-icon {
+		margin-left: 5px;
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		color: #ccc;
+		filter: brightness(0.25);
+	}
+
+		.info-icon:hover::after {
+			content: attr(data-title);
+			position: absolute;
+			background: #333;
+			color: white;
+			padding: 8px 12px;
+			border-radius: 4px;
+			font-size: 0.8rem;
+			bottom: 100%;
+			left: 0;
+			z-index: 100;
+			width: 300px;
+			word-wrap: break-word;
+			text-align: left;
+			line-height: 1.4;
+			margin-bottom: 10px;
+		}
+
+
+
+
+
 </style>

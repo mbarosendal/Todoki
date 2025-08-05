@@ -84,6 +84,7 @@
 							  OnClose="@(() => showFinishModal = false)" />
 		}
 
+		@* <button @onclick="RequestNotificationPermission">Enable Notifications</button> *@
 
 	</div>
 </div>
@@ -361,15 +362,15 @@
 		await JS.InvokeVoidAsync("playClickSound");
 	}
 
-	private void SelectAndResetTimer(TimerType type, bool userSwitchedTimersUsingTabs = false)
+	private void SelectAndResetTimer(TimerType timerType, bool userSwitchedTimersUsingTabs = false)
 	{
 		if (userSwitchedTimersUsingTabs == true)
 			showFinishModal = false;
 
-		timerType = type;
+		this.timerType = timerType;
 		timerService.Reset(GetCountdownTimer);
 
-		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, GetCountdownTimer);
+		if (settings.IsAutoStart) ToggleStartStopTimer(this.timerType, GetCountdownTimer);
 	}
 
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
@@ -393,6 +394,11 @@
 				else if (!timerWasSkipped)
 				{
 					await JS.InvokeVoidAsync("playAlarmSound");
+					await JS.InvokeVoidAsync("showNotification",
+						"Pomodoro Finished!",
+						settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak
+							? $"Time for a long break ({(int)longBreakTimer.Duration.TotalMinutes} min)"
+							: $"Take a short break ({(int)shortBreakTimer.Duration.TotalMinutes} min)");
 				}
 
 				if (settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
@@ -405,17 +411,32 @@
 					SelectAndResetTimer(TimerType.ShortBreak);
 				}
 				break;
+
 			case TimerType.ShortBreak:
+				if (!timerWasSkipped)
+				{
+					await JS.InvokeVoidAsync("playBreakOverSound");
+					await JS.InvokeVoidAsync("showNotification",
+						"Short Break Over!",
+						$"Current task is {taskListRef.ActiveTask?.Name ?? "not set"}");
+				}
+				SelectAndResetTimer(TimerType.Pomodoro);
+				break;
+
 			case TimerType.LongBreak:
 				if (!timerWasSkipped)
 				{
 					await JS.InvokeVoidAsync("playBreakOverSound");
+					await JS.InvokeVoidAsync("showNotification",
+						"Long Break Over!",
+						$"Current task is {taskListRef.ActiveTask?.Name ?? "not set"}");
 				}
 
 				SelectAndResetTimer(TimerType.Pomodoro);
 				break;
 		}
 	}
+
 
 	private void RestartTimer(CountdownTimer timer)
 	{

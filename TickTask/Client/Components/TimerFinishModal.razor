@@ -1,9 +1,11 @@
 ﻿<BaseModal IsOpen="@IsOpen"
 		   IsOpenChanged="@IsOpenChanged"
 		   OnClose="@OnClose">
+
 	<div class="section">
 		<h1>⏰</h1>
 	</div>
+
 </BaseModal>
 
 @code {
@@ -24,7 +26,6 @@
 		await Task.Delay(3000);
 
 		IsOpen = false;
-		await IsOpenChanged.InvokeAsync(false);
 		await OnClose.InvokeAsync();
 	}
 }
