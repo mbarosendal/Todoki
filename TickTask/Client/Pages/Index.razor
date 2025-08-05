@@ -24,7 +24,7 @@
 			@foreach (TimerType type in Enum.GetValues<TimerType>())
 			{
 				<button class="timer-tab @(timerType == type ? "active" : "")"
-						@onclick="() => SelectAndResetTimer(type)">
+						@onclick="() => SelectAndResetTimer(type, userSwitchedTimersUsingTabs : true)">
 					@type
 					@if (type == TimerType.Pomodoro)
 					{
@@ -79,7 +79,7 @@
 
 		@if (GetCountdownTimer is not PomodoroTimer)
 		{
-			<TimerFinishModal @bind-IsOpen="isTimerFinished" CountdownTimer="@GetCountdownTimer" />
+			<TimerFinishModal @bind-IsOpen="shouldShowTimerFinishModal" CountdownTimer="@GetCountdownTimer" />
 		}
 
 	</div>
@@ -299,7 +299,7 @@
 	};
 
 
-	private bool isTimerFinished = false;
+	private bool shouldShowTimerFinishModal = false;
 
 	private TimerSettings settings = new();
 	private bool showSettings = false;
@@ -358,8 +358,11 @@
 		await JS.InvokeVoidAsync("playClickSound");
 	}
 
-	private void SelectAndResetTimer(TimerType type)
+	private void SelectAndResetTimer(TimerType type, bool userSwitchedTimersUsingTabs = false)
 	{
+		if (userSwitchedTimersUsingTabs == true)
+			shouldShowTimerFinishModal = false;
+
 		timerType = type;
 		timerService.Reset(GetCountdownTimer);
 
@@ -368,11 +371,10 @@
 
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
-		// isTimerFinished = true;
-
-		// hide break modal when skipped?
-		if (!timerWasSkipped)
-			isTimerFinished = true;
+		if (timerWasSkipped == true)
+			shouldShowTimerFinishModal = false;
+		else
+			shouldShowTimerFinishModal = true;
 
 		switch (timerType)
 		{
