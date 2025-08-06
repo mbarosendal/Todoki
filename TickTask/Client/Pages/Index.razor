@@ -418,7 +418,7 @@
 					await JS.InvokeVoidAsync("playBreakOverSound");
 					await JS.InvokeVoidAsync("showNotification",
 						"Short Break Over!",
-						$"Current task is {taskListRef.ActiveTask?.Name ?? "not set"}");
+						$"Current task is{": " + taskListRef.ActiveTask?.Name ?? " not set"}");
 				}
 				SelectAndResetTimer(TimerType.Pomodoro);
 				break;
@@ -429,7 +429,7 @@
 					await JS.InvokeVoidAsync("playBreakOverSound");
 					await JS.InvokeVoidAsync("showNotification",
 						"Long Break Over!",
-						$"Current task is {taskListRef.ActiveTask?.Name ?? "not set"}");
+						$"Current task is{": " + taskListRef.ActiveTask?.Name ?? " not set"}");
 				}
 
 				SelectAndResetTimer(TimerType.Pomodoro);

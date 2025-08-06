@@ -131,25 +131,25 @@
 	private int PomodoroMinutes
 	{
 		get => (int)PomodoroTimer.Duration.TotalMinutes;
-		set => PomodoroTimer.Duration = TimeSpan.FromMinutes(Math.Max(1, Math.Min(999, value)));
+		set => PomodoroTimer.Duration = TimeSpan.FromMinutes(Math.Clamp(value, 1, 999));
 	}
 
 	private int ShortBreakMinutes
 	{
 		get => (int)ShortBreakTimer.Duration.TotalMinutes;
-		set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(Math.Max(1, Math.Min(999, value)));
+		set => ShortBreakTimer.Duration = TimeSpan.FromMinutes(Math.Clamp(value, 1, 999));
 	}
 
 	private int LongBreakMinutes
 	{
 		get => (int)LongBreakTimer.Duration.TotalMinutes;
-		set => LongBreakTimer.Duration = TimeSpan.FromMinutes(Math.Max(1, Math.Min(999, value)));
+		set => LongBreakTimer.Duration = TimeSpan.FromMinutes(Math.Clamp(value, 1, 999));
 	}
 
 	public int RunsBeforeLongBreak
 	{
 		get => Settings.RunsBeforeLongBreak;
-		set => Settings.RunsBeforeLongBreak = Math.Max(1, Math.Min(99, value));
+		set => Settings.RunsBeforeLongBreak = Math.Clamp(value, 1, 999);
 	}
 
 	protected override async Task OnInitializedAsync()
