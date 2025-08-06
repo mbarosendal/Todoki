@@ -15,7 +15,7 @@ namespace TickTask.Client
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
             builder.Services.AddScoped<TimerService>();
-            builder.Services.AddScoped<TaskService>();
+            builder.Services.AddScoped<TaskRepositorye>();
 
             builder.Services.AddHttpClient("TickTask.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
