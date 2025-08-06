@@ -1,11 +1,11 @@
 ﻿using System.Net.Http.Json;
 using TickTask.Shared;
 
-public class TaskService
+public class TaskRepositorye
 {
     private readonly HttpClient _http;
 
-    public TaskService(HttpClient http)
+    public TaskRepositorye(HttpClient http)
     {
         _http = http;
     }

@@ -1,6 +1,6 @@
 ﻿@using TickTask.Client.Services
 @using TickTask.Shared
-@inject TaskRepositorye TaskService
+@inject TaskRepositorye TaskRepository
 @inject TimerService TimerService
 @inject IJSRuntime JS
 @inject ILogger<TaskList> Logger
@@ -16,15 +16,19 @@
 					<div class="section-label">Current task</div>
 					<div class="active-task-name">@ActiveTask.Name</div>
 				</div>
-				<div class="active-task-right" title="Pomodoro progress on current task">
-					<div class="task-info-row">
+				<div class="active-task-right">
+					<div class="task-info-row tooltip">
 						🍅 @ActiveTask.PomodorosRanOnTask/@ActiveTask.EstimatedNumberOfPomodoros
+						<div class="tooltip-text">Pomodoro progress on current task</div>
 					</div>
-					<div class="task-info-row" title="Your estimated minutes of work left on current task (breaks excluded)">
-						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes) + ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+					<div class="task-info-row tooltip">
+						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes)
+											+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+						<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
 					</div>
-					<div class="task-info-row" title="The estimated time of current task completion (breaks included)">
+					<div class="task-info-row tooltip">
 						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings)
+						<div class="tooltip-text">Estimated time of current task completion (breaks included)</div>
 					</div>
 				</div>
 			}
@@ -34,32 +38,26 @@
 					<div class="active-task-name">@(HasMoreTasks() ? "No current task set" : "All done!")</div>
 				</div>
 			}
-
 		</div>
+
 		<!-- Active Task Check-in-->
 		@if (IsOnBreak && ActiveTask != null)
 		{
 			<div class="checkin-container">
 				<div class="question-label">How is it going?</div>
 				<div class="checkin-buttons">
-					<button class="checkin-btn on-time" @onclick="HandleOnTime">
-						<div class="btn-icon">👍</div>
-						<div class="btn-text">
-							<div class="btn-title">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings))</div>
-						</div>
-					</button>
-					<button class="checkin-btn need-time" @onclick="HandleNeedMoreTime">
-						<div class="btn-icon">⏰</div>
-						<div class="btn-text">
-							<div class="btn-title">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
-						</div>
-					</button>
-					<button class="checkin-btn task-done" @onclick="HandleTaskDone">
-						<div class="btn-icon">✅</div>
-						<div class="btn-text">
-							<div class="btn-title">I'm done with this task (Mark done & move to next)</div>
-						</div>
-					</button>
+					<div class="task-info-row tooltip" @onclick="HandleOnTime" style="cursor: pointer;">
+						👍
+						<div class="tooltip-text">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings))</div>
+					</div>
+					<div class="task-info-row tooltip" @onclick="HandleNeedMoreTime" style="cursor: pointer;">
+						⏰
+						<div class="tooltip-text">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
+					</div>
+					<div class="task-info-row tooltip" @onclick="HandleTaskDone" style="cursor: pointer;">
+						✅
+						<div class="tooltip-text">I'm done with this task (Mark done & move to next)</div>
+					</div>
 				</div>
 			</div>
 		}
@@ -123,16 +121,16 @@
 
 			<div class="task-wrapper"
 				 @ondragover="(e) => OnDragOver(e, index)"
-			@ondragover:preventDefault
+				 @ondragover:preventDefault
 				 @ondrop="(e) => OnDrop(e, index)"
-			@ondrop:preventDefault
+				 @ondrop:preventDefault
 				 @ondragleave="OnDragLeave">
 
 				<!-- Drop indicator line -->
 				<div class="drop-indicator @(dropIndicatorIndex == index ? "visible" : "")"></div>
 
 				<!-- Original task item -->
-						<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
+				<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
 					 draggable="true"
 					 @ondragstart="(e) => OnDragStart(e, index)"
 					 @ondragend="OnDragEnd"
@@ -177,9 +175,9 @@
 		<!-- Final drop zone for bottom -->
 		<div class="task-wrapper bottom-drop-zone @(IsDragging ? "active" : "")"
 			 @ondragover="(e) => OnDragOver(e, tasks.Count)"
-		@ondragover:preventDefault
+			 @ondragover:preventDefault
 			 @ondrop="(e) => OnDrop(e, tasks.Count)"
-		@ondrop:preventDefault
+			 @ondrop:preventDefault
 			 @ondragleave="OnDragLeave">
 
 			<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
@@ -297,7 +295,15 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		tasks = await TaskService.GetAllAsync();
+		tasks = await TaskRepository.GetAllAsync();
+
+		// Clean up any tasks that are marked active but are done
+		foreach (var t in tasks.Where(t => t.IsActiveTask && t.IsDone))
+		{
+			t.IsActiveTask = false;
+			await TaskRepository.UpdateAsync(t);
+		}
+
 		await SetNextAvailableTaskIfNoneActive();
 
 		ShouldPlaySoundAfterAllTasksDone = HasMoreTasks();
@@ -315,7 +321,7 @@
 		if (ActiveTask == null) return;
 
 		ActiveTask.PomodorosRanOnTask++;
-		await TaskService.UpdateAsync(ActiveTask);
+		await TaskRepository.UpdateAsync(ActiveTask);
 
 		bool isTaskDone = ActiveTask.PomodorosRanOnTask >= ActiveTask.EstimatedNumberOfPomodoros;
 
@@ -324,7 +330,7 @@
 			if (TimerSettings.AutomaticallyMarkDoneTasks)
 			{
 				ActiveTask.IsDone = true;
-				await TaskService.UpdateAsync(ActiveTask);
+				await TaskRepository.UpdateAsync(ActiveTask);
 			}
 
 			if (TimerSettings.AutomaticallyClearDoneTasks)
@@ -345,19 +351,19 @@
 			if (nextTask != null)
 			{
 				nextTask.IsActiveTask = true;
-				await TaskService.UpdateAsync(nextTask);
+				await TaskRepository.UpdateAsync(nextTask);
 				ActiveTask = nextTask;
 				StateHasChanged();
 			}
 		}
 	}
 
-	public async void SetNextTaskAsActive()
+	public async Task SetNextTaskAsActive()
 	{
 		if (ActiveTask != null)
 		{
 			ActiveTask.IsActiveTask = false;
-			await TaskService.UpdateAsync(ActiveTask);
+			await TaskRepository.UpdateAsync(ActiveTask);
 		}
 
 		if (HasMoreTasks())
@@ -366,7 +372,7 @@
 			if (nextTask != null)
 			{
 				nextTask.IsActiveTask = true;
-				await TaskService.UpdateAsync(nextTask);
+				await TaskRepository.UpdateAsync(nextTask);
 				ActiveTask = nextTask;
 			}
 			else
@@ -380,7 +386,7 @@
 		}
 	}
 
-	public async Task<TaskItem?>GetNextTask()
+	public async Task<TaskItem?> GetNextTask()
 	{
 		var nextTask = tasks?.FirstOrDefault(t => !t.IsDone && !t.IsActiveTask);
 
@@ -411,7 +417,7 @@
 	{
 		foreach (var task in tasks!.Where(t => t.IsDone).ToList())
 		{
-			_ = TaskService.DeleteAsync(task.TaskItemId);
+			_ = TaskRepository.DeleteAsync(task.TaskItemId);
 			tasks.Remove(task);
 		}
 	}
@@ -420,7 +426,7 @@
 	{
 		foreach (var task in tasks!.ToList())
 		{
-			_ = TaskService.DeleteAsync(task.TaskItemId);
+			_ = TaskRepository.DeleteAsync(task.TaskItemId);
 		}
 		tasks!.Clear();
 	}
@@ -431,7 +437,7 @@
 			{
 				Name = "New Task"/*, ProjectId = 1*/
 			};
-		var created = await TaskService.CreateAsync(newTask);
+		var created = await TaskRepository.CreateAsync(newTask);
 
 		if (created != null)
 		{
@@ -454,19 +460,16 @@
 
 		ActiveTask = clickedTask;
 		clickedTask.IsActiveTask = true;
-		await TaskService.UpdateAsync(clickedTask);
+		await TaskRepository.UpdateAsync(clickedTask);
 		StateHasChanged();
 	}
 
-	private void FinishTask(int taskId)
+	private async Task FinishTask(int taskId)
 	{
 		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
+		if (task == null) return;
 
-		if (task != null)
-		{
-			task.IsDone = !task.IsDone;
-			_ = TaskService.UpdateAsync(task);
-		}
+		await CompleteTaskAsync(task, !task.IsDone);
 	}
 
 	private void StartEdit(int taskId) => editingTaskId = taskId;
@@ -481,12 +484,12 @@
 			return;
 		}
 
-		await TaskService.UpdateAsync(task);
+		await TaskRepository.UpdateAsync(task);
 	}
 
 	private async Task DeleteTask(int taskItemId)
 	{
-		var success = await TaskService.DeleteAsync(taskItemId);
+		var success = await TaskRepository.DeleteAsync(taskItemId);
 
 		if (success)
 		{
@@ -507,7 +510,7 @@
 		if (ActiveTask != null)
 		{
 			ActiveTask.EstimatedNumberOfPomodoros++;
-			await TaskService.UpdateAsync(ActiveTask);
+			await TaskRepository.UpdateAsync(ActiveTask);
 			StateHasChanged();
 		}
 		await JS.InvokeVoidAsync("playClickSound");
@@ -516,15 +519,11 @@
 	private async Task HandleTaskDone()
 	{
 		if (ActiveTask != null)
-		{
-			ActiveTask.IsDone = true;
-			await TaskService.UpdateAsync(ActiveTask);
-			SetNextTaskAsActive();
-		}
+			await CompleteTaskAsync(ActiveTask, true);
 
 		await JS.InvokeVoidAsync("playClickSound");
 
-		if (HasMoreTasks() == false)
+		if (!HasMoreTasks())
 		{
 			await JS.InvokeVoidAsync("playTasksDoneSound");
 			ShouldPlaySoundAfterAllTasksDone = false;
@@ -543,19 +542,38 @@
 		{
 			if (newValue <= task.PomodorosRanOnTask)
 			{
-				task.IsDone = true;
-				if (HasMoreTasks() == false)
-					ShouldPlaySoundAfterAllTasksDone = false;
+				await CompleteTaskAsync(task, isDone: true);
 			}
-			if (newValue > task.PomodorosRanOnTask)
+			else
 			{
-				task.IsDone = false;
-				ShouldPlaySoundAfterAllTasksDone = true;
+				await CompleteTaskAsync(task, isDone: false);
 			}
 
 			task.EstimatedNumberOfPomodoros = newValue;
-			await TaskService.UpdateAsync(task);
-			StateHasChanged();
 		}
 	}
+
+	private async Task CompleteTaskAsync(TaskItem task, bool isDone)
+	{
+		if (task == null) return;
+
+		task.IsDone = isDone;
+		await TaskRepository.UpdateAsync(task);
+
+		if (task.TaskItemId == ActiveTask?.TaskItemId)
+		{
+			ActiveTask.IsActiveTask = false;
+			ActiveTask = null;
+
+			if (isDone && HasMoreTasks())
+			{
+				await SetNextTaskAsActive();
+			}
+		}
+
+		ShouldPlaySoundAfterAllTasksDone = HasMoreTasks() == false ? false : true;
+
+		StateHasChanged();
+	}
+
 }

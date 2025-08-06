@@ -176,18 +176,19 @@
 
 	private void SelectAndResetTimer(TimerType timerType, bool userSwitchedTimersUsingTabs = false)
 	{
-		if (userSwitchedTimersUsingTabs == true)
+		if (userSwitchedTimersUsingTabs)
 			showFinishModal = false;
 
 		this.timerType = timerType;
 		timerService.Reset(GetCountdownTimer);
 
-		if (settings.IsAutoStart) ToggleStartStopTimer(this.timerType, GetCountdownTimer);
+		if (settings.IsAutoStart)
+			ToggleStartStopTimer(this.timerType, GetCountdownTimer);
 	}
 
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
-		if (timerWasSkipped == true)
+		if (timerWasSkipped)
 			showFinishModal = false;
 		else
 			showFinishModal = true;

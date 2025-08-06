@@ -60,7 +60,6 @@
 
 .checkin-container {
     background: rgba(0, 0, 0, 0.2);
-    opacity: 0.9;
     border-radius: 10px;
     padding: 10px;
     display: flex;
@@ -68,6 +67,7 @@
     max-width: 350px;
     margin: 25px auto auto auto;
 }
+
 
 .question-label {
     font-size: 1.1rem;
@@ -82,6 +82,16 @@
     flex: 1;
 }
 
+    .checkin-buttons .task-info-row {
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: background 0.3s ease;
+    }
+
+        .checkin-buttons .task-info-row:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
 .checkin-btn {
     background: rgba(255, 255, 255, 0.1);
     border: none;
@@ -93,6 +103,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative;
 }
 
     .checkin-btn:hover {
@@ -105,24 +116,72 @@
 
     .checkin-btn .btn-text {
         display: none;
+        position: absolute;
+        bottom: 125%; 
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 1000;
+        transition: opacity 0.2s;
     }
 
     .checkin-btn .btn-title {
         font-size: 0.9rem;
     }
 
+    .checkin-btn:hover .btn-text {
+        display: block;
+        bottom: 125%;
+        left: 50%;
+    }
+
     /* Tooltip styling */
     .checkin-btn:hover .btn-text {
         display: block;
         position: absolute;
+        bottom: 35%;
         background: rgba(0, 0, 0, 0.8);
         color: white;
         padding: 5px 10px;
         border-radius: 4px;
         margin-top: 30px;
-        z-index: 100;
+        z-index: 1;
         white-space: nowrap;
     }
+
+.tooltip {
+    position: relative;
+    display: inline-block; /* instead of flex */
+}
+
+    .tooltip .tooltip-text {
+        visibility: hidden;
+        opacity: 1;
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 1000;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+
+    .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+
+
+
 
 /*< Style for the timer tab*/
 
