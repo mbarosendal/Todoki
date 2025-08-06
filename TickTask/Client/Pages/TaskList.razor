@@ -5,8 +5,6 @@
 @inject IJSRuntime JS
 @inject ILogger<TaskList> Logger
 
-
-
 <!-- Active Task Section -->
 <div class="active-task-section">
 	@if (!hideActiveTask)
@@ -90,7 +88,6 @@
 		</div>
 	}
 
-	<!-- Tasks display -->
 	@if (tasks == null)
 	{
 		<div class="loading">Loading tasks...</div>
@@ -118,10 +115,27 @@
 	}
 	else
 	{
-		<div class="tasks-list">
-			@foreach (var task in tasks)
-			{
-				<div class="task-item @(task.IsActiveTask ? "active" : "") @(task.IsDone ? "completed" : "")"
+		<!-- Tasks display -->
+		@for (int i = 0; i < tasks.Count; i++)
+		{
+			var task = tasks[i];
+			var index = i;
+
+			<div class="task-wrapper"
+				 @ondragover="(e) => OnDragOver(e, index)"
+			@ondragover:preventDefault
+				 @ondrop="(e) => OnDrop(e, index)"
+			@ondrop:preventDefault
+				 @ondragleave="OnDragLeave">
+
+				<!-- Drop indicator line -->
+				<div class="drop-indicator @(dropIndicatorIndex == index ? "visible" : "")"></div>
+
+				<!-- Original task item -->
+						<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
+					 draggable="true"
+					 @ondragstart="(e) => OnDragStart(e, index)"
+					 @ondragend="OnDragEnd"
 					 @onclick="() => SetActiveTask(task.TaskItemId)"
 					 @onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
 					 @onwheel:preventDefault="true">
@@ -130,7 +144,7 @@
 						   class="task-checkbox"
 						   checked="@task.IsDone"
 						   @onclick="() => FinishTask(task.TaskItemId)"
-						   @onclick:stopPropagation="true">
+						   @onclick:stopPropagation="true" />
 
 					<div class="task-info">
 						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
@@ -156,14 +170,68 @@
 						<button class="task-btn" @onclick:stopPropagation="true">⋯</button>
 					</div>
 				</div>
-			}
+			</div>
+
+		}
+
+		<!-- Final drop zone for bottom -->
+		<div class="task-wrapper bottom-drop-zone @(IsDragging ? "active" : "")"
+			 @ondragover="(e) => OnDragOver(e, tasks.Count)"
+		@ondragover:preventDefault
+			 @ondrop="(e) => OnDrop(e, tasks.Count)"
+		@ondrop:preventDefault
+			 @ondragleave="OnDragLeave">
+
+			<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
 		</div>
 
 		<div class="add-task-section">
 			<button class="add-task-btn" @onclick="AddTask">Add Task</button>
 		</div>
+
 	}
 </div>
+
+
+<!-- For drag and drop -->
+<style>
+	.task-wrapper {
+		position: relative;
+	}
+
+	.drop-indicator {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 0;
+		width: 100%;
+		border-top: 3px solid limegreen;
+		opacity: 0;
+		transition: opacity 0.1s ease;
+	}
+
+		.drop-indicator.visible {
+			opacity: 1;
+		}
+
+	.bottom-drop-zone {
+		position: absolute;
+		align-content: center;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 85px;
+		background: transparent;
+		z-index: 10;
+		pointer-events: none;
+	}
+
+		/* Only catch drag events while dragging */
+		.bottom-drop-zone.active {
+			pointer-events: auto;
+		}
+</style>
+
 
 <!-- Style for break screen, clean before add to overall style-->
 <style>
@@ -235,7 +303,7 @@
 		}
 
 		.checkin-btn .btn-text {
-			display: none; /* Hide text to make buttons minimalistic */
+			display: none;
 		}
 
 		.checkin-btn .btn-title {
@@ -268,6 +336,7 @@
 
 	/* Tasks Section */
 	.tasks-section {
+		position: relative;
 		background: rgba(89, 8, 8, 0.25);
 		border-radius: 0 0 12px 12px;
 		padding: 16px 20px 20px 20px;
@@ -299,15 +368,18 @@
 	}
 
 	.active-task-left {
-		display: flex;
-		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+		word-break: break-word;
+		overflow-wrap: break-word;
 	}
 
 	.active-task-right {
+		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 6px;
 	}
 
@@ -320,7 +392,12 @@
 		font-size: 1.1rem;
 		font-weight: 500;
 		flex: 1;
+		white-space: normal; 
+		overflow-wrap: break-word;
+		word-break: break-word;
+		min-width: 0;
 	}
+	
 
 	.active-task-progress {
 		font-size: 0.9rem;
@@ -453,6 +530,10 @@
 		flex: 1;
 		color: white;
 		font-size: 1rem;
+		white-space: normal;
+		overflow-wrap: break-word;
+		word-break: break-word;
+		min-width: 0;
 	}
 
 		.task-name.completed, .task-edit-input.completed {
@@ -530,6 +611,77 @@
 </style>
 
 @code {
+	private bool IsDragging;
+	private int? draggedTaskIndex;
+	private int? dropIndicatorIndex;
+
+	private void OnDragStart(DragEventArgs e, int index)
+	{
+		draggedTaskIndex = index;
+		IsDragging = true;
+		StateHasChanged();
+	}
+
+	private void OnDragEnd(DragEventArgs e)
+	{
+		draggedTaskIndex = null;
+		dropIndicatorIndex = null;
+		IsDragging = false;
+		StateHasChanged();
+	}
+
+	private void OnDragLeave(DragEventArgs e)
+	{
+		dropIndicatorIndex = null;
+		StateHasChanged();
+	}
+
+	private void OnDragOver(DragEventArgs e, int index)
+	{
+		e.DataTransfer.DropEffect = "move";
+
+		if (draggedTaskIndex.HasValue && draggedTaskIndex != index)
+		{
+			dropIndicatorIndex = index;
+			StateHasChanged();
+		}
+	}
+
+	private async Task OnDrop(DragEventArgs e, int dropIndex)
+	{
+		if (draggedTaskIndex.HasValue && draggedTaskIndex != dropIndex)
+		{
+			await ReorderTasks(draggedTaskIndex.Value, dropIndex);
+		}
+
+		draggedTaskIndex = null;
+		dropIndicatorIndex = null;
+		StateHasChanged();
+	}
+
+
+	private async Task ReorderTasks(int fromIndex, int toIndex)
+	{
+		if (fromIndex < 0 || fromIndex >= tasks.Count || toIndex < 0 || toIndex > tasks.Count)
+			return;
+
+		var draggedTask = tasks[fromIndex];
+		tasks.RemoveAt(fromIndex);
+
+		if (toIndex > fromIndex)
+			toIndex--;
+
+		// Allow insert at end
+		if (toIndex >= tasks.Count)
+			tasks.Add(draggedTask);
+		else
+			tasks.Insert(toIndex, draggedTask);
+
+		StateHasChanged();
+	}
+
+
+
 	[Parameter] public CountdownTimer CurrentTimer { get; set; } = default!;
 	[Parameter] public PomodoroTimer ActivePomodoro { get; set; } = default!;
 	[Parameter] public ShortBreakTimer ActiveShortBreakTimer { get; set; } = default!;
@@ -537,17 +689,16 @@
 	[Parameter] public EventCallback OnResetPomodoros { get; set; }
 	[Parameter] public TimerSettings TimerSettings { get; set; } = default!;
 
-	private bool IsOnBreak => CurrentTimer is ShortBreakTimer or LongBreakTimer;
-
-	private string GetBreakText() => CurrentTimer?.Text ?? (CurrentTimer is ShortBreakTimer ? ActiveShortBreakTimer.Text : ActiveLongBreakTimer.Text);
-
 	private List<TaskItem>? tasks = new();
 	private TaskItem? activeTask;
+	private int? ActiveTaskId => tasks.FirstOrDefault(t => t.IsActiveTask)?.TaskItemId;
 	private int? editingTaskId;
 
 	private bool showMenu;
 	private bool hideTasks = false;
 	private bool hideActiveTask = false;
+	private bool IsOnBreak => CurrentTimer is ShortBreakTimer or LongBreakTimer;
+	private string GetBreakText() => CurrentTimer?.Text ?? (CurrentTimer is ShortBreakTimer ? ActiveShortBreakTimer.Text : ActiveLongBreakTimer.Text);
 
 	public bool AreAllTasksDone = false;
 	public bool ShouldPlaySoundAfterAllTasksDone = false;
@@ -647,7 +798,8 @@
 		}
 	}
 
-	public async Task<TaskItem?> GetNextTask()
+	public async Task<TaskItem?>
+		GetNextTask()
 	{
 		var nextTask = tasks?.FirstOrDefault(t => !t.IsDone && !t.IsActiveTask);
 
@@ -665,7 +817,8 @@
 
 	private async Task ConfirmClearAll()
 	{
-		bool confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to clear all tasks? This cannot be undone.");
+		bool confirmed = await JS.InvokeAsync<bool>
+			("confirm", "Are you sure you want to clear all tasks? This cannot be undone.");
 
 		if (confirmed)
 		{
@@ -711,19 +864,17 @@
 
 	private async Task SetActiveTask(int taskId)
 	{
-		if (ActiveTask != null)
-		{
-			ActiveTask.IsActiveTask = false;
-			await TaskService.UpdateAsync(ActiveTask);
-		}
+		var clickedTask = tasks.FirstOrDefault(t => t.TaskItemId == taskId);
+		if (clickedTask == null || clickedTask.IsDone)
+			return;
 
-		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskId);
-		if (task != null && !task.IsDone)
-		{
-			task.IsActiveTask = true;
-			await TaskService.UpdateAsync(task);
-			ActiveTask = task;
-		}
+		foreach (var t in tasks)
+			t.IsActiveTask = false;
+
+		ActiveTask = clickedTask;
+		clickedTask.IsActiveTask = true;
+		await TaskService.UpdateAsync(clickedTask);
+		StateHasChanged();
 	}
 
 	private void FinishTask(int taskId)
