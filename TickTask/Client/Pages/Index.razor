@@ -7,12 +7,13 @@
 @inject TaskApiService taskService
 @inject IJSRuntime JS
 @inject ILogger<Index> Logger
+@inject HttpClient _httpClient
 @implements IDisposable
 
 <PageTitle>
 	@(timerType == TimerType.Pomodoro
-				? $"🍅 {GetCountdownTimer.RemainingTime}"
-				: $"🌴 {GetCountdownTimer.RemainingTime}")
+					? $"🍅 {GetCountdownTimer.RemainingTime}"
+					: $"🌴 {GetCountdownTimer.RemainingTime}")
 </PageTitle>
 
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
@@ -63,7 +64,7 @@
 
 		<!-- Task List Component -->
 		<TaskList @ref="taskListRef"
-		TimerSettings="settings"
+		Settings="settings"
 		OnResetPomodoros="ResetPomodoroCount"
 		ActivePomodoro="pomodoroTimer"
 		ActiveShortBreakTimer="shortBreakTimer"
@@ -76,7 +77,7 @@
 		PomodoroTimer="@pomodoroTimer"
 		ShortBreakTimer="@shortBreakTimer"
 		LongBreakTimer="@longBreakTimer"
-		OnClose="HandleSettingsClosed" />
+		OnClose="SyncSettingsToDisplay" />
 
 		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
 		{
@@ -118,10 +119,13 @@
 	private bool showFinishModal = false;
 
 	private UserSettings settings = new();
+
+
+
 	private bool showSettings = false;
 	private void OpenSettings() => showSettings = true;
 
-	private void HandleSettingsClosed()
+	private async void SyncSettingsToDisplay()
 	{
 		pomodoroTimer.RemainingTime = pomodoroTimer.Duration;
 		shortBreakTimer.RemainingTime = shortBreakTimer.Duration;
@@ -138,9 +142,17 @@
 		timerService.OnTimerUpdate += HandleTimerUpdate;
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
+		GetUserSettings();
+
+
 		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, GetCountdownTimer);
 
 		GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
+	}
+
+	private async Task GetUserSettings()
+	{
+		settings = await _httpClient.GetFromJsonAsync<UserSettings>("api/UserSettings");
 	}
 
 	private DotNetObjectReference<Index>? objRef;

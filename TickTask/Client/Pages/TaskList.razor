@@ -27,7 +27,7 @@
 						<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
 					</div>
 					<div class="task-info-row tooltip">
-						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings)
+						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings)
 						<div class="tooltip-text">Estimated time of current task completion (breaks included)</div>
 					</div>
 				</div>
@@ -48,7 +48,7 @@
 				<div class="checkin-buttons">
 					<div class="task-info-row tooltip" @onclick="HandleOnTime" style="cursor: pointer;">
 						👍
-						<div class="tooltip-text">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, TimerSettings))</div>
+						<div class="tooltip-text">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings))</div>
 					</div>
 					<div class="task-info-row tooltip" @onclick="HandleNeedMoreTime" style="cursor: pointer;">
 						⏰
@@ -64,7 +64,6 @@
 	}
 </div>
 
-<!-- FUCK OFF-->
 <!-- Tasks Section -->
 <div class="tasks-section">
 	@if (!IsOnBreak)
@@ -385,7 +384,7 @@
 	[Parameter] public ShortBreakTimer ActiveShortBreakTimer { get; set; } = default!;
 	[Parameter] public LongBreakTimer ActiveLongBreakTimer { get; set; } = default!;
 	[Parameter] public EventCallback OnResetPomodoros { get; set; }
-	[Parameter] public UserSettings TimerSettings { get; set; } = default!;
+	[Parameter] public UserSettings Settings { get; set; } = default!;
 
 	private List<TaskItem>? tasks = new();
 	private TaskItem? activeTask;
@@ -396,7 +395,7 @@
 	private bool hideTasks = false;
 	private bool hideActiveTask = false;
 	private bool IsOnBreak => CurrentTimer is ShortBreakTimer or LongBreakTimer;
-	private string GetBreakText() => CurrentTimer?.Text ?? (CurrentTimer is ShortBreakTimer ? ActiveShortBreakTimer.Text : ActiveLongBreakTimer.Text);
+	private string GetBreakText() => CurrentTimer is ShortBreakTimer ? Settings.ShortBreakLabel : Settings.LongBreakLabel;
 
 	public bool AreAllTasksDone = false;
 	public bool ShouldPlaySoundAfterAllTasksDone = false;
@@ -458,16 +457,16 @@
 
 		if (isTaskDone)
 		{
-			if (TimerSettings.AutomaticallyMarkDoneTasks)
+			if (Settings.AutomaticallyMarkDoneTasks)
 			{
 				ActiveTask.IsDone = true;
 				await TaskApiService.UpdateAsync(ActiveTask);
 			}
 
-			if (TimerSettings.AutomaticallyClearDoneTasks)
+			if (Settings.AutomaticallyClearDoneTasks)
 				await DeleteTask(ActiveTask.TaskItemId);
 
-			if (TimerSettings.AutomaticallyProceedToNextTaskAfterDone)
+			if (Settings.AutomaticallyProceedToNextTaskAfterDone)
 				await SetNextTaskAsActive();
 		}
 

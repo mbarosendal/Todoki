@@ -20,7 +20,6 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
-
         modelBuilder.Entity<ApplicationUser>()
     .HasOne(u => u.Settings)
     .WithOne()

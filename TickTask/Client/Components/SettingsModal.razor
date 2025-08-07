@@ -1,10 +1,12 @@
 ﻿@using TickTask.Shared
 @inject IJSRuntime JS
+@inject HttpClient _httpClient
+@inject ILogger<SettingsModal> Logger
 
 <BaseModal IsOpen="@IsOpen"
 		   IsOpenChanged="@IsOpenChanged"
 		   Title="Settings"
-		   OnClose="@OnClose">
+		   OnClose="@SaveAndClose">
 
 	<div class="settings-container">
 		<!-- Tabs -->
@@ -44,17 +46,17 @@
 					<!-- Pomodoros per long break -->
 					<div>
 						<label>Pomodoros per long break</label>
-						<input type="number" min="1" max="99" @bind="RunsBeforeLongBreak" />
+						<input type="number" min="1" max="99" @bind="Settings.RunsBeforeLongBreak" />
 					</div>
 
 					<!-- Break Texts -->
 					<div>
 						<label>Reminder for short breaks</label>
-						<input type="text" @bind="ShortBreakTimer.Text" placeholder="E.g. stretch, drink water..." />
+						<input type="text" @bind="Settings.ShortBreakLabel" placeholder="E.g. stretch, drink water..." />
 					</div>
 					<div>
 						<label>Reminder for long breaks</label>
-						<input type="text" @bind="LongBreakTimer.Text" placeholder="E.g. snack, walk the dog..." />
+						<input type="text" @bind="Settings.LongBreakLabel" placeholder="E.g. snack, walk the dog..." />
 					</div>
 
 					<!-- Auto-start options -->
@@ -121,12 +123,28 @@
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 	[Parameter] public EventCallback OnClose { get; set; }
-	// define onclose to save settings in database when settings are set up to be persisted
 
 	[Parameter] public UserSettings Settings { get; set; } = default!;
 	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
+
+	private async Task SaveAndClose()
+	{
+		// Logger.LogCritical($"Saving pomodoro duration {Settings.PomodoroDurationMinutes}");
+
+		try
+		{
+			await _httpClient.PutAsJsonAsync("api/UserSettings", Settings);
+			await OnClose.InvokeAsync();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Failed to save settings: {ex.Message}");
+		}
+
+		await OnClose.InvokeAsync();
+	}
 
 	private int PomodoroMinutes
 	{

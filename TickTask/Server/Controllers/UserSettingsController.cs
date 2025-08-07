@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ namespace TickTask.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // Require authentication for all endpoints
     public class UserSettingsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -20,46 +23,55 @@ namespace TickTask.Server.Controllers
             _context = context;
         }
 
-        // GET: api/UserSettings
+        // GET: api/UserSettings - Get current user's settings
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserSettings>>> GetUserSettings()
+        public async Task<ActionResult<UserSettings>> GetMySettings()
         {
-          if (_context.UserSettings == null)
-          {
-              return NotFound();
-          }
-            return await _context.UserSettings.ToListAsync();
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // GET: api/UserSettings/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserSettings>> GetUserSettings(int id)
-        {
-          if (_context.UserSettings == null)
-          {
-              return NotFound();
-          }
-            var userSettings = await _context.UserSettings.FindAsync(id);
-
-            if (userSettings == null)
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound();
+                return Unauthorized();
             }
 
-            return userSettings;
-        }
+            var settings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
 
-        // PUT: api/UserSettings/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUserSettings(int id, UserSettings userSettings)
-        {
-            if (id != userSettings.UserSettingsId)
+            if (settings == null)
             {
-                return BadRequest();
+                // Create default settings for new user
+                settings = new UserSettings { UserId = userId };
+                _context.UserSettings.Add(settings);
+                await _context.SaveChangesAsync();
             }
 
-            _context.Entry(userSettings).State = EntityState.Modified;
+            return Ok(settings);
+        }
+
+        // PUT: api/UserSettings - Update current user's settings
+        [HttpPut]
+        public async Task<IActionResult> UpdateMySettings(UserSettings userSettings)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var existingSettings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
+            if (existingSettings == null)
+            {
+                return NotFound("User settings not found");
+            }
+
+            // Ensure user can only update their own settings
+            userSettings.UserId = userId;
+            userSettings.UserSettingsId = existingSettings.UserSettingsId;
+
+            _context.Entry(existingSettings).CurrentValues.SetValues(userSettings);
 
             try
             {
@@ -67,7 +79,7 @@ namespace TickTask.Server.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserSettingsExists(id))
+                if (!await UserSettingsExistsForUser(userId))
                 {
                     return NotFound();
                 }
@@ -80,30 +92,50 @@ namespace TickTask.Server.Controllers
             return NoContent();
         }
 
-        // POST: api/UserSettings
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/UserSettings - Create settings for current user (if they don't exist)
         [HttpPost]
-        public async Task<ActionResult<UserSettings>> PostUserSettings(UserSettings userSettings)
+        public async Task<ActionResult<UserSettings>> CreateMySettings(UserSettings userSettings)
         {
-          if (_context.UserSettings == null)
-          {
-              return Problem("Entity set 'ApplicationDbContext.UserSettings'  is null.");
-          }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // Check if settings already exist
+            var existingSettings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
+            if (existingSettings != null)
+            {
+                return Conflict("User settings already exist. Use PUT to update.");
+            }
+
+            // Ensure the settings belong to the current user
+            userSettings.UserId = userId;
+            userSettings.UserSettingsId = 0; // Let EF generate the ID
+
             _context.UserSettings.Add(userSettings);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUserSettings", new { id = userSettings.UserSettingsId }, userSettings);
+            return CreatedAtAction(nameof(GetMySettings), null, userSettings);
         }
 
-        // DELETE: api/UserSettings/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserSettings(int id)
+        // DELETE: api/UserSettings - Delete current user's settings
+        [HttpDelete]
+        public async Task<IActionResult> DeleteMySettings()
         {
-            if (_context.UserSettings == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound();
+                return Unauthorized();
             }
-            var userSettings = await _context.UserSettings.FindAsync(id);
+
+            var userSettings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
             if (userSettings == null)
             {
                 return NotFound();
@@ -115,9 +147,9 @@ namespace TickTask.Server.Controllers
             return NoContent();
         }
 
-        private bool UserSettingsExists(int id)
+        private async Task<bool> UserSettingsExistsForUser(string userId)
         {
-            return (_context.UserSettings?.Any(e => e.UserSettingsId == id)).GetValueOrDefault();
+            return await _context.UserSettings.AnyAsync(e => e.UserId == userId);
         }
     }
 }
