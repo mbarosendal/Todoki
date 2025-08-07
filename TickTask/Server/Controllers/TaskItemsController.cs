@@ -120,5 +120,18 @@ namespace TickTask.Server.Controllers
         {
             return (_context.TaskItems?.Any(e => e.TaskItemId == id)).GetValueOrDefault();
         }
+
+        [HttpPut("order")]
+        public async Task<IActionResult> UpdateTaskOrder([FromBody] List<TaskItem> tasks)
+        {
+            foreach (var task in tasks)
+            {
+                _context.Entry(task).Property(t => t.SortOrder).IsModified = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 }

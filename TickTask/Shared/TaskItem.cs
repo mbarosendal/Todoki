@@ -33,6 +33,7 @@ namespace TickTask.Shared
     {
         [Key]
         public int TaskItemId { get; set; }
+        public int SortOrder { get; set; }
 
         [Required]
         [StringLength(200, MinimumLength = 1)]

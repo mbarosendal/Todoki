@@ -1,11 +1,13 @@
 ﻿using System.Net.Http.Json;
+using System.Threading.Tasks;
 using TickTask.Shared;
+using static System.Net.WebRequestMethods;
 
-public class TaskRepositorye
+public class TaskApiService
 {
     private readonly HttpClient _http;
 
-    public TaskRepositorye(HttpClient http)
+    public TaskApiService(HttpClient http)
     {
         _http = http;
     }
@@ -38,4 +40,11 @@ public class TaskRepositorye
         var response = await _http.DeleteAsync($"api/TaskItems/{id}");
         return response.IsSuccessStatusCode;
     }
+
+    public async Task SaveTaskOrderAsync(List<TaskItem> reorderedTasks)
+    {
+        var response  = await _http.PutAsJsonAsync("api/tasks/order", reorderedTasks);
+    }
+
+
 }

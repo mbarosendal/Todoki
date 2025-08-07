@@ -1,6 +1,6 @@
 ﻿@using TickTask.Client.Services
 @using TickTask.Shared
-@inject TaskRepositorye TaskRepository
+@inject TaskApiService TaskApiService
 @inject TimerService TimerService
 @inject IJSRuntime JS
 @inject ILogger<TaskList> Logger
@@ -121,9 +121,9 @@
 
 			<div class="task-wrapper"
 				 @ondragover="(e) => OnDragOver(e, index)"
-				 @ondragover:preventDefault
+			@ondragover:preventDefault
 				 @ondrop="(e) => OnDrop(e, index)"
-				 @ondrop:preventDefault
+			@ondrop:preventDefault
 				 @ondragleave="OnDragLeave">
 
 				<!-- Drop indicator line -->
@@ -162,6 +162,8 @@
 						<span class="task-name @(task.IsDone ? "completed" : "")">@task.Name</span>
 					}
 
+					<p> @task.SortOrder </p>
+
 					<div class="task-actions">
 						<button class="task-btn" @onclick="() => StartEdit(task.TaskItemId)" @onclick:stopPropagation="true">✎</button>
 						<button class="task-btn" @onclick="() => DeleteTask(task.TaskItemId)" @onclick:stopPropagation="true">❌</button>
@@ -177,7 +179,7 @@
 			 @ondragover="(e) => OnDragOver(e, tasks.Count)"
 			 @ondragover:preventDefault
 			 @ondrop="(e) => OnDrop(e, tasks.Count)"
-			 @ondrop:preventDefault
+		@ondrop:preventDefault
 			 @ondragleave="OnDragLeave">
 
 			<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
@@ -239,7 +241,6 @@
 		StateHasChanged();
 	}
 
-
 	private async Task ReorderTasks(int fromIndex, int toIndex)
 	{
 		if (fromIndex < 0 || fromIndex >= tasks.Count || toIndex < 0 || toIndex > tasks.Count)
@@ -251,14 +252,21 @@
 		if (toIndex > fromIndex)
 			toIndex--;
 
-		// Allow insert at end
 		if (toIndex >= tasks.Count)
 			tasks.Add(draggedTask);
 		else
 			tasks.Insert(toIndex, draggedTask);
 
+		for (int i = 0; i < tasks.Count; i++)
+		{
+			tasks[i].SortOrder = i;
+		}
+
+		await TaskApiService.SaveTaskOrderAsync(tasks);
+
 		StateHasChanged();
 	}
+
 
 
 
@@ -295,13 +303,15 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		tasks = await TaskRepository.GetAllAsync();
+		tasks = await TaskApiService.GetAllAsync();
+
+		// await SortListByTaskOrder();
 
 		// Clean up any tasks that are marked active but are done
 		foreach (var t in tasks.Where(t => t.IsActiveTask && t.IsDone))
 		{
 			t.IsActiveTask = false;
-			await TaskRepository.UpdateAsync(t);
+			await TaskApiService.UpdateAsync(t);
 		}
 
 		await SetNextAvailableTaskIfNoneActive();
@@ -316,12 +326,22 @@
 
 	public bool HasMoreTasks() => tasks?.Any(t => !t.IsDone) == true;
 
+
+	public async Task SortListByTaskOrder()
+	{
+		var sortedList = new List<TaskItem>();
+
+		sortedList.OrderByDescending(t => t.SortOrder).ToList();
+
+		// tasks = sortedList;
+	}
+
 	public async Task IncrementActivePomodoroCount()
 	{
 		if (ActiveTask == null) return;
 
 		ActiveTask.PomodorosRanOnTask++;
-		await TaskRepository.UpdateAsync(ActiveTask);
+		await TaskApiService.UpdateAsync(ActiveTask);
 
 		bool isTaskDone = ActiveTask.PomodorosRanOnTask >= ActiveTask.EstimatedNumberOfPomodoros;
 
@@ -330,7 +350,7 @@
 			if (TimerSettings.AutomaticallyMarkDoneTasks)
 			{
 				ActiveTask.IsDone = true;
-				await TaskRepository.UpdateAsync(ActiveTask);
+				await TaskApiService.UpdateAsync(ActiveTask);
 			}
 
 			if (TimerSettings.AutomaticallyClearDoneTasks)
@@ -351,7 +371,7 @@
 			if (nextTask != null)
 			{
 				nextTask.IsActiveTask = true;
-				await TaskRepository.UpdateAsync(nextTask);
+				await TaskApiService.UpdateAsync(nextTask);
 				ActiveTask = nextTask;
 				StateHasChanged();
 			}
@@ -363,7 +383,7 @@
 		if (ActiveTask != null)
 		{
 			ActiveTask.IsActiveTask = false;
-			await TaskRepository.UpdateAsync(ActiveTask);
+			await TaskApiService.UpdateAsync(ActiveTask);
 		}
 
 		if (HasMoreTasks())
@@ -372,7 +392,7 @@
 			if (nextTask != null)
 			{
 				nextTask.IsActiveTask = true;
-				await TaskRepository.UpdateAsync(nextTask);
+				await TaskApiService.UpdateAsync(nextTask);
 				ActiveTask = nextTask;
 			}
 			else
@@ -417,7 +437,7 @@
 	{
 		foreach (var task in tasks!.Where(t => t.IsDone).ToList())
 		{
-			_ = TaskRepository.DeleteAsync(task.TaskItemId);
+			_ = TaskApiService.DeleteAsync(task.TaskItemId);
 			tasks.Remove(task);
 		}
 	}
@@ -426,7 +446,7 @@
 	{
 		foreach (var task in tasks!.ToList())
 		{
-			_ = TaskRepository.DeleteAsync(task.TaskItemId);
+			_ = TaskApiService.DeleteAsync(task.TaskItemId);
 		}
 		tasks!.Clear();
 	}
@@ -435,9 +455,12 @@
 	{
 		var newTask = new TaskItem
 			{
-				Name = "New Task"/*, ProjectId = 1*/
+				Name = "New Task",
+				/*ProjectId = 1*/
+				SortOrder = tasks.Count > 0 ? tasks.Max(t => t.SortOrder) + 1 : 0,
 			};
-		var created = await TaskRepository.CreateAsync(newTask);
+
+		var created = await TaskApiService.CreateAsync(newTask);
 
 		if (created != null)
 		{
@@ -460,7 +483,7 @@
 
 		ActiveTask = clickedTask;
 		clickedTask.IsActiveTask = true;
-		await TaskRepository.UpdateAsync(clickedTask);
+		await TaskApiService.UpdateAsync(clickedTask);
 		StateHasChanged();
 	}
 
@@ -484,12 +507,12 @@
 			return;
 		}
 
-		await TaskRepository.UpdateAsync(task);
+		await TaskApiService.UpdateAsync(task);
 	}
 
 	private async Task DeleteTask(int taskItemId)
 	{
-		var success = await TaskRepository.DeleteAsync(taskItemId);
+		var success = await TaskApiService.DeleteAsync(taskItemId);
 
 		if (success)
 		{
@@ -510,7 +533,7 @@
 		if (ActiveTask != null)
 		{
 			ActiveTask.EstimatedNumberOfPomodoros++;
-			await TaskRepository.UpdateAsync(ActiveTask);
+			await TaskApiService.UpdateAsync(ActiveTask);
 			StateHasChanged();
 		}
 		await JS.InvokeVoidAsync("playClickSound");
@@ -558,7 +581,7 @@
 		if (task == null) return;
 
 		task.IsDone = isDone;
-		await TaskRepository.UpdateAsync(task);
+		await TaskApiService.UpdateAsync(task);
 
 		if (task.TaskItemId == ActiveTask?.TaskItemId)
 		{
