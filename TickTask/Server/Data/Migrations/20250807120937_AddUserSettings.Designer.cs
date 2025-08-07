@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TickTask.Server.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250807120937_AddUserSettings")]
+    partial class AddUserSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -401,77 +403,6 @@ namespace TickTask.Server.Data.Migrations
                     b.ToTable("TaskItems");
                 });
 
-            modelBuilder.Entity("TickTask.Shared.UserSettings", b =>
-                {
-                    b.Property<int>("UserSettingsId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserSettingsId"), 1L, 1);
-
-                    b.Property<bool>("AutomaticallyClearDoneTasks")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("AutomaticallyMarkDoneTasks")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("AutomaticallyProceedToNextTaskAfterDone")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("EnableNotifications")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HideActiveTask")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HideTasks")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsAutoStart")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsAutoStartAfterRestart")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("LongBreakDurationMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LongBreakLabel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("NumberOfPomodorosRun")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PomodoroDurationMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PomodoroLabel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RunsBeforeLongBreak")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ShortBreakDurationMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShortBreakLabel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserSettingsId");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("UserSettings");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -521,20 +452,6 @@ namespace TickTask.Server.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("TickTask.Shared.UserSettings", b =>
-                {
-                    b.HasOne("TickTask.Server.Models.ApplicationUser", null)
-                        .WithOne("Settings")
-                        .HasForeignKey("TickTask.Shared.UserSettings", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TickTask.Server.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("Settings");
                 });
 #pragma warning restore 612, 618
         }

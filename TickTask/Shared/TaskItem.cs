@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTask.Shared
 {
@@ -50,8 +45,23 @@ namespace TickTask.Shared
         //public int ProjectId { get; set; }
     }
 
-    public class TimerSettings
+    public class UserSettings
     {
+        [Key]
+        public int UserSettingsId { get; set; }
+
+        [Required]
+        public string UserId { get; set; } = "";
+
+        public int PomodoroDurationMinutes { get; set; } = 25;
+        public int ShortBreakDurationMinutes { get; set; } = 5;
+        public int LongBreakDurationMinutes { get; set; } = 15;
+        public string PomodoroLabel { get; set; } = "Focus Time";
+        public string ShortBreakLabel { get; set; } = "Short Break";
+        public string LongBreakLabel { get; set; } = "Long Break";
+
+        public bool HideTasks { get; set; } = false;
+        public bool HideActiveTask { get; set; } = false;
         public bool IsAutoStart { get; set; } = false;
         public bool IsAutoStartAfterRestart { get; set; } = true;
         public bool AutomaticallyMarkDoneTasks { get; set; } = true;

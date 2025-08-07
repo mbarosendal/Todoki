@@ -14,21 +14,18 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
     }
 
     public DbSet<TaskItem> TaskItems { get; set; }
-    // public DbSet<Project> Projects { get; set; }
+    public DbSet<UserSettings> UserSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        /*
-        modelBuilder.Entity<TaskItem>()
-            .HasOne(t => t.Project)
-            .WithMany(p => p.Tasks)
-            .HasForeignKey(t => t.ProjectId)
-            .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<TaskItem>().ToTable("TaskItems");
-        modelBuilder.Entity<Project>().ToTable("Projects");
-        */
+        modelBuilder.Entity<ApplicationUser>()
+    .HasOne(u => u.Settings)
+    .WithOne()
+    .HasForeignKey<TickTask.Shared.UserSettings>(s => s.UserId)
+    .IsRequired();
+
     }
 }

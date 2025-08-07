@@ -98,7 +98,7 @@
 	else if (IsOnBreak)
 	{
 		<!-- Break display (no tasks, just break) -->
-		<div class="section-label">@(GetBreakText() == "" ? "Take a break!" : "Reminder")</div>
+		<div class="section-label">@(GetBreakText() == "" ? "Take a break" : "Reminder")</div>
 
 		<div class="break-screen">
 			<div class="break-message">
@@ -385,7 +385,7 @@
 	[Parameter] public ShortBreakTimer ActiveShortBreakTimer { get; set; } = default!;
 	[Parameter] public LongBreakTimer ActiveLongBreakTimer { get; set; } = default!;
 	[Parameter] public EventCallback OnResetPomodoros { get; set; }
-	[Parameter] public TimerSettings TimerSettings { get; set; } = default!;
+	[Parameter] public UserSettings TimerSettings { get; set; } = default!;
 
 	private List<TaskItem>? tasks = new();
 	private TaskItem? activeTask;
@@ -468,7 +468,7 @@
 				await DeleteTask(ActiveTask.TaskItemId);
 
 			if (TimerSettings.AutomaticallyProceedToNextTaskAfterDone)
-				SetNextTaskAsActive();
+				await SetNextTaskAsActive();
 		}
 
 		StateHasChanged();

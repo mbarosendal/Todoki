@@ -61,7 +61,7 @@ namespace TickTask.Client.Services
             }
         }
 
-        public string CalculateEstimatedTimeOfTaskCompletion(PomodoroTimer activePomodoro, ShortBreakTimer shortBreakTimer, LongBreakTimer longBreakTimer, TaskItem activeTask, TimerSettings timerSettings)
+        public string CalculateEstimatedTimeOfTaskCompletion(PomodoroTimer activePomodoro, ShortBreakTimer shortBreakTimer, LongBreakTimer longBreakTimer, TaskItem activeTask, UserSettings timerSettings)
         {
             var remainingCurrentPomodoroTime = activePomodoro.RemainingTime.TotalMinutes;
             var remainingPomodorosTime = (activeTask.EstimatedNumberOfPomodoros - activeTask.PomodorosRanOnTask - 1) * activePomodoro.Duration.TotalMinutes;

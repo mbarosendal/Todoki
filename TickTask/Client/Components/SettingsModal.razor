@@ -123,7 +123,7 @@
 	[Parameter] public EventCallback OnClose { get; set; }
 	// define onclose to save settings in database when settings are set up to be persisted
 
-	[Parameter] public TimerSettings Settings { get; set; } = default!;
+	[Parameter] public UserSettings Settings { get; set; } = default!;
 	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
