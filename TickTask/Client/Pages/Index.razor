@@ -12,8 +12,8 @@
 
 <PageTitle>
 	@(timerType == TimerType.Pomodoro
-					? $"🍅 {GetCountdownTimer.RemainingTime}"
-					: $"🌴 {GetCountdownTimer.RemainingTime}")
+							? $"🍅 {GetCountdownTimer.RemainingTime}"
+							: $"🌴 {GetCountdownTimer.RemainingTime}")
 </PageTitle>
 
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
@@ -29,7 +29,7 @@
 					@type
 					@if (type == TimerType.Pomodoro)
 					{
-						<span class="pomodoro-count">@settings.NumberOfPomodorosRun/@settings.RunsBeforeLongBreak</span>
+						<span class="pomodoro-count">@NumberOfPomodorosRun/@settings.RunsBeforeLongBreak</span>
 					}
 				</button>
 			}
@@ -95,6 +95,7 @@
 	private PomodoroTimer pomodoroTimer = new PomodoroTimer();
 	private ShortBreakTimer shortBreakTimer = new ShortBreakTimer();
 	private LongBreakTimer longBreakTimer = new LongBreakTimer();
+	private int NumberOfPomodorosRun = 0;
 
 	private TaskList? taskListRef;
 
@@ -137,12 +138,12 @@
 		}
 	}
 
-	protected override void OnInitialized()
+	protected async override void OnInitialized()
 	{
 		timerService.OnTimerUpdate += HandleTimerUpdate;
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
-		GetUserSettings();
+		await GetUserSettings();
 
 
 		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, GetCountdownTimer);
@@ -153,6 +154,7 @@
 	private async Task GetUserSettings()
 	{
 		settings = await _httpClient.GetFromJsonAsync<UserSettings>("api/UserSettings");
+		StateHasChanged();
 	}
 
 	private DotNetObjectReference<Index>? objRef;
@@ -236,7 +238,7 @@
 		switch (timerType)
 		{
 			case TimerType.Pomodoro:
-				settings.NumberOfPomodorosRun++;
+				NumberOfPomodorosRun++;
 				await IncrementActiveTaskPomodoroCount();
 
 				if (!taskListRef.HasMoreTasks() && taskListRef.ShouldPlaySoundAfterAllTasksDone)
@@ -249,15 +251,15 @@
 					await JS.InvokeVoidAsync("playAlarmSound");
 					await JS.InvokeVoidAsync("showNotification",
 						"Pomodoro Finished!",
-						settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak
+						NumberOfPomodorosRun >= settings.RunsBeforeLongBreak
 							? $"Time for a long break ({(int)longBreakTimer.Duration.TotalMinutes} min)"
 							: $"Take a short break ({(int)shortBreakTimer.Duration.TotalMinutes} min)");
 				}
 
-				if (settings.NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
+				if (NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
 				{
 					SelectAndResetTimer(TimerType.LongBreak);
-					settings.NumberOfPomodorosRun = 0;
+					NumberOfPomodorosRun = 0;
 				}
 				else
 				{
@@ -304,7 +306,7 @@
 			await taskListRef.IncrementActivePomodoroCount();
 	}
 
-	private void ResetPomodoroCount() => settings.NumberOfPomodorosRun = 0;
+	private void ResetPomodoroCount() => NumberOfPomodorosRun = 0;
 
 	private void AddTimeToTimer()
 	{
