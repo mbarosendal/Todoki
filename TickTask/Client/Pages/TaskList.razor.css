@@ -284,8 +284,8 @@
 
 .menu-popup {
     position: absolute;
-    right: 25%;
-    top: 50%;
+    right: 0%;
+    top: 15%;
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
     padding: 8px 0;

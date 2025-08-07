@@ -23,7 +23,7 @@
 					</div>
 					<div class="task-info-row tooltip">
 						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes)
-											+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+																+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
 						<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
 					</div>
 					<div class="task-info-row tooltip">
@@ -64,6 +64,7 @@
 	}
 </div>
 
+<!-- FUCK OFF-->
 <!-- Tasks Section -->
 <div class="tasks-section">
 	@if (!IsOnBreak)
@@ -96,6 +97,7 @@
 	}
 	else if (IsOnBreak)
 	{
+		<!-- Break display (no tasks, just break) -->
 		<div class="section-label">@(GetBreakText() == "" ? "Take a break!" : "Reminder")</div>
 
 		<div class="break-screen">
@@ -120,29 +122,29 @@
 			var index = i;
 
 			<div class="task-wrapper"
-				 @ondragover="(e) => OnDragOver(e, index)"
+			@ondragover="(e) => OnDragOver(e, index)"
 			@ondragover:preventDefault
-				 @ondrop="(e) => OnDrop(e, index)"
+			@ondrop="(e) => OnDrop(e, index)"
 			@ondrop:preventDefault
-				 @ondragleave="OnDragLeave">
+			@ondragleave="OnDragLeave">
 
 				<!-- Drop indicator line -->
 				<div class="drop-indicator @(dropIndicatorIndex == index ? "visible" : "")"></div>
 
 				<!-- Original task item -->
 				<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
-					 draggable="true"
-					 @ondragstart="(e) => OnDragStart(e, index)"
-					 @ondragend="OnDragEnd"
-					 @onclick="() => SetActiveTask(task.TaskItemId)"
-					 @onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
-					 @onwheel:preventDefault="true">
+				draggable="true"
+				@ondragstart="(e) => OnDragStart(e, index)"
+				@ondragend="OnDragEnd"
+				@onclick="() => SetActiveTask(task.TaskItemId)"
+				@onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
+				@onwheel:preventDefault="true">
 
 					<input type="checkbox"
-						   class="task-checkbox"
-						   checked="@task.IsDone"
-						   @onclick="() => FinishTask(task.TaskItemId)"
-						   @onclick:stopPropagation="true" />
+					class="task-checkbox"
+					checked="@task.IsDone"
+					@onclick="() => FinishTask(task.TaskItemId)"
+					@onclick:stopPropagation="true" />
 
 					<div class="task-info">
 						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
@@ -151,11 +153,14 @@
 					@if (editingTaskId == task.TaskItemId)
 					{
 						<input class="task-edit-input @(task.IsDone ? "completed" : "")"
-							   @bind="task.Name"
-							   @bind:event="oninput"
-							   @onblur="() => FinishEdit(task)"
-							   @onclick:stopPropagation="true"
-							   placeholder="Edit task..." />
+						@bind="task.Name"
+						@bind:event="oninput"
+						@onblur="() => FinishEdit(task)"
+						@onkeydown="(e) => HandleKeyDown(e, task)"
+						@onkeydown:stopPropagation="true"
+						@onclick:stopPropagation="true"
+						@ref="editInputRef"
+						placeholder="What's your task?" />
 					}
 					else
 					{
@@ -176,11 +181,11 @@
 
 		<!-- Final drop zone for bottom -->
 		<div class="task-wrapper bottom-drop-zone @(IsDragging ? "active" : "")"
-			 @ondragover="(e) => OnDragOver(e, tasks.Count)"
-			 @ondragover:preventDefault
-			 @ondrop="(e) => OnDrop(e, tasks.Count)"
+		@ondragover="(e) => OnDragOver(e, tasks.Count)"
+		@ondragover:preventDefault
+		@ondrop="(e) => OnDrop(e, tasks.Count)"
 		@ondrop:preventDefault
-			 @ondragleave="OnDragLeave">
+		@ondragleave="OnDragLeave">
 
 			<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
 		</div>
@@ -267,6 +272,111 @@
 		StateHasChanged();
 	}
 
+	private ElementReference editInputRef;
+
+	private async Task HandleKeyDown(KeyboardEventArgs e, TaskItem task)
+	{
+		if (e.Key == "Enter")
+		{
+			await FinishEdit(task);
+		}
+		else if (e.Key == "Tab")
+		{
+			int currentIndex = tasks.FindIndex(t => t.TaskItemId == task.TaskItemId);
+			if (currentIndex >= 0 && currentIndex < tasks.Count - 1)
+			{
+				await EditPreviousOrNextTask(task, isPrevious: false);
+			}
+			else
+			{
+				await FinishEdit(task);
+				await AddTask();
+			}
+		}
+		else if (e.Key == "ArrowUp" || e.Key == "ArrowDown")
+		{
+			if (e.CtrlKey)
+			{
+				// Ctrl + ArrowUp / ArrowDown
+				if (e.Key == "ArrowUp")
+				{
+					await MoveTaskUpOrDown(task, isUp: true);
+				}
+				else if (e.Key == "ArrowDown")
+				{
+					await MoveTaskUpOrDown(task, isUp: false);
+				}
+			}
+			else if (e.ShiftKey)
+			{
+				// Shift + ArrowUp / ArrowDown
+				if (e.Key == "ArrowUp")
+				{
+					await EditPreviousOrNextTask(task, isPrevious: true);
+				}
+				else if (e.Key == "ArrowDown")
+				{
+					await EditPreviousOrNextTask(task, isPrevious: false);
+				}
+			}
+			// ArrowUp / ArrowDown
+			else if (e.Key == "ArrowUp")
+			{
+				await AdjustEstimatedPomodoros(task.TaskItemId, -1);
+			}
+			else if (e.Key == "ArrowDown")
+			{
+				await AdjustEstimatedPomodoros(task.TaskItemId, 1);
+			}
+		}
+	}
+
+	private async Task EditPreviousOrNextTask(TaskItem task, bool isPrevious)
+	{
+		if (tasks == null || tasks.Count == 0) return;
+
+		int currentIndex = tasks.FindIndex(t => t.TaskItemId == task.TaskItemId);
+		if (currentIndex == -1) return;
+
+		int newIndex = isPrevious ? currentIndex - 1 : currentIndex + 1;
+
+		if (newIndex < 0 || newIndex >= tasks.Count) return;
+
+		var nextTask = tasks[newIndex];
+		await FinishEdit(task);
+		await StartEdit(nextTask.TaskItemId);
+	}
+
+
+	private async Task MoveTaskUpOrDown(TaskItem task, bool isUp)
+	{
+		if (tasks == null) return;
+
+		int currentIndex = tasks.FindIndex(t => t.TaskItemId == task.TaskItemId);
+
+		if (currentIndex == -1) return;
+
+		if (isUp && currentIndex == 0) return; // Already top
+		if (!isUp && currentIndex == tasks.Count - 1) return; // Already bottom
+
+		int swapIndex = isUp ? currentIndex - 1 : currentIndex + 1;
+
+		var temp = tasks[swapIndex];
+		tasks[swapIndex] = task;
+		tasks[currentIndex] = temp;
+
+		for (int i = 0; i < tasks.Count; i++)
+		{
+			tasks[i].SortOrder = i;
+		}
+
+		await TaskApiService.SaveTaskOrderAsync(tasks);
+
+		await editInputRef.FocusAsync();
+
+		StateHasChanged();
+	}
+
 
 
 
@@ -305,7 +415,8 @@
 	{
 		tasks = await TaskApiService.GetAllAsync();
 
-		// await SortListByTaskOrder();
+		// make it sort finished tasks at top? --- call it again if a task is unchecked?
+		SortListByTaskOrder();
 
 		// Clean up any tasks that are marked active but are done
 		foreach (var t in tasks.Where(t => t.IsActiveTask && t.IsDone))
@@ -327,13 +438,13 @@
 	public bool HasMoreTasks() => tasks?.Any(t => !t.IsDone) == true;
 
 
-	public async Task SortListByTaskOrder()
+	public void SortListByTaskOrder()
 	{
-		var sortedList = new List<TaskItem>();
+		if (tasks == null) return;
 
-		sortedList.OrderByDescending(t => t.SortOrder).ToList();
+		tasks = tasks.OrderBy(t => t.SortOrder).ToList();
 
-		// tasks = sortedList;
+		StateHasChanged();
 	}
 
 	public async Task IncrementActivePomodoroCount()
@@ -451,12 +562,11 @@
 		tasks!.Clear();
 	}
 
-	private async Task AddTask()
+	public async Task AddTask()
 	{
 		var newTask = new TaskItem
 			{
 				Name = "New Task",
-				/*ProjectId = 1*/
 				SortOrder = tasks.Count > 0 ? tasks.Max(t => t.SortOrder) + 1 : 0,
 			};
 
@@ -466,9 +576,11 @@
 		{
 			tasks!.Add(created);
 			editingTaskId = created.TaskItemId;
-
 			ShouldPlaySoundAfterAllTasksDone = true;
 			StateHasChanged();
+
+			await Task.Delay(10);
+			await editInputRef.FocusAsync();
 		}
 	}
 
@@ -495,7 +607,14 @@
 		await CompleteTaskAsync(task, !task.IsDone);
 	}
 
-	private void StartEdit(int taskId) => editingTaskId = taskId;
+	private async Task StartEdit(int taskId)
+	{
+		editingTaskId = taskId;
+		StateHasChanged();
+
+		await Task.Delay(10);
+		await editInputRef.FocusAsync();
+	}
 
 	private async Task FinishEdit(TaskItem task)
 	{
@@ -598,5 +717,7 @@
 
 		StateHasChanged();
 	}
+
+
 
 }

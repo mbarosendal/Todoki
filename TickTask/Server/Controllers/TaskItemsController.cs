@@ -15,10 +15,12 @@ namespace TickTask.Server.Controllers
     public class TaskItemsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private ILogger<TaskItemsController> _logger;
 
-        public TaskItemsController(ApplicationDbContext context)
+        public TaskItemsController(ApplicationDbContext context, ILogger<TaskItemsController> logger)
         {
             _context = context;
+            this._logger = logger;
         }
 
         // GET: api/TaskItems
@@ -121,7 +123,7 @@ namespace TickTask.Server.Controllers
             return (_context.TaskItems?.Any(e => e.TaskItemId == id)).GetValueOrDefault();
         }
 
-        [HttpPut("order")]
+        [HttpPut("reorder")]
         public async Task<IActionResult> UpdateTaskOrder([FromBody] List<TaskItem> tasks)
         {
             foreach (var task in tasks)

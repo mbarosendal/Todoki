@@ -56,6 +56,22 @@
                 sound.currentTime = 0;
             }
         };
+
+        window.registerGlobalKeyHandler = function (dotNetHelper) {
+            document.addEventListener("keydown", function (e) {
+                if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+
+                if (e.code === "Space") {
+                    e.preventDefault(); // prevent page scroll
+                    dotNetHelper.invokeMethodAsync("OnSpacePressed");
+                }
+
+                if (e.code === "Tab") {
+                    e.preventDefault();
+                    dotNetHelper.invokeMethodAsync("OnTabPressed");
+                }
+            });
+        };
     </script>
 
     <div id="app">Loading...</div>

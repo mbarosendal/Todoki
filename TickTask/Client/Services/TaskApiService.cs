@@ -41,9 +41,10 @@ public class TaskApiService
         return response.IsSuccessStatusCode;
     }
 
-    public async Task SaveTaskOrderAsync(List<TaskItem> reorderedTasks)
+    public async Task<bool> SaveTaskOrderAsync(List<TaskItem> reorderedTasks)
     {
-        var response  = await _http.PutAsJsonAsync("api/tasks/order", reorderedTasks);
+        var response  = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
+        return response.IsSuccessStatusCode;
     }
 
 

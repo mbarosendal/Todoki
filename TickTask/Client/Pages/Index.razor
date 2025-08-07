@@ -11,8 +11,8 @@
 
 <PageTitle>
 	@(timerType == TimerType.Pomodoro
-		? $"🍅 {GetCountdownTimer.RemainingTime}"
-		: $"🌴 {GetCountdownTimer.RemainingTime}")
+				? $"🍅 {GetCountdownTimer.RemainingTime}"
+				: $"🌴 {GetCountdownTimer.RemainingTime}")
 </PageTitle>
 
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
@@ -24,7 +24,7 @@
 			@foreach (TimerType type in Enum.GetValues<TimerType>())
 			{
 				<button class="timer-tab @(timerType == type ? "active" : "")"
-						@onclick="() => SelectAndResetTimer(type, userSwitchedTimersUsingTabs : true)">
+				@onclick="() => SelectAndResetTimer(type, userSwitchedTimersUsingTabs : true)">
 					@type
 					@if (type == TimerType.Pomodoro)
 					{
@@ -40,8 +40,8 @@
 			@if (GetCountdownTimer.RemainingTime.TotalMinutes + 1 <= GetCountdownTimer.Duration.TotalMinutes)
 			{
 				<button class="plus-one-btn"
-						title="Add one minute to the current timer (not above max duration set in settings)"
-						@onclick="() => AddTimeToTimer()">
+				title="Add one minute to the current timer (not above max duration set in settings)"
+				@onclick="() => AddTimeToTimer()">
 					+1
 				</button>
 			}
@@ -51,37 +51,37 @@
 		<div class="timer-controls">
 			<button class="restart-btn" @onclick="() => RestartTimer(GetCountdownTimer)" title="Restart the current timer">⟲</button>
 			<button class="btn-primary timer-main-btn @(GetCountdownTimer.IsRunning ? "running" : "")"
-					@onclick="() => ToggleStartStopTimer(timerType, GetCountdownTimer)">
+			@onclick="() => ToggleStartStopTimer(timerType, GetCountdownTimer)">
 				@(GetCountdownTimer.IsRunning ? "PAUSE" : "START")
 			</button>
 			<button class="btn-secondary timer-control-btn"
-					@onclick="() => HandleTimerFinish(timerWasSkipped : true)"
-					title="Skip the current timer">
+			@onclick="() => HandleTimerFinish(timerWasSkipped : true)"
+			title="Skip the current timer">
 				→
 			</button>
 		</div>
 
 		<!-- Task List Component -->
 		<TaskList @ref="taskListRef"
-				  TimerSettings="settings"
-				  OnResetPomodoros="ResetPomodoroCount"
-				  ActivePomodoro="pomodoroTimer"
-				  ActiveShortBreakTimer="shortBreakTimer"
-				  ActiveLongBreakTimer="longBreakTimer"
-				  CurrentTimer="GetCountdownTimer" />
+		TimerSettings="settings"
+		OnResetPomodoros="ResetPomodoroCount"
+		ActivePomodoro="pomodoroTimer"
+		ActiveShortBreakTimer="shortBreakTimer"
+		ActiveLongBreakTimer="longBreakTimer"
+		CurrentTimer="GetCountdownTimer" />
 
 		<!-- Modals -->
 		<SettingsModal @bind-IsOpen="showSettings"
-					   Settings="@settings"
-					   PomodoroTimer="@pomodoroTimer"
-					   ShortBreakTimer="@shortBreakTimer"
-					   LongBreakTimer="@longBreakTimer"
-					   OnClose="HandleSettingsClosed" />
+		Settings="@settings"
+		PomodoroTimer="@pomodoroTimer"
+		ShortBreakTimer="@shortBreakTimer"
+		LongBreakTimer="@longBreakTimer"
+		OnClose="HandleSettingsClosed" />
 
 		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
 		{
 			<TimerFinishModal @bind-IsOpen="showFinishModal"
-							  OnClose="@(() => showFinishModal = false)" />
+			OnClose="@(() => showFinishModal = false)" />
 		}
 
 		@* <button @onclick="RequestNotificationPermission">Enable Notifications</button> *@
@@ -142,6 +142,34 @@
 
 		GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
 	}
+
+	private DotNetObjectReference<Index>? objRef;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			objRef = DotNetObjectReference.Create(this);
+			await JS.InvokeVoidAsync("registerGlobalKeyHandler", objRef);
+		}
+	}
+
+	[JSInvokable]
+	public async Task OnSpacePressed()
+	{
+		ToggleStartStopTimer(timerType, GetCountdownTimer);
+		StateHasChanged();
+	}
+
+	[JSInvokable]
+	public async Task OnTabPressed()
+	{
+		if (timerType == TimerType.Pomodoro)
+			await taskListRef.AddTask();
+
+		StateHasChanged();
+	}
+
 
 	private async void HandleTimerUpdate() => await InvokeAsync(StateHasChanged);
 
@@ -277,5 +305,6 @@
 	{
 		timerService.OnTimerUpdate -= HandleTimerUpdate;
 		timerService.OnTimerFinish -= HandleTimerFinish;
+		objRef?.Dispose();
 	}
 }
