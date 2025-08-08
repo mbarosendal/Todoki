@@ -7,20 +7,20 @@
 
 
 <BaseModal IsOpen="@IsOpen"
-		   IsOpenChanged="@IsOpenChanged"
-		   Title="Settings"
-		   OnClose="@SaveAndClose">
+IsOpenChanged="@IsOpenChanged"
+Title="Settings"
+OnClose="@SaveAndClose">
 
 	<div class="settings-container">
 		<!-- Tabs -->
 		<div class="settings-tabs">
 			<button class="@(ActiveTab == "Timer" ? "active" : "")"
-					@onclick="@(() => ActiveTab = "Timer")">
+			@onclick="@(() => ActiveTab = "Timer")">
 				🕒 Timer
 			</button>
 
 			<button class="@(ActiveTab == "Task" ? "active" : "")"
-					@onclick="@(() => ActiveTab = "Task")">
+			@onclick="@(() => ActiveTab = "Task")">
 				📝 Task
 			</button>
 		</div>
@@ -83,8 +83,8 @@
 							<span class="info-icon" data-title="If notifications are not showing, check that you are allowing them in your OS for your browser">❔</span>
 						</span>
 						<button class="notify-btn @(Settings.EnableNotifications ? "enabled" : "")"
-								@onclick="RequestNotificationPermission"
-								title="@(Settings.EnableNotifications ? "Managed via browser settings" : "")">
+						@onclick="RequestNotificationPermission"
+						title="@(Settings.EnableNotifications ? "Managed via browser settings" : "")">
 						</button>
 					</div>
 
@@ -141,7 +141,6 @@
 	[Parameter] public EventCallback OnClose { get; set; }
 	[Parameter] public EventCallback<UserSettings> OnSave { get; set; }
 
-
 	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
 	[Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
@@ -154,7 +153,7 @@
 			ShortBreakDurationMinutes = TimeSpan.FromMinutes(5),
 			LongBreakDurationMinutes = TimeSpan.FromMinutes(15),
 			RunsBeforeLongBreak = 4,
-			IsAutoStart = true,
+			IsAutoStart = false,
 			IsAutoStartAfterRestart = true,
 			AutomaticallyProceedToNextTaskAfterDone = true,
 			AutomaticallyMarkDoneTasks = true,
@@ -163,35 +162,22 @@
 			LongBreakLabel = ""
 		};
 
-	protected override void OnParametersSet()
-	{
-		// If no settings exist (new user), initialize with defaults
-		if (Settings.UserSettingsId == 0)
-		{
-			// ApplyDefaults();
-		}
-	}
-
 	private void ResetToDefaults()
 	{
-		// ApplyDefaults();
+		Settings.PomodoroDurationMinutes = DefaultSettings.PomodoroDurationMinutes;
+		Settings.ShortBreakDurationMinutes = DefaultSettings.ShortBreakDurationMinutes;
+		Settings.LongBreakDurationMinutes = DefaultSettings.LongBreakDurationMinutes;
+		Settings.RunsBeforeLongBreak = DefaultSettings.RunsBeforeLongBreak;
+		Settings.IsAutoStart = DefaultSettings.IsAutoStart;
+		Settings.IsAutoStartAfterRestart = DefaultSettings.IsAutoStartAfterRestart;
+		Settings.AutomaticallyProceedToNextTaskAfterDone = DefaultSettings.AutomaticallyProceedToNextTaskAfterDone;
+		Settings.AutomaticallyMarkDoneTasks = DefaultSettings.AutomaticallyMarkDoneTasks;
+		Settings.AutomaticallyClearDoneTasks = DefaultSettings.AutomaticallyClearDoneTasks;
+		Settings.ShortBreakLabel = DefaultSettings.ShortBreakLabel;
+		Settings.LongBreakLabel = DefaultSettings.LongBreakLabel;
+
 		StateHasChanged();
 	}
-
-	// private void ApplyDefaults()
-	// {
-	// 	Settings.PomodoroDurationMinutes = defaultSettings.PomodoroDurationMinutes;
-	// 	Settings.ShortBreakDurationMinutes = defaultSettings.ShortBreakDurationMinutes;
-	// 	Settings.LongBreakDurationMinutes = defaultSettings.LongBreakDurationMinutes;
-	// 	Settings.RunsBeforeLongBreak = defaultSettings.RunsBeforeLongBreak;
-	// 	Settings.IsAutoStart = defaultSettings.IsAutoStart;
-	// 	Settings.IsAutoStartAfterRestart = defaultSettings.IsAutoStartAfterRestart;
-	// 	Settings.AutomaticallyProceedToNextTaskAfterDone = defaultSettings.AutomaticallyProceedToNextTaskAfterDone;
-	// 	Settings.AutomaticallyMarkDoneTasks = defaultSettings.AutomaticallyMarkDoneTasks;
-	// 	Settings.AutomaticallyClearDoneTasks = defaultSettings.AutomaticallyClearDoneTasks;
-	// 	Settings.ShortBreakLabel = defaultSettings.ShortBreakLabel;
-	// 	Settings.LongBreakLabel = defaultSettings.LongBreakLabel;
-	// }
 
 	private async Task SaveAndClose()
 	{
@@ -451,9 +437,5 @@
 			line-height: 1.4;
 			margin-bottom: 10px;
 		}
-
-
-
-
 
 </style>

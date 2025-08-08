@@ -30,7 +30,7 @@
 					@type
 					@if (type == TimerType.Pomodoro)
 					{
-						<span class="pomodoro-count">@NumberOfPomodorosRun/@settings.RunsBeforeLongBreak</span>
+						<span class="pomodoro-count">@NumberOfPomodorosRun/@userSettings.RunsBeforeLongBreak</span>
 					}
 				</button>
 			}
@@ -65,7 +65,7 @@
 
 		<!-- Task List Component -->
 		<TaskList @ref="taskListRef"
-				  Settings="settings"
+				  Settings="userSettings"
 				  OnResetPomodoros="ResetPomodoroCount"
 				  ActivePomodoro="pomodoroTimer"
 				  ActiveShortBreakTimer="shortBreakTimer"
@@ -76,12 +76,12 @@
 
 		<!-- Modals -->
 		<SettingsModal @bind-IsOpen="showSettings"
-					   DefaultSettings="@settingsModalDefaultSettings"
-					   Settings="@settings"
+					   DefaultSettings="@defaultSettings"
+					   Settings="@userSettings"
 					   PomodoroTimer="@pomodoroTimer"
 					   ShortBreakTimer="@shortBreakTimer"
 					   LongBreakTimer="@longBreakTimer"
-					   OnClose="SyncUserSettingsToDisplay"
+					   OnClose="SyncSettingsToDisplay"
 					   OnSave="CreateOrUpdateSettingsOnSave" />
 
 		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
@@ -122,32 +122,33 @@
 	private bool showFinishModal = false;
 	private void OpenSettings() => showSettings = true;
 
-	private UserSettings settings = new();
+	private UserSettings defaultSettings = new();
+	private UserSettings userSettings = new();
 	private bool _settingsExist = false;
 	private bool showSettings = false;
-	private UserSettings settingsModalDefaultSettings = new();
 
 	protected override async Task OnInitializedAsync()
 	{
 		timerService.OnTimerUpdate += HandleTimerUpdate;
 		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
 
-		settings = await userSettingsApiService.GetAsync();
-		_settingsExist = settings != null && settings.UserSettingsId > 0;
-		await SyncUserSettingsToDisplay();
+		userSettings = await userSettingsApiService.GetAsync();
+		_settingsExist = userSettings != null && userSettings.UserSettingsId > 0;
 
-		if (settings?.IsAutoStart == true)
+		await SyncSettingsToDisplay();
+
+		if (userSettings?.IsAutoStart == true)
 			ToggleStartStopTimer(timerType, GetCountdownTimer);
 
-		GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
+		// GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
 
 		StateHasChanged();
 	}
 
 
-	private async Task SyncUserSettingsToDisplay()
+	private async Task SyncSettingsToDisplay()
 	{
-		var settingsToUse = _settingsExist ? settings : settingsModalDefaultSettings;
+		var settingsToUse = _settingsExist ? userSettings : defaultSettings;
 
 		if (!GetCountdownTimer.IsRunning)
 		{
@@ -174,7 +175,7 @@
 			var created = await userSettingsApiService.CreateAsync(updatedSettings);
 			if (created != null)
 			{
-				settings = created;
+				userSettings = created;
 				_settingsExist = true;
 			}
 		}
@@ -182,7 +183,7 @@
 
 	private async Task GetUserSettings()
 	{
-		settings = await userSettingsApiService.GetAsync();
+		userSettings = await userSettingsApiService.GetAsync();
 		StateHasChanged();
 	}
 
@@ -253,7 +254,7 @@
 		this.timerType = timerType;
 		timerService.Reset(GetCountdownTimer);
 
-		if (settings.IsAutoStart)
+		if (userSettings.IsAutoStart)
 			ToggleStartStopTimer(this.timerType, GetCountdownTimer);
 	}
 
@@ -280,12 +281,12 @@
 					await JS.InvokeVoidAsync("playAlarmSound");
 					await JS.InvokeVoidAsync("showNotification",
 						"Pomodoro Finished!",
-						NumberOfPomodorosRun >= settings.RunsBeforeLongBreak
+						NumberOfPomodorosRun >= userSettings.RunsBeforeLongBreak
 							? $"Time for a long break ({(int)longBreakTimer.Duration.TotalMinutes} min)"
 							: $"Take a short break ({(int)shortBreakTimer.Duration.TotalMinutes} min)");
 				}
 
-				if (NumberOfPomodorosRun >= settings.RunsBeforeLongBreak)
+				if (NumberOfPomodorosRun >= userSettings.RunsBeforeLongBreak)
 				{
 					SelectAndResetTimer(TimerType.LongBreak);
 					NumberOfPomodorosRun = 0;
@@ -326,7 +327,7 @@
 	{
 		timerService.Reset(timer);
 
-		if (settings.IsAutoStartAfterRestart) ToggleStartStopTimer(timerType, GetCountdownTimer);
+		if (userSettings.IsAutoStartAfterRestart) ToggleStartStopTimer(timerType, GetCountdownTimer);
 	}
 
 	private async Task IncrementActiveTaskPomodoroCount()

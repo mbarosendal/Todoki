@@ -56,9 +56,9 @@ namespace TickTask.Shared
         public TimeSpan PomodoroDurationMinutes { get; set; } = TimeSpan.FromMinutes(25);
         public TimeSpan ShortBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LongBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(15);
-        public string PomodoroLabel { get; set; } = "Focus Time";
-        public string ShortBreakLabel { get; set; } = "Short Break";
-        public string LongBreakLabel { get; set; } = "Long Break";
+        public string PomodoroLabel { get; set; } = "";
+        public string ShortBreakLabel { get; set; } = "";
+        public string LongBreakLabel { get; set; } = "";
 
         public bool HideTasks { get; set; } = false;
         public bool HideActiveTask { get; set; } = false;
@@ -83,26 +83,9 @@ namespace TickTask.Shared
         public string Text { get; set; } = "";
     }
 
-    public class PomodoroTimer : CountdownTimer
-    {
-        public PomodoroTimer()
-        {
-        }
-    }
-
-    public class ShortBreakTimer : CountdownTimer
-    {
-        public ShortBreakTimer()
-        {
-        }
-    }
-
-    public class LongBreakTimer : CountdownTimer
-    {
-        public LongBreakTimer()
-        {
-        }
-    }
+    public class PomodoroTimer : CountdownTimer {}
+    public class ShortBreakTimer : CountdownTimer{}
+    public class LongBreakTimer : CountdownTimer{}
 
     public class User
     {
