@@ -395,7 +395,7 @@
 
 	private bool showMenu;
 	private bool IsOnBreak => CurrentTimer is ShortBreakTimer or LongBreakTimer;
-	private string GetBreakText() => CurrentTimer is ShortBreakTimer ? Settings.ShortBreakLabel : Settings.LongBreakLabel;
+	private string GetBreakText() => CurrentTimer is ShortBreakTimer ? Settings.ShortBreakText : Settings.LongBreakText;
 
 	public bool AreAllTasksDone = false;
 	public bool ShouldPlaySoundAfterAllTasksDone = false;

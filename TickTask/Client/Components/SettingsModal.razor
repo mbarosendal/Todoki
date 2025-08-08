@@ -55,11 +55,11 @@ OnClose="@SaveAndClose">
 					<!-- Break Texts -->
 					<div>
 						<label>Reminder for short breaks</label>
-						<input type="text" @bind="Settings.ShortBreakLabel" placeholder="E.g. stretch, drink water..." />
+						<input type="text" @bind="Settings.ShortBreakText" placeholder="E.g. stretch, drink water..." />
 					</div>
 					<div>
 						<label>Reminder for long breaks</label>
-						<input type="text" @bind="Settings.LongBreakLabel" placeholder="E.g. snack, walk the dog..." />
+						<input type="text" @bind="Settings.LongBreakText" placeholder="E.g. snack, walk the dog..." />
 					</div>
 
 					<!-- Auto-start options -->
@@ -158,8 +158,8 @@ OnClose="@SaveAndClose">
 			AutomaticallyProceedToNextTaskAfterDone = true,
 			AutomaticallyMarkDoneTasks = true,
 			AutomaticallyClearDoneTasks = false,
-			ShortBreakLabel = "",
-			LongBreakLabel = ""
+			ShortBreakText = "",
+			LongBreakText = ""
 		};
 
 	private void ResetToDefaults()
@@ -173,8 +173,8 @@ OnClose="@SaveAndClose">
 		Settings.AutomaticallyProceedToNextTaskAfterDone = DefaultSettings.AutomaticallyProceedToNextTaskAfterDone;
 		Settings.AutomaticallyMarkDoneTasks = DefaultSettings.AutomaticallyMarkDoneTasks;
 		Settings.AutomaticallyClearDoneTasks = DefaultSettings.AutomaticallyClearDoneTasks;
-		Settings.ShortBreakLabel = DefaultSettings.ShortBreakLabel;
-		Settings.LongBreakLabel = DefaultSettings.LongBreakLabel;
+		Settings.ShortBreakText = DefaultSettings.ShortBreakText;
+		Settings.LongBreakText = DefaultSettings.LongBreakText;
 
 		StateHasChanged();
 	}

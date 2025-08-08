@@ -49,17 +49,14 @@ namespace TickTask.Shared
     {
         [Key]
         public int UserSettingsId { get; set; }
-
         [Required]
         public string UserId { get; set; } = "";
-
         public TimeSpan PomodoroDurationMinutes { get; set; } = TimeSpan.FromMinutes(25);
         public TimeSpan ShortBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LongBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(15);
-        public string PomodoroLabel { get; set; } = "";
-        public string ShortBreakLabel { get; set; } = "";
-        public string LongBreakLabel { get; set; } = "";
-
+        public string PomodoroText { get; set; } = "";
+        public string ShortBreakText { get; set; } = "";
+        public string LongBreakText { get; set; } = "";
         public bool HideTasks { get; set; } = false;
         public bool HideActiveTask { get; set; } = false;
         public bool IsAutoStart { get; set; } = false;
