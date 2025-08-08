@@ -90,10 +90,6 @@
 	{
 		<div class="loading">Loading tasks...</div>
 	}
-	else if (Settings.HideTasks)
-	{
-		<div class="tasks-hidden">Tasks are hidden.</div>
-	}
 	else if (IsOnBreak)
 	{
 		<!-- Break display (no tasks, just break) -->
@@ -111,6 +107,10 @@
 				}
 			</div>
 		</div>
+	}
+	else if (Settings.HideTasks)
+	{
+		<div class="tasks-hidden">Tasks are hidden.</div>
 	}
 	else
 	{

@@ -3,6 +3,27 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TickTask.Shared
 {
+    public class User
+    {
+        [Key]
+        public int UserId { get; set; }
+        [Required]
+        [EmailAddress]
+        [StringLength(100)]
+        public string Email { get; set; } = "";
+        [Required]
+        [StringLength(50, MinimumLength = 3)]
+        public string UserName { get; set; } = "";
+        [Required]
+        [StringLength(100, MinimumLength = 6)]
+        public string Password { get; set; } = "";
+
+        [InverseProperty("User")]
+        public ICollection<Project> Projects { get; set; } = new List<Project>();
+        // Needs to save users timer settings (durations)
+        //public CountdownTimer CountDownTimer { get; set; } = new CountdownTimer();
+    }
+
     public class Project
     {
         [Key]
@@ -83,25 +104,4 @@ namespace TickTask.Shared
     public class PomodoroTimer : CountdownTimer {}
     public class ShortBreakTimer : CountdownTimer{}
     public class LongBreakTimer : CountdownTimer{}
-
-    public class User
-    {
-        [Key]
-        public int UserId { get; set; }
-        [Required]
-        [EmailAddress]
-        [StringLength(100)]
-        public string Email { get; set; } = "";
-        [Required]
-        [StringLength(50, MinimumLength = 3)]
-        public string UserName { get; set; } = "";
-        [Required]
-        [StringLength(100, MinimumLength = 6)]
-        public string Password { get; set; } = "";
-
-        [InverseProperty("User")]
-        public ICollection<Project> Projects { get; set; } = new List<Project>();
-        // Needs to save users timer settings (durations)
-        //public CountdownTimer CountDownTimer { get; set; } = new CountdownTimer();
-    }
 }
