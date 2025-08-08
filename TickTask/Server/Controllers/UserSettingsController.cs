@@ -114,7 +114,7 @@ namespace TickTask.Server.Controllers
 
             // Ensure the settings belong to the current user
             userSettings.UserId = userId;
-            userSettings.UserSettingsId = 0; // Let EF generate the ID
+            userSettings.UserSettingsId = 0;
 
             _context.UserSettings.Add(userSettings);
             await _context.SaveChangesAsync();

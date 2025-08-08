@@ -1,9 +1,10 @@
 ﻿using System.Net.Http.Json;
 using System.Threading.Tasks;
+using TickTask.Client.Services;
 using TickTask.Shared;
 using static System.Net.WebRequestMethods;
 
-public class TaskApiService
+public class TaskApiService : ITaskApiService
 {
     private readonly HttpClient _http;
 
@@ -46,6 +47,5 @@ public class TaskApiService
         var response  = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
         return response.IsSuccessStatusCode;
     }
-
 
 }

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using TickTask.Client;
 using TickTask.Client.Services;
 
 namespace TickTask.Client
@@ -16,6 +15,7 @@ namespace TickTask.Client
 
             builder.Services.AddScoped<TimerService>();
             builder.Services.AddScoped<TaskApiService>();
+            builder.Services.AddScoped<UserSettingsApiService>();
 
             builder.Services.AddHttpClient("TickTask.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
