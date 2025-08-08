@@ -76,11 +76,12 @@
 
 		<!-- Modals -->
 		<SettingsModal @bind-IsOpen="showSettings"
+					   DefaultSettings="@settingsModalDefaultSettings"
 					   Settings="@settings"
 					   PomodoroTimer="@pomodoroTimer"
 					   ShortBreakTimer="@shortBreakTimer"
 					   LongBreakTimer="@longBreakTimer"
-					   OnClose="SyncUserSettingsToDisplayOnClose"
+					   OnClose="SyncUserSettingsToDisplay"
 					   OnSave="CreateOrUpdateSettingsOnSave" />
 
 		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
@@ -124,6 +125,7 @@
 	private UserSettings settings = new();
 	private bool _settingsExist = false;
 	private bool showSettings = false;
+	private UserSettings settingsModalDefaultSettings = new();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -132,6 +134,7 @@
 
 		settings = await userSettingsApiService.GetAsync();
 		_settingsExist = settings != null && settings.UserSettingsId > 0;
+		await SyncUserSettingsToDisplay();
 
 		if (settings?.IsAutoStart == true)
 			ToggleStartStopTimer(timerType, GetCountdownTimer);
@@ -142,16 +145,22 @@
 	}
 
 
-	private async void SyncUserSettingsToDisplayOnClose()
+	private async Task SyncUserSettingsToDisplay()
 	{
+		var settingsToUse = _settingsExist ? settings : settingsModalDefaultSettings;
+
 		if (!GetCountdownTimer.IsRunning)
 		{
+			pomodoroTimer.Duration = settingsToUse.PomodoroDurationMinutes;
+			shortBreakTimer.Duration = settingsToUse.ShortBreakDurationMinutes;
+			longBreakTimer.Duration = settingsToUse.LongBreakDurationMinutes;
+
 			pomodoroTimer.RemainingTime = pomodoroTimer.Duration;
 			shortBreakTimer.RemainingTime = shortBreakTimer.Duration;
 			longBreakTimer.RemainingTime = longBreakTimer.Duration;
-
-			InvokeAsync(StateHasChanged);
 		}
+
+		StateHasChanged();
 	}
 
 	private async Task CreateOrUpdateSettingsOnSave(UserSettings updatedSettings)
