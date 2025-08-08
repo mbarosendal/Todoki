@@ -70,7 +70,9 @@
 				  ActivePomodoro="pomodoroTimer"
 				  ActiveShortBreakTimer="shortBreakTimer"
 				  ActiveLongBreakTimer="longBreakTimer"
-				  CurrentTimer="GetCountdownTimer" />
+				  CurrentTimer="GetCountdownTimer"
+				  OnSave="CreateOrUpdateSettingsOnSave" />
+
 
 		<!-- Modals -->
 		<SettingsModal @bind-IsOpen="showSettings"
@@ -78,7 +80,8 @@
 					   PomodoroTimer="@pomodoroTimer"
 					   ShortBreakTimer="@shortBreakTimer"
 					   LongBreakTimer="@longBreakTimer"
-					   OnClose="SyncUserSettingsToDisplayOnClose" />
+					   OnClose="SyncUserSettingsToDisplayOnClose"
+					   OnSave="CreateOrUpdateSettingsOnSave" />
 
 		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
 		{
@@ -116,13 +119,28 @@
 
 
 	private bool showFinishModal = false;
+	private void OpenSettings() => showSettings = true;
 
 	private UserSettings settings = new();
-
-
-
+	private bool _settingsExist = false;
 	private bool showSettings = false;
-	private void OpenSettings() => showSettings = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		timerService.OnTimerUpdate += HandleTimerUpdate;
+		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
+
+		settings = await userSettingsApiService.GetAsync();
+		_settingsExist = settings != null && settings.UserSettingsId > 0;
+
+		if (settings?.IsAutoStart == true)
+			ToggleStartStopTimer(timerType, GetCountdownTimer);
+
+		GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
+
+		StateHasChanged();
+	}
+
 
 	private async void SyncUserSettingsToDisplayOnClose()
 	{
@@ -136,17 +154,21 @@
 		}
 	}
 
-	protected async override void OnInitialized()
+	private async Task CreateOrUpdateSettingsOnSave(UserSettings updatedSettings)
 	{
-		timerService.OnTimerUpdate += HandleTimerUpdate;
-		timerService.OnTimerFinish += (bool skipped) => HandleTimerFinish(skipped);
-
-		await GetUserSettings();
-
-
-		if (settings.IsAutoStart) ToggleStartStopTimer(timerType, GetCountdownTimer);
-
-		GetCountdownTimer.RemainingTime = GetCountdownTimer.Duration;
+		if (_settingsExist)
+		{
+			await userSettingsApiService.UpdateAsync(updatedSettings);
+		}
+		else
+		{
+			var created = await userSettingsApiService.CreateAsync(updatedSettings);
+			if (created != null)
+			{
+				settings = created;
+				_settingsExist = true;
+			}
+		}
 	}
 
 	private async Task GetUserSettings()

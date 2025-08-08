@@ -79,7 +79,7 @@ OnClose="@SaveAndClose">
 					<div class="switch-row">
 						<span>
 							Enable browser notifications
-							<span class="info-icon" data-title="If notifications aren't showing, check that you are allowing them in your OS for your browser">❔</span>
+							<span class="info-icon" data-title="If notifications are not showing, check that you are allowing them in your OS for your browser">❔</span>
 						</span>
 						<button class="notify-btn @(Settings.EnableNotifications ? "enabled" : "")"
 						@onclick="RequestNotificationPermission"
@@ -125,6 +125,7 @@ OnClose="@SaveAndClose">
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 	[Parameter] public EventCallback OnClose { get; set; }
+	[Parameter] public EventCallback<UserSettings> OnSave { get; set; }
 
 	[Parameter] public UserSettings Settings { get; set; } = default!;
 	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
@@ -133,16 +134,7 @@ OnClose="@SaveAndClose">
 
 	private async Task SaveAndClose()
 	{
-		try
-		{
-			await userSettingsApiService.UpdateAsync(Settings);			
-			await OnClose.InvokeAsync();
-		}
-		catch (Exception ex)
-		{
-			// Console.WriteLine($"Failed to save settings: {ex.Message}");
-		}
-
+		await OnSave.InvokeAsync(Settings);
 		await OnClose.InvokeAsync();
 	}
 
