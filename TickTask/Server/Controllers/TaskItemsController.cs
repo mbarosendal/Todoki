@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using TickTask.Server.Data;
 using TickTask.Shared;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TickTask.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TaskItemsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using TickTask.Server.Data;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using TickTask.Server.Models;
 
 namespace TickTask
@@ -15,20 +16,47 @@ namespace TickTask
             builder.Services.AddLogging();
             builder.Logging.AddConsole();
 
+            // Retrieve secret from appsettings
+            //var jwtSecret = builder.Configuration["JWT:SecretKey"];
+            //var tokenValidationParameters = new TokenValidationParameters
+            //{
+            //    ValidateIssuerSigningKey = true,
+            //    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            //    ValidateIssuer = true,
+            //    ValidIssuer = builder.Configuration["JWT:Issuer"],
+            //    ValidateAudience = true,
+            //    ValidAudience = builder.Configuration["JWT:Audience"],
+            //    ValidateLifetime = true,
+            //    ClockSkew = TimeSpan.FromMinutes(1)
+            //};
+            //builder.Services.AddSingleton(tokenValidationParameters);
+
+
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
-            builder.Services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-
-            builder.Services.AddAuthentication()
-                .AddIdentityServerJwt();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    };
+                });
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
@@ -55,7 +83,6 @@ namespace TickTask
 
             app.UseRouting();
 
-            app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
 

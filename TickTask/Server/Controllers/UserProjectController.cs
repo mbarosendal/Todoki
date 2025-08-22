@@ -9,7 +9,7 @@ namespace TickTask.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class UserProjectController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
