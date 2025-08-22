@@ -23,7 +23,7 @@
 					</div>
 					<div class="task-info-row tooltip">
 						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes)
-																+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+											+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
 						<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
 					</div>
 					<div class="task-info-row tooltip">
@@ -121,29 +121,29 @@
 			var index = i;
 
 			<div class="task-wrapper"
-			@ondragover="(e) => OnDragOver(e, index)"
+				 @ondragover="(e) => OnDragOver(e, index)"
 			@ondragover:preventDefault
-			@ondrop="(e) => OnDrop(e, index)"
+				 @ondrop="(e) => OnDrop(e, index)"
 			@ondrop:preventDefault
-			@ondragleave="OnDragLeave">
+				 @ondragleave="OnDragLeave">
 
 				<!-- Drop indicator line -->
 				<div class="drop-indicator @(dropIndicatorIndex == index ? "visible" : "")"></div>
 
 				<!-- Original task item -->
 				<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
-				draggable="true"
-				@ondragstart="(e) => OnDragStart(e, index)"
-				@ondragend="OnDragEnd"
-				@onclick="() => SetActiveTask(task.TaskItemId)"
-				@onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
-				@onwheel:preventDefault="true">
+					 draggable="true"
+					 @ondragstart="(e) => OnDragStart(e, index)"
+					 @ondragend="OnDragEnd"
+					 @onclick="() => SetActiveTask(task.TaskItemId)"
+					 @onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
+					 @onwheel:preventDefault="true">
 
 					<input type="checkbox"
-					class="task-checkbox"
-					checked="@task.IsDone"
-					@onclick="() => FinishTask(task.TaskItemId)"
-					@onclick:stopPropagation="true" />
+						   class="task-checkbox"
+						   checked="@task.IsDone"
+						   @onclick="() => FinishTask(task.TaskItemId)"
+						   @onclick:stopPropagation="true" />
 
 					<div class="task-info">
 						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
@@ -152,14 +152,14 @@
 					@if (editingTaskId == task.TaskItemId)
 					{
 						<input class="task-edit-input @(task.IsDone ? "completed" : "")"
-						@bind="task.Name"
-						@bind:event="oninput"
-						@onblur="() => FinishEdit(task)"
-						@onkeydown="(e) => HandleKeyDown(e, task)"
-						@onkeydown:stopPropagation="true"
-						@onclick:stopPropagation="true"
-						@ref="editInputRef"
-						placeholder="What's your task?" />
+							   @bind="task.Name"
+							   @bind:event="oninput"
+							   @onblur="() => FinishEdit(task)"
+							   @onkeydown="(e) => HandleKeyDown(e, task)"
+							   @onkeydown:stopPropagation="true"
+							   @onclick:stopPropagation="true"
+							   @ref="editInputRef"
+							   placeholder="What's your task?" />
 					}
 					else
 					{
@@ -180,11 +180,11 @@
 
 		<!-- Final drop zone for bottom -->
 		<div class="task-wrapper bottom-drop-zone @(IsDragging ? "active" : "")"
-		@ondragover="(e) => OnDragOver(e, tasks.Count)"
+			 @ondragover="(e) => OnDragOver(e, tasks.Count)"
 		@ondragover:preventDefault
-		@ondrop="(e) => OnDrop(e, tasks.Count)"
+			 @ondrop="(e) => OnDrop(e, tasks.Count)"
 		@ondrop:preventDefault
-		@ondragleave="OnDragLeave">
+			 @ondragleave="OnDragLeave">
 
 			<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
 		</div>
@@ -580,8 +580,9 @@
 	{
 		var newTask = new TaskItem
 			{
-				Name = "New Task",
-				SortOrder = tasks.Count > 0 ? tasks.Max(t => t.SortOrder) + 1 : 0,
+				Name = "My first task",
+				Description = "",
+				ProjectId = 0 // optional, will be replaced with default project
 			};
 
 		var created = await TaskApiService.CreateAsync(newTask);

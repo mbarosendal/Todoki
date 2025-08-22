@@ -9,6 +9,7 @@
 @inject ILogger<Index> Logger
 @inject HttpClient _httpClient
 @inject UserSettingsApiService userSettingsApiService
+@inject UserProjectApiService userProjectApiService
 @implements IDisposable
 
 <PageTitle>
@@ -118,10 +119,10 @@
 		_ => "rgba(227, 18, 10, 1)"
 	};
 
-
 	private bool showFinishModal = false;
 	private void OpenSettings() => showSettings = true;
 
+	private Project defaultProject = new(); // to be expanded with list of projects - each with own tasks and timers
 	private UserSettings defaultSettings = new();
 	private UserSettings userSettings = new();
 	private bool _settingsExist = false;
@@ -134,6 +135,7 @@
 
 		userSettings = await userSettingsApiService.GetAsync();
 		_settingsExist = userSettings != null && userSettings.UserSettingsId > 0;
+		defaultProject = await userProjectApiService.GetDefaultProjectAsync();
 
 		await SyncSettingsToDisplay();
 
@@ -144,6 +146,8 @@
 
 		StateHasChanged();
 	}
+
+
 
 
 	private async Task SyncSettingsToDisplay()

@@ -1,10 +1,8 @@
 ﻿using System.Net.Http.Json;
-using System.Threading.Tasks;
 using TickTask.Client.Services;
 using TickTask.Shared;
-using static System.Net.WebRequestMethods;
 
-public class TaskApiService : ITaskApiService
+public class TaskApiService
 {
     private readonly HttpClient _http;
 
@@ -13,14 +11,15 @@ public class TaskApiService : ITaskApiService
         _http = http;
     }
 
-    public async Task<List<TaskItem>> GetAllAsync()
+    public async Task<List<TaskItem>> GetAllAsync(int? projectId = null)
     {
-        return await _http.GetFromJsonAsync<List<TaskItem>>("api/TaskItems")
-               ?? new List<TaskItem>();
+        var url = projectId.HasValue ? $"api/TaskItems?projectId={projectId}" : "api/TaskItems";
+        return await _http.GetFromJsonAsync<List<TaskItem>>(url) ?? new List<TaskItem>();
     }
 
     public async Task<TaskItem?> GetByIdAsync(int id)
     {
+        if (id == 0) return null; // don't call backend with ID 0
         return await _http.GetFromJsonAsync<TaskItem>($"api/TaskItems/{id}");
     }
 
@@ -33,7 +32,7 @@ public class TaskApiService : ITaskApiService
     public async Task<TaskItem?> CreateAsync(TaskItem task)
     {
         var response = await _http.PostAsJsonAsync("api/TaskItems", task);
-        return await response.Content.ReadFromJsonAsync<TaskItem>();
+        return await response.Content.ReadFromJsonAsync<TaskItem>(); // now includes DB-assigned ID
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -44,8 +43,7 @@ public class TaskApiService : ITaskApiService
 
     public async Task<bool> SaveTaskOrderAsync(List<TaskItem> reorderedTasks)
     {
-        var response  = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
+        var response = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
         return response.IsSuccessStatusCode;
     }
-
 }

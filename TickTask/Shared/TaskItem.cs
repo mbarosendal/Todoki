@@ -3,26 +3,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TickTask.Shared
 {
-    public class User
-    {
-        [Key]
-        public int UserId { get; set; }
-        [Required]
-        [EmailAddress]
-        [StringLength(100)]
-        public string Email { get; set; } = "";
-        [Required]
-        [StringLength(50, MinimumLength = 3)]
-        public string UserName { get; set; } = "";
-        [Required]
-        [StringLength(100, MinimumLength = 6)]
-        public string Password { get; set; } = "";
+    //public class User
+    //{
+    //    [Key]
+    //    public int UserId { get; set; }
+    //    [Required]
+    //    [EmailAddress]
+    //    [StringLength(100)]
+    //    public string Email { get; set; } = "";
+    //    [Required]
+    //    [StringLength(50, MinimumLength = 3)]
+    //    public string UserName { get; set; } = "";
+    //    [Required]
+    //    [StringLength(100, MinimumLength = 6)]
+    //    public string Password { get; set; } = "";
 
-        [InverseProperty("User")]
-        public ICollection<Project> Projects { get; set; } = new List<Project>();
+    //    [InverseProperty("User")]
+    //    public ICollection<Project> Projects { get; set; } = new List<Project>();
         // Needs to save users timer settings (durations)
         //public CountdownTimer CountDownTimer { get; set; } = new CountdownTimer();
-    }
+    //}
 
     public class Project
     {
@@ -38,11 +38,10 @@ namespace TickTask.Shared
         [DataType(DataType.Date)]
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
 
-        // Navigation property kept here only
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     public class TaskItem
@@ -62,8 +61,9 @@ namespace TickTask.Shared
         public int EstimatedNumberOfPomodoros { get; set; } = 1;
         public int PomodorosRanOnTask { get; set; } = 0;
 
-        //[Required]
-        //public int ProjectId { get; set; }
+        [Required]
+        public int ProjectId { get; set; }
+        public Project? Project { get; set; } = null!;
     }
 
     public class UserSettings
@@ -72,6 +72,7 @@ namespace TickTask.Shared
         public int UserSettingsId { get; set; }
         [Required]
         public string UserId { get; set; } = "";
+
         public TimeSpan PomodoroDurationMinutes { get; set; } = TimeSpan.FromMinutes(25);
         public TimeSpan ShortBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LongBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(15);

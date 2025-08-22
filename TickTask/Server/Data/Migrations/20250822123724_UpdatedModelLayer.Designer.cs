@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TickTask.Server.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250822123724_UpdatedModelLayer")]
+    partial class UpdatedModelLayer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -384,15 +386,12 @@ namespace TickTask.Server.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("ProjectId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Projects");
+                    b.ToTable("Project");
                 });
 
             modelBuilder.Entity("TickTask.Shared.TaskItem", b =>
@@ -559,15 +558,6 @@ namespace TickTask.Server.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TickTask.Shared.Project", b =>
-                {
-                    b.HasOne("TickTask.Server.Models.ApplicationUser", null)
-                        .WithMany("Projects")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("TickTask.Shared.TaskItem", b =>
                 {
                     b.HasOne("TickTask.Shared.Project", "Project")
@@ -590,8 +580,6 @@ namespace TickTask.Server.Data.Migrations
 
             modelBuilder.Entity("TickTask.Server.Models.ApplicationUser", b =>
                 {
-                    b.Navigation("Projects");
-
                     b.Navigation("Settings");
                 });
 

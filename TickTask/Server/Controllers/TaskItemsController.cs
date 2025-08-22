@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TickTask.Server.Data;
 using TickTask.Shared;
+using System.Security.Claims;
 
 namespace TickTask.Server.Controllers
 {
@@ -15,116 +11,100 @@ namespace TickTask.Server.Controllers
     public class TaskItemsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private ILogger<TaskItemsController> _logger;
 
-        public TaskItemsController(ApplicationDbContext context, ILogger<TaskItemsController> logger)
+        public TaskItemsController(ApplicationDbContext context)
         {
             _context = context;
-            this._logger = logger;
         }
 
-        // GET: api/TaskItems
+        // GET: api/TaskItems?projectId=1
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaskItem>>> GetTaskItem()
+        public async Task<ActionResult<List<TaskItem>>> GetTasks(int? projectId = null)
         {
-          if (_context.TaskItems == null)
-          {
-              return NotFound();
-          }
-            return await _context.TaskItems.ToListAsync();
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // GET: api/TaskItems/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TaskItem>> GetTaskItem(int id)
-        {
-          if (_context.TaskItems == null)
-          {
-              return NotFound();
-          }
-            var taskItem = await _context.TaskItems.FindAsync(id);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            if (taskItem == null)
+            // Use default project if none specified
+            if (projectId == null)
             {
-                return NotFound();
-            }
-
-            return taskItem;
-        }
-
-        // PUT: api/TaskItems/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTaskItem(int id, TaskItem taskItem)
-        {
-            if (id != taskItem.TaskItemId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(taskItem).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TaskItemExists(id))
+                var defaultProject = await _context.Projects.FirstOrDefaultAsync(p => p.UserId == userId);
+                if (defaultProject == null)
                 {
-                    return NotFound();
+                    defaultProject = new Project { UserId = userId, Title = "Default Project" };
+                    _context.Projects.Add(defaultProject);
+                    await _context.SaveChangesAsync();
                 }
-                else
-                {
-                    throw;
-                }
+
+                projectId = defaultProject.ProjectId;
             }
 
-            return NoContent();
+            var tasks = await _context.TaskItems
+                .Where(t => t.ProjectId == projectId)
+                .OrderBy(t => t.SortOrder)
+                .ToListAsync();
+
+            return Ok(tasks);
         }
 
         // POST: api/TaskItems
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TaskItem>> PostTaskItem(TaskItem taskItem)
+        public async Task<ActionResult<TaskItem>> CreateTask(TaskItem task)
         {
-          if (_context.TaskItems == null)
-          {
-              return Problem("Entity set 'ApplicationDbContext.TaskItem'  is null.");
-          }
-            _context.TaskItems.Add(taskItem);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            // Assign default project if ProjectId is 0
+            if (task.ProjectId == 0)
+            {
+                var defaultProject = await _context.Projects.FirstOrDefaultAsync(p => p.UserId == userId);
+                if (defaultProject == null)
+                {
+                    defaultProject = new Project { UserId = userId, Title = "Default Project" };
+                    _context.Projects.Add(defaultProject);
+                    await _context.SaveChangesAsync();
+                }
+                task.ProjectId = defaultProject.ProjectId;
+            }
+
+            _context.TaskItems.Add(task);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTaskItem", new { id = taskItem.TaskItemId }, taskItem);
+            return CreatedAtAction(nameof(GetTasks), new { projectId = task.ProjectId }, task);
+        }
+
+        // PUT: api/TaskItems/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTask(int id, TaskItem task)
+        {
+            if (id != task.TaskItemId)
+                return BadRequest();
+
+            _context.Entry(task).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         // DELETE: api/TaskItems/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTaskItem(int id)
+        public async Task<IActionResult> DeleteTask(int id)
         {
-            if (_context.TaskItems == null)
-            {
+            var task = await _context.TaskItems.FindAsync(id);
+            if (task == null)
                 return NotFound();
-            }
-            var taskItem = await _context.TaskItems.FindAsync(id);
-            if (taskItem == null)
-            {
-                return NotFound();
-            }
 
-            _context.TaskItems.Remove(taskItem);
+            _context.TaskItems.Remove(task);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool TaskItemExists(int id)
-        {
-            return (_context.TaskItems?.Any(e => e.TaskItemId == id)).GetValueOrDefault();
-        }
-
+        // PUT: api/TaskItems/reorder
         [HttpPut("reorder")]
-        public async Task<IActionResult> UpdateTaskOrder([FromBody] List<TaskItem> tasks)
+        public async Task<IActionResult> ReorderTasks([FromBody] List<TaskItem> tasks)
         {
             foreach (var task in tasks)
             {
@@ -134,6 +114,5 @@ namespace TickTask.Server.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
     }
 }
