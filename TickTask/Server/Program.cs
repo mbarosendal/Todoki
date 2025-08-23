@@ -9,6 +9,7 @@ using System;
 using System.Text;
 using TickTask.Server.Data;
 using TickTask.Server.Data.Models;
+using TickTask.Server.Services;
 
 namespace TickTask
 {
@@ -20,6 +21,8 @@ namespace TickTask
 
             builder.Services.AddLogging();
             builder.Logging.AddConsole();
+
+            builder.Services.AddScoped<IProjectService, ProjectService>();
 
             // Retrieve sensitive information from environment variables
             var jwtSecret = builder.Configuration["JWT:SecretKey"];

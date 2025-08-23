@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TickTask.Server.Data;
+using TickTask.Server.Data.Models;
+using TickTask.Server.Services;
 using TickTask.Shared;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using TickTask.Server.Data.Models;
 
 namespace TickTask.Server.Controllers
 {
@@ -15,37 +16,22 @@ namespace TickTask.Server.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<TaskItemsController> _logger;
+        private readonly IProjectService _projectService;
 
-        public TaskItemsController(ApplicationDbContext context, ILogger<TaskItemsController> logger)
+        public TaskItemsController(ApplicationDbContext context, ILogger<TaskItemsController> logger, IProjectService projectService)
         {
             _context = context;
             _logger = logger;
+            _projectService = projectService;
         }
 
         // GET: api/TaskItems?projectId=1
         [HttpGet]
         public async Task<ActionResult<List<TaskItemDto>>> GetTasks(int? projectId = null)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                // not logged in → return empty (or later: only "public" tasks if you add that field)
-                return Ok(new List<TaskItemDto>());
-            }
-
             if (projectId == null)
             {
-                var defaultProject = await _context.Projects
-                    .FirstOrDefaultAsync(p => p.UserId == userId);
-
-                if (defaultProject == null)
-                {
-                    defaultProject = new Project { UserId = userId, Title = "Default Project" };
-                    _context.Projects.Add(defaultProject);
-                    await _context.SaveChangesAsync();
-                }
-
+                var defaultProject = await _projectService.GetOrCreateDefaultProjectAsync(User, Request, Response);
                 projectId = defaultProject.ProjectId;
             }
 
@@ -72,24 +58,9 @@ namespace TickTask.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<TaskItemDto>> CreateTask(TaskItemDto dto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("You must be logged in to create tasks.");
-            }
-
             if (dto.ProjectId == 0)
             {
-                var defaultProject = await _context.Projects
-                    .FirstOrDefaultAsync(p => p.UserId == userId);
-
-                if (defaultProject == null)
-                {
-                    defaultProject = new Project { UserId = userId, Title = "Default Project" };
-                    _context.Projects.Add(defaultProject);
-                    await _context.SaveChangesAsync();
-                }
+                var defaultProject = await _projectService.GetOrCreateDefaultProjectAsync(User, Request, Response);
                 dto.ProjectId = defaultProject.ProjectId;
             }
 
@@ -112,11 +83,10 @@ namespace TickTask.Server.Controllers
             return CreatedAtAction(nameof(GetTasks), new { projectId = dto.ProjectId }, dto);
         }
 
+        // PUT: api/TaskItems/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, TaskItemDto dto)
         {
-            if (id != dto.TaskItemId) return BadRequest();
-
             var task = await _context.TaskItems.FindAsync(id);
             if (task == null) return NotFound();
 
@@ -132,6 +102,7 @@ namespace TickTask.Server.Controllers
             return NoContent();
         }
 
+        // DELETE: api/TaskItems/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
@@ -143,11 +114,14 @@ namespace TickTask.Server.Controllers
             return NoContent();
         }
 
+        // PUT: api/TaskItems/reorder
         [HttpPut("reorder")]
         public async Task<IActionResult> ReorderTasks([FromBody] List<TaskItemDto> dtos)
         {
             var taskIds = dtos.Select(t => t.TaskItemId).ToList();
-            var tasks = await _context.TaskItems.Where(t => taskIds.Contains(t.TaskItemId)).ToListAsync();
+            var tasks = await _context.TaskItems
+                .Where(t => taskIds.Contains(t.TaskItemId))
+                .ToListAsync();
 
             foreach (var task in tasks)
             {

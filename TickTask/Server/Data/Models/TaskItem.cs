@@ -16,10 +16,10 @@ namespace TickTask.Server.Data.Models
 
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
 
-        [Required]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }  // Remove [Required]
+        public string? GuestId { get; set; }
 
-        public ApplicationUser User { get; set; } = null!;
+        public ApplicationUser? User { get; set; } = null!;
 
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
     }
@@ -43,7 +43,7 @@ namespace TickTask.Server.Data.Models
         [Required]
         public int ProjectId { get; set; }
         [ForeignKey("ProjectId")]
-        public Project Project { get; set; } = null!;
+        public Project? Project { get; set; }
     }
 
     public class UserSettings

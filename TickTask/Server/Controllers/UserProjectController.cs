@@ -1,10 +1,10 @@
 ﻿using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TickTask.Server.Controllers.TickTask.Server.Controllers;
+using TickTask.Server.Data;
 using TickTask.Server.Data.Models;
+using TickTask.Server.Services;
 using TickTask.Shared;
 
 namespace TickTask.Server.Controllers
@@ -15,77 +15,52 @@ namespace TickTask.Server.Controllers
     public class UserProjectController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<AuthenticationController> _logger;
+        private readonly ILogger<UserProjectController> _logger;
+        private readonly IProjectService _projectService;
 
-        public UserProjectController(ApplicationDbContext context, ILogger<AuthenticationController> logger)
+        public UserProjectController(ApplicationDbContext context, ILogger<UserProjectController> logger, IProjectService projectService)
         {
             _context = context;
             _logger = logger;
+            _projectService = projectService;
         }
 
-        // GET: api/UserProject - Get current user's default project
+        // GET: api/UserProject - Get current user's default project (guest or user)
         [HttpGet]
         public async Task<ActionResult<ProjectDto>> GetMyDefaultProject()
         {
-            try
+            var project = await _projectService.GetOrCreateDefaultProjectAsync(User, Request, Response);
+
+            var projectDto = new ProjectDto
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized();
+                ProjectId = project.ProjectId,
+                Title = project.Title,
+                Description = project.Description,
+                DeadLine = project.DeadLine,
+                UserId = project.UserId,
+                GuestId = project.GuestId
+            };
 
-                var existingProject = await _context.Projects.FirstOrDefaultAsync(p => p.UserId == userId);
-                if (existingProject == null)
-                {
-                    existingProject = new Project()
-                    {
-                        Title = "Default Project",
-                        Description = "",
-                        DeadLine = DateTime.Now.AddDays(1),
-                        UserId = userId
-                    };
-
-                    _context.Projects.Add(existingProject);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Map EF model to DTO to return to client
-                var projectDto = new ProjectDto
-                {
-                    ProjectId = existingProject.ProjectId,
-                    Title = existingProject.Title,
-                    Description = existingProject.Description,
-                    DeadLine = existingProject.DeadLine,
-                    UserId = existingProject.UserId
-                };
-
-                return Ok(projectDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("GetMyDefaultProject failed: {Error}", ex);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(projectDto);
         }
-
 
         // PUT: api/UserProject - Update current user's default project
         [HttpPut]
         public async Task<IActionResult> UpdateMyDefaultProject(ProjectDto projectDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var guestId = Request.Cookies["GuestId"];
+            var ownerId = userId ?? guestId;
 
             var existingProject = await _context.Projects
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+                .FirstOrDefaultAsync(p => (userId != null ? p.UserId == userId : p.GuestId == guestId));
 
             if (existingProject == null)
-            {
                 return NotFound("Default project not found");
-            }
 
-            projectDto.UserId = userId;
             projectDto.ProjectId = existingProject.ProjectId;
+            projectDto.UserId = userId;
+            projectDto.GuestId = guestId;
 
             _context.Entry(existingProject).CurrentValues.SetValues(projectDto);
             await _context.SaveChangesAsync();
@@ -93,47 +68,53 @@ namespace TickTask.Server.Controllers
             return NoContent();
         }
 
-        // POST: api/UserProject - Create a default project (if none exists)
+        // POST: api/UserProject - Create default project if none exists
         [HttpPost]
         public async Task<ActionResult<ProjectDto>> CreateMyDefaultProject(ProjectDto projectDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var guestId = Request.Cookies["GuestId"];
 
-            var existingProject = await _context.Projects
-                .FirstOrDefaultAsync(p => p.UserId == userId);
-
-            if (existingProject != null)
+            // Ensure guest has an ID
+            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(guestId))
             {
-                _logger.LogWarning("CreateMyDefaultProject failed:Default project already exists for ProjectId: {ProjectId}", projectDto.ProjectId.ToString());
-                return Conflict("Default project already exists. Use PUT to update.");
+                guestId = Guid.NewGuid().ToString();
+                Response.Cookies.Append("GuestId", guestId, new CookieOptions
+                {
+                    Expires = DateTimeOffset.Now.AddDays(30),
+                    HttpOnly = true
+                });
             }
 
-            // Map DTO → EF model
+            var existingProject = await _context.Projects
+                .FirstOrDefaultAsync(p => (userId != null ? p.UserId == userId : p.GuestId == guestId));
+
+            if (existingProject != null)
+                return Conflict("Default project already exists. Use PUT to update.");
+
             var project = new Project
             {
                 Title = projectDto.Title,
                 Description = projectDto.Description,
                 DeadLine = projectDto.DeadLine,
-                UserId = userId
+                UserId = userId,
+                GuestId = userId == null ? guestId : null
             };
 
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
 
-            // Map back to DTO for response
             var savedProjectDto = new ProjectDto
             {
                 ProjectId = project.ProjectId,
                 Title = project.Title,
                 Description = project.Description,
                 DeadLine = project.DeadLine,
-                UserId = project.UserId
+                UserId = project.UserId,
+                GuestId = project.GuestId
             };
 
             return CreatedAtAction(nameof(GetMyDefaultProject), null, savedProjectDto);
         }
-
     }
 }

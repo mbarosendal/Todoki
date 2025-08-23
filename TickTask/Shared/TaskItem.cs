@@ -14,8 +14,9 @@ namespace TickTask.Shared
 
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
 
-        [Required]
-        public string UserId { get; set; } = "";
+        public string? UserId { get; set; }
+        public string? GuestId { get; set; }
+        public bool IsValid => !string.IsNullOrEmpty(UserId) ^ !string.IsNullOrEmpty(GuestId);
     }
 
     public class TaskItemDto
