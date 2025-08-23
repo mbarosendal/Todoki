@@ -139,15 +139,15 @@ OnClose="@SaveAndClose">
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 	[Parameter] public EventCallback OnClose { get; set; }
-	[Parameter] public EventCallback<UserSettings> OnSave { get; set; }
+	[Parameter] public EventCallback<UserSettingsDto> OnSave { get; set; }
 
-	[Parameter] public CountdownTimer PomodoroTimer { get; set; } = default!;
-	[Parameter] public CountdownTimer ShortBreakTimer { get; set; } = default!;
-	[Parameter] public CountdownTimer LongBreakTimer { get; set; } = default!;
-	[Parameter] public UserSettings Settings { get; set; } = default!;
+	[Parameter] public CountdownTimerDto PomodoroTimer { get; set; } = default!;
+	[Parameter] public CountdownTimerDto ShortBreakTimer { get; set; } = default!;
+	[Parameter] public CountdownTimerDto LongBreakTimer { get; set; } = default!;
+	[Parameter] public UserSettingsDto Settings { get; set; } = default!;
 
 	[Parameter]
-	public UserSettings DefaultSettings { get; set; } = new UserSettings
+	public UserSettingsDto DefaultSettings { get; set; } = new UserSettingsDto
 		{
 			PomodoroDurationMinutes = TimeSpan.FromMinutes(25),
 			ShortBreakDurationMinutes = TimeSpan.FromMinutes(5),

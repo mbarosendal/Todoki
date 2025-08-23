@@ -1,5 +1,6 @@
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using TickTask.Client.Services;
 
@@ -17,16 +18,21 @@ namespace TickTask.Client
             builder.Services.AddScoped<TaskApiService>();
             builder.Services.AddScoped<UserSettingsApiService>();
             builder.Services.AddScoped<UserProjectApiService>();
+            builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
-            builder.Services.AddHttpClient("TickTask.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
-                .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+            builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 
+            builder.Services.AddHttpClient("ServerAPI", client =>
+            {
+                client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+            })
+            .AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
-
-            // Supply HttpClient instances that include access tokens when making requests to the server project
-            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("TickTask.ServerAPI"));
-
-            builder.Services.AddApiAuthorization();
+            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
+                .CreateClient("ServerAPI"));
 
             await builder.Build().RunAsync();
         }

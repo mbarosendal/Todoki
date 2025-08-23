@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TickTask.Server.Data.Models;
 using TickTask.Shared;
 
 namespace TickTask.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Require authentication for all endpoints
+    [AllowAnonymous]
     public class UserSettingsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -25,21 +26,17 @@ namespace TickTask.Server.Controllers
 
         // GET: api/UserSettings - Get current user's settings
         [HttpGet]
-        public async Task<ActionResult<UserSettings>> GetMySettings()
+        public async Task<ActionResult<UserSettingsDto>> GetMySettings()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized();
-            }
 
             var settings = await _context.UserSettings
                 .FirstOrDefaultAsync(s => s.UserId == userId);
 
             if (settings == null)
             {
-                // Create default settings for new user
                 settings = new UserSettings { UserId = userId };
                 _context.UserSettings.Add(settings);
                 await _context.SaveChangesAsync();
@@ -48,9 +45,10 @@ namespace TickTask.Server.Controllers
             return Ok(settings);
         }
 
+
         // PUT: api/UserSettings - Update current user's settings
         [HttpPut]
-        public async Task<IActionResult> UpdateMySettings(UserSettings userSettings)
+        public async Task<IActionResult> UpdateMySettings(UserSettingsDto userSettings)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

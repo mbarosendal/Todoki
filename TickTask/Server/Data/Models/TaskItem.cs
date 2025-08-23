@@ -1,13 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TickTask.Shared
+namespace TickTask.Server.Data.Models
 {
-    public class ProjectDto
+    public class Project
     {
+        [Key]
         public int ProjectId { get; set; }
 
-        [Required]
-        [StringLength(200, MinimumLength = 1)]
+        [Required, StringLength(200)]
         public string Title { get; set; } = "";
 
         public string Description { get; set; } = "";
@@ -15,16 +17,20 @@ namespace TickTask.Shared
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
 
         [Required]
-        public string UserId { get; set; } = "";
+        public string UserId { get; set; }
+
+        public ApplicationUser User { get; set; } = null!;
+
+        public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
     }
 
-    public class TaskItemDto
+    public class TaskItem
     {
+        [Key]
         public int TaskItemId { get; set; }
         public int SortOrder { get; set; }
 
-        [Required]
-        [StringLength(200, MinimumLength = 1)]
+        [Required, StringLength(200)]
         public string Name { get; set; } = "";
 
         public string Description { get; set; } = "";
@@ -36,13 +42,19 @@ namespace TickTask.Shared
 
         [Required]
         public int ProjectId { get; set; }
+        [ForeignKey("ProjectId")]
+        public Project Project { get; set; } = null!;
     }
 
-    public class UserSettingsDto
+    public class UserSettings
     {
+        [Key]
         public int UserSettingsId { get; set; }
+
         [Required]
-        public string UserId { get; set; } = "";
+        public string UserId { get; set; }
+
+        public ApplicationUser User { get; set; } = null!;
 
         public TimeSpan PomodoroDurationMinutes { get; set; } = TimeSpan.FromMinutes(25);
         public TimeSpan ShortBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(5);
@@ -59,21 +71,6 @@ namespace TickTask.Shared
         public bool AutomaticallyClearDoneTasks { get; set; } = false;
         public bool EnableNotifications { get; set; } = false;
         public int NumberOfPomodorosRun { get; set; } = 0;
-        [Range(1, 99)]
         public int RunsBeforeLongBreak { get; set; } = 4;
     }
-
-    public class CountdownTimerDto
-    {
-        [Range(1, long.MaxValue)]
-        public TimeSpan Duration { get; set; }
-        public TimeSpan RemainingTime { get; set; }
-        public bool IsRunning { get; set; } = false;
-        [StringLength(200, MinimumLength = 1)]
-        public string Text { get; set; } = "";
-    }
-
-    public class PomodoroTimerDto : CountdownTimerDto { }
-    public class ShortBreakTimerDto : CountdownTimerDto { }
-    public class LongBreakTimerDto : CountdownTimerDto { }
 }

@@ -1,24 +1,61 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+﻿@using Blazored.LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager Nav
+@inject HttpClient Http
+@inject ILogger<LoginDisplay> _logger
 
-@inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
+<button @onclick="GoLogin" hidden="@IsAuthenticated">Login</button>
+<button @onclick="Logout" hidden="@( !IsAuthenticated )">Logout</button>
 
-<AuthorizeView>
-    <Authorized>
-        <a href="authentication/profile">@context.User.Identity?.Name!</a>
-        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
-    </Authorized>
-    <NotAuthorized>
-        <a href="authentication/register">Register</a>
-        <a href="authentication/login">Log in</a>
-    </NotAuthorized>
-</AuthorizeView>
+@code {
+    private bool IsAuthenticated;
 
-@code{
-    private async Task BeginSignOut(MouseEventArgs args)
+    protected override async Task OnInitializedAsync()
     {
-        await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        IsAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+    }
+
+    private void GoLogin() => Nav.NavigateTo("/login");
+
+    private async Task Logout()
+    {
+        _logger.LogInformation("Attempting to log out...");
+
+        // Get refresh token from local storage
+        var refreshToken = await LocalStorage.GetItemAsync<string>("refreshToken");
+
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            _logger.LogInformation("Found refresh token, calling logout endpoint...");
+
+            var response = await Http.PostAsJsonAsync("api/authentication/logout", new { RefreshToken = refreshToken });
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Logout success, clearing tokens...");
+                await LocalStorage.RemoveItemAsync("authToken");
+                await LocalStorage.RemoveItemAsync("refreshToken");
+            }
+            else
+            {
+                _logger.LogWarning("Logout HTTP failed: " + response.StatusCode);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("No refresh token found, just clearing local JWT");
+            await LocalStorage.RemoveItemAsync("authToken");
+        }
+
+        // Notify auth provider
+        if (AuthStateProvider is JwtAuthenticationStateProvider jwtAuth)
+        {
+            jwtAuth.MarkUserAsLoggedOut();
+        }
+
+        IsAuthenticated = false;
+        Nav.NavigateTo("/"); // redirect after logout
     }
 }

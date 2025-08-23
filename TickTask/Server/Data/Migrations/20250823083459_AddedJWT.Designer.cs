@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TickTask.Server.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250823083459_AddedJWT")]
+    partial class AddedJWT
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -219,37 +222,6 @@ namespace TickTask.Server.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.Project", b =>
-                {
-                    b.Property<int>("ProjectId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectId"));
-
-                    b.Property<DateTime>("DeadLine")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("ProjectId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Projects");
-                });
-
             modelBuilder.Entity("TickTask.Server.Data.Models.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -286,7 +258,38 @@ namespace TickTask.Server.Data.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.TaskItem", b =>
+            modelBuilder.Entity("TickTask.Shared.Project", b =>
+                {
+                    b.Property<int>("ProjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectId"));
+
+                    b.Property<DateTime>("DeadLine")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("TickTask.Shared.TaskItem", b =>
                 {
                     b.Property<int>("TaskItemId")
                         .ValueGeneratedOnAdd()
@@ -328,7 +331,7 @@ namespace TickTask.Server.Data.Migrations
                     b.ToTable("TaskItems");
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.UserSettings", b =>
+            modelBuilder.Entity("TickTask.Shared.UserSettings", b =>
                 {
                     b.Property<int>("UserSettingsId")
                         .ValueGeneratedOnAdd()
@@ -450,17 +453,6 @@ namespace TickTask.Server.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.Project", b =>
-                {
-                    b.HasOne("TickTask.Server.Data.Models.ApplicationUser", "User")
-                        .WithMany("Projects")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("TickTask.Server.Data.Models.RefreshToken", b =>
                 {
                     b.HasOne("TickTask.Server.Data.Models.ApplicationUser", "User")
@@ -472,9 +464,18 @@ namespace TickTask.Server.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.TaskItem", b =>
+            modelBuilder.Entity("TickTask.Shared.Project", b =>
                 {
-                    b.HasOne("TickTask.Server.Data.Models.Project", "Project")
+                    b.HasOne("TickTask.Server.Data.Models.ApplicationUser", null)
+                        .WithMany("Projects")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TickTask.Shared.TaskItem", b =>
+                {
+                    b.HasOne("TickTask.Shared.Project", "Project")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -483,15 +484,13 @@ namespace TickTask.Server.Data.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.UserSettings", b =>
+            modelBuilder.Entity("TickTask.Shared.UserSettings", b =>
                 {
-                    b.HasOne("TickTask.Server.Data.Models.ApplicationUser", "User")
+                    b.HasOne("TickTask.Server.Data.Models.ApplicationUser", null)
                         .WithOne("Settings")
-                        .HasForeignKey("TickTask.Server.Data.Models.UserSettings", "UserId")
+                        .HasForeignKey("TickTask.Shared.UserSettings", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TickTask.Server.Data.Models.ApplicationUser", b =>
@@ -501,7 +500,7 @@ namespace TickTask.Server.Data.Migrations
                     b.Navigation("Settings");
                 });
 
-            modelBuilder.Entity("TickTask.Server.Data.Models.Project", b =>
+            modelBuilder.Entity("TickTask.Shared.Project", b =>
                 {
                     b.Navigation("Tasks");
                 });

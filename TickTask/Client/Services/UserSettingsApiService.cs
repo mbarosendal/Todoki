@@ -10,29 +10,29 @@ namespace TickTask.Client.Services
 
         private readonly HttpClient _http;
 
-        public UserSettingsApiService(HttpClient http)
+        public UserSettingsApiService(IHttpClientFactory httpFactory)
         {
-            _http = http;
+            _http = httpFactory.CreateClient("ServerAPI");
         }
 
         // ✔️ 
-        public async Task<UserSettings> GetAsync()
+        public async Task<UserSettingsDto> GetAsync()
         {
-            return await _http.GetFromJsonAsync<UserSettings>("api/UserSettings")
-                   ?? new UserSettings();
+            return await _http.GetFromJsonAsync<UserSettingsDto>("api/UserSettings")
+                   ?? new UserSettingsDto();
         }
 
         // ✔️ 
-        public async Task<bool> UpdateAsync(UserSettings userSettings)
+        public async Task<bool> UpdateAsync(UserSettingsDto userSettings)
         {
             var response = await _http.PutAsJsonAsync($"api/UserSettings", userSettings);
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<UserSettings?> CreateAsync(UserSettings userSettings)
+        public async Task<UserSettingsDto?> CreateAsync(UserSettingsDto userSettings)
         {
             var response = await _http.PostAsJsonAsync("api/UserSettings", userSettings);
-            return await response.Content.ReadFromJsonAsync<UserSettings>();
+            return await response.Content.ReadFromJsonAsync<UserSettingsDto>();
         }
 
         public async Task<bool> DeleteAsync()

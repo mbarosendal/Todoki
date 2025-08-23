@@ -85,7 +85,7 @@
 					   OnClose="SyncSettingsToDisplay"
 					   OnSave="CreateOrUpdateSettingsOnSave" />
 
-		@if (showFinishModal && GetCountdownTimer is not PomodoroTimer)
+		@if (showFinishModal && GetCountdownTimer is not PomodoroTimerDto)
 		{
 			<TimerFinishModal @bind-IsOpen="showFinishModal"
 							  OnClose="@(() => showFinishModal = false)" />
@@ -95,15 +95,15 @@
 
 @code
 {
-	private PomodoroTimer pomodoroTimer = new PomodoroTimer();
-	private ShortBreakTimer shortBreakTimer = new ShortBreakTimer();
-	private LongBreakTimer longBreakTimer = new LongBreakTimer();
+	private PomodoroTimerDto pomodoroTimer = new PomodoroTimerDto();
+	private ShortBreakTimerDto shortBreakTimer = new ShortBreakTimerDto();
+	private LongBreakTimerDto longBreakTimer = new LongBreakTimerDto();
 	private int NumberOfPomodorosRun = 0;
 
 	private TaskList? taskListRef;
 
 	private TimerType timerType = Enums.TimerType.Pomodoro;
-	private CountdownTimer GetCountdownTimer => timerType switch
+	private CountdownTimerDto GetCountdownTimer => timerType switch
 	{
 		TimerType.Pomodoro => pomodoroTimer,
 		TimerType.ShortBreak => shortBreakTimer,
@@ -122,9 +122,9 @@
 	private bool showFinishModal = false;
 	private void OpenSettings() => showSettings = true;
 
-	private Project defaultProject = new(); // to be expanded with list of projects - each with own tasks and timers
-	private UserSettings defaultSettings = new();
-	private UserSettings userSettings = new();
+	private ProjectDto defaultProject = new(); // to be expanded with list of projects - each with own tasks and timers
+	private UserSettingsDto defaultSettings = new();
+	private UserSettingsDto userSettings = new();
 	private bool _settingsExist = false;
 	private bool showSettings = false;
 
@@ -168,7 +168,7 @@
 		StateHasChanged();
 	}
 
-	private async Task CreateOrUpdateSettingsOnSave(UserSettings updatedSettings)
+	private async Task CreateOrUpdateSettingsOnSave(UserSettingsDto updatedSettings)
 	{
 		if (_settingsExist)
 		{
@@ -230,7 +230,7 @@
 	private void ToggleLongBreak() =>
 	ToggleStartStopTimer(TimerType.LongBreak, longBreakTimer);
 
-	private async void ToggleStartStopTimer(TimerType type, CountdownTimer timer)
+	private async void ToggleStartStopTimer(TimerType type, CountdownTimerDto timer)
 	{
 		if (timer.IsRunning)
 		{
@@ -327,7 +327,7 @@
 	}
 
 
-	private void RestartTimer(CountdownTimer timer)
+	private void RestartTimer(CountdownTimerDto timer)
 	{
 		timerService.Reset(timer);
 

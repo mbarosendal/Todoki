@@ -273,7 +273,7 @@
 
 	private ElementReference editInputRef;
 
-	private async Task HandleKeyDown(KeyboardEventArgs e, TaskItem task)
+	private async Task HandleKeyDown(KeyboardEventArgs e, TaskItemDto task)
 	{
 		if (e.Key == "Enter")
 		{
@@ -330,7 +330,7 @@
 		}
 	}
 
-	private async Task EditPreviousOrNextTask(TaskItem task, bool isPrevious)
+	private async Task EditPreviousOrNextTask(TaskItemDto task, bool isPrevious)
 	{
 		if (tasks == null || tasks.Count == 0) return;
 
@@ -347,7 +347,7 @@
 	}
 
 
-	private async Task MoveTaskUpOrDown(TaskItem task, bool isUp)
+	private async Task MoveTaskUpOrDown(TaskItemDto task, bool isUp)
 	{
 		if (tasks == null) return;
 
@@ -379,28 +379,28 @@
 
 
 
-	[Parameter] public CountdownTimer CurrentTimer { get; set; } = default!;
-	[Parameter] public PomodoroTimer ActivePomodoro { get; set; } = default!;
-	[Parameter] public ShortBreakTimer ActiveShortBreakTimer { get; set; } = default!;
-	[Parameter] public LongBreakTimer ActiveLongBreakTimer { get; set; } = default!;
-	[Parameter] public UserSettings Settings { get; set; } = default!;
+	[Parameter] public CountdownTimerDto CurrentTimer { get; set; } = default!;
+	[Parameter] public PomodoroTimerDto ActivePomodoro { get; set; } = default!;
+	[Parameter] public ShortBreakTimerDto ActiveShortBreakTimer { get; set; } = default!;
+	[Parameter] public LongBreakTimerDto ActiveLongBreakTimer { get; set; } = default!;
+	[Parameter] public UserSettingsDto Settings { get; set; } = default!;
 
 	[Parameter] public EventCallback OnResetPomodoros { get; set; }
-	[Parameter] public EventCallback<UserSettings> OnSave { get; set; }
+	[Parameter] public EventCallback<UserSettingsDto> OnSave { get; set; }
 
-	private List<TaskItem>? tasks = new();
-	private TaskItem? activeTask;
+	private List<TaskItemDto>? tasks = new();
+	private TaskItemDto? activeTask;
 	private int? ActiveTaskId => tasks.FirstOrDefault(t => t.IsActiveTask)?.TaskItemId;
 	private int? editingTaskId;
 
 	private bool showMenu;
-	private bool IsOnBreak => CurrentTimer is ShortBreakTimer or LongBreakTimer;
-	private string GetBreakText() => CurrentTimer is ShortBreakTimer ? Settings.ShortBreakText : Settings.LongBreakText;
+	private bool IsOnBreak => CurrentTimer is ShortBreakTimerDto or LongBreakTimerDto;
+	private string GetBreakText() => CurrentTimer is ShortBreakTimerDto ? Settings.ShortBreakText : Settings.LongBreakText;
 
 	public bool AreAllTasksDone = false;
 	public bool ShouldPlaySoundAfterAllTasksDone = false;
 
-	public TaskItem? ActiveTask
+	public TaskItemDto? ActiveTask
 	{
 		get => activeTask;
 		set
@@ -531,7 +531,7 @@
 		}
 	}
 
-	public async Task<TaskItem?> GetNextTask()
+	public async Task<TaskItemDto?> GetNextTask()
 	{
 		var nextTask = tasks?.FirstOrDefault(t => !t.IsDone && !t.IsActiveTask);
 
@@ -578,7 +578,7 @@
 
 	public async Task AddTask()
 	{
-		var newTask = new TaskItem
+		var newTask = new TaskItemDto
 			{
 				Name = "My first task",
 				Description = "",
@@ -631,7 +631,7 @@
 		await editInputRef.FocusAsync();
 	}
 
-	private async Task FinishEdit(TaskItem task)
+	private async Task FinishEdit(TaskItemDto task)
 	{
 		editingTaskId = null;
 
@@ -710,7 +710,7 @@
 		}
 	}
 
-	private async Task CompleteTaskAsync(TaskItem task, bool isDone)
+	private async Task CompleteTaskAsync(TaskItemDto task, bool isDone)
 	{
 		if (task == null) return;
 

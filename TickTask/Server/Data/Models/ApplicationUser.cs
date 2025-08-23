@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using TickTask.Shared;
 
-namespace TickTask.Server.Models
+namespace TickTask.Server.Data.Models
 {
     public class ApplicationUser : IdentityUser
     {

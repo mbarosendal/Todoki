@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TickTask.Server.Models;
+using TickTask.Server.Data.Models;
 using TickTask.Shared;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
@@ -13,6 +13,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Project> Projects { get; set; }
     public DbSet<TaskItem> TaskItems { get; set; }
     public DbSet<UserSettings> UserSettings { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -21,14 +23,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // One-to-one: ApplicationUser <-> UserSettings
         modelBuilder.Entity<ApplicationUser>()
             .HasOne(u => u.Settings)
-            .WithOne()
+            .WithOne(s => s.User)
             .HasForeignKey<UserSettings>(s => s.UserId)
             .IsRequired();
 
         // One-to-many: ApplicationUser <-> Projects
         modelBuilder.Entity<Project>()
-            .HasOne<ApplicationUser>() // each project has one ApplicationUser
-            .WithMany(u => u.Projects) // each user has many Projects
+            .HasOne(p => p.User)
+            .WithMany(u => u.Projects)
             .HasForeignKey(p => p.UserId)
             .IsRequired();
 
@@ -39,4 +41,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(t => t.ProjectId)
             .IsRequired();
     }
+
 }

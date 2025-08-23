@@ -6,33 +6,33 @@ public class TaskApiService
 {
     private readonly HttpClient _http;
 
-    public TaskApiService(HttpClient http)
+    public TaskApiService(IHttpClientFactory httpFactory)
     {
-        _http = http;
+        _http = httpFactory.CreateClient("ServerAPI");
     }
 
-    public async Task<List<TaskItem>> GetAllAsync(int? projectId = null)
+    public async Task<List<TaskItemDto>> GetAllAsync(int? projectId = null)
     {
         var url = projectId.HasValue ? $"api/TaskItems?projectId={projectId}" : "api/TaskItems";
-        return await _http.GetFromJsonAsync<List<TaskItem>>(url) ?? new List<TaskItem>();
+        return await _http.GetFromJsonAsync<List<TaskItemDto>>(url) ?? new List<TaskItemDto>();
     }
 
-    public async Task<TaskItem?> GetByIdAsync(int id)
+    public async Task<TaskItemDto?> GetByIdAsync(int id)
     {
         if (id == 0) return null; // don't call backend with ID 0
-        return await _http.GetFromJsonAsync<TaskItem>($"api/TaskItems/{id}");
+        return await _http.GetFromJsonAsync<TaskItemDto>($"api/TaskItems/{id}");
     }
 
-    public async Task<bool> UpdateAsync(TaskItem task)
+    public async Task<bool> UpdateAsync(TaskItemDto task)
     {
         var response = await _http.PutAsJsonAsync($"api/TaskItems/{task.TaskItemId}", task);
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<TaskItem?> CreateAsync(TaskItem task)
+    public async Task<TaskItemDto?> CreateAsync(TaskItemDto task)
     {
         var response = await _http.PostAsJsonAsync("api/TaskItems", task);
-        return await response.Content.ReadFromJsonAsync<TaskItem>(); // now includes DB-assigned ID
+        return await response.Content.ReadFromJsonAsync<TaskItemDto>();
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -41,7 +41,7 @@ public class TaskApiService
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<bool> SaveTaskOrderAsync(List<TaskItem> reorderedTasks)
+    public async Task<bool> SaveTaskOrderAsync(List<TaskItemDto> reorderedTasks)
     {
         var response = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
         return response.IsSuccessStatusCode;

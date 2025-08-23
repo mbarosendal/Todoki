@@ -7,12 +7,12 @@ namespace TickTask.Client.Services
     {
         private System.Threading.Timer? _timer;
         private TimerType? _activeType;
-        private CountdownTimer? _activeTimer;
+        private CountdownTimerDto? _activeTimer;
 
         public event Action? OnTimerUpdate;
         public event Action<bool>? OnTimerFinish;
 
-        public void Start(TimerType type, CountdownTimer timer)
+        public void Start(TimerType type, CountdownTimerDto timer)
         {
             if (timer.IsRunning) return;
 
@@ -24,14 +24,14 @@ namespace TickTask.Client.Services
             _timer = new System.Threading.Timer(_ => Tick(), null, 1000, 1000);
         }
 
-        public void Stop(CountdownTimer timer)
+        public void Stop(CountdownTimerDto timer)
         {
             timer.IsRunning = false;
             _timer?.Dispose();
             _timer = null;
         }
 
-        public void Reset(CountdownTimer timer)
+        public void Reset(CountdownTimerDto timer)
         {
             Stop(timer);
             timer.RemainingTime = timer.Duration;
@@ -61,7 +61,7 @@ namespace TickTask.Client.Services
             }
         }
 
-        public string CalculateEstimatedTimeOfTaskCompletion(PomodoroTimer activePomodoro, ShortBreakTimer shortBreakTimer, LongBreakTimer longBreakTimer, TaskItem activeTask, UserSettings timerSettings)
+        public string CalculateEstimatedTimeOfTaskCompletion(PomodoroTimerDto activePomodoro, ShortBreakTimerDto shortBreakTimer, LongBreakTimerDto longBreakTimer, TaskItemDto activeTask, UserSettingsDto timerSettings)
         {
             var remainingCurrentPomodoroTime = activePomodoro.RemainingTime.TotalMinutes;
             var remainingPomodorosTime = (activeTask.EstimatedNumberOfPomodoros - activeTask.PomodorosRanOnTask - 1) * activePomodoro.Duration.TotalMinutes;

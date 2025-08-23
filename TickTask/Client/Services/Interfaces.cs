@@ -6,19 +6,19 @@ namespace TickTask.Client.Services
 {
     public interface ITaskApiService
     {
-        Task<List<TaskItem>> GetAllAsync();
-        Task<TaskItem?> GetByIdAsync(int id);
-        Task<bool> UpdateAsync(TaskItem task);
-        Task<TaskItem?> CreateAsync(TaskItem task);
+        Task<List<TaskItemDto>> GetAllAsync();
+        Task<TaskItemDto?> GetByIdAsync(int id);
+        Task<bool> UpdateAsync(TaskItemDto task);
+        Task<TaskItemDto?> CreateAsync(TaskItemDto task);
         Task<bool> DeleteAsync(int id);
-        Task<bool> SaveTaskOrderAsync(List<TaskItem> reorderedTasks);
+        Task<bool> SaveTaskOrderAsync(List<TaskItemDto> reorderedTasks);
     }
 
     public interface IUserSettingsApiService
     {
-        Task<UserSettings> GetAsync();
-        Task<bool> UpdateAsync(UserSettings userSettings);
-        Task<UserSettings> CreateAsync(UserSettings userSettings);
+        Task<UserSettingsDto> GetAsync();
+        Task<bool> UpdateAsync(UserSettingsDto userSettings);
+        Task<UserSettingsDto> CreateAsync(UserSettingsDto userSettings);
         Task<bool> DeleteAsync();
 
     }

@@ -1,0 +1,69 @@
+﻿@page "/login"
+@using Blazored.LocalStorage
+@using TickTask.Shared.Data.ViewModels
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject ILocalStorageService LocalStorage
+@inject JwtAuthenticationStateProvider AuthProvider
+
+<div class="login-overlay">
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p style="color:red">@Error</p>
+    }
+    <input placeholder="Email" @bind="Email" />
+    <input type="password" placeholder="Password" @bind="Password" />
+    <button @onclick="UserLogin">Login</button>
+</div>
+
+@code {
+    private string Email;
+    private string Password;
+    private string Error;
+
+    private async Task UserLogin()
+    {
+        Error = null;
+        var loginData = new { emailAddress = Email, password = Password };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/authentication/login-user", loginData);
+            if (!response.IsSuccessStatusCode)
+            {
+                Error = "Invalid credentials";
+                return;
+            }
+
+            var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
+            if (authResponse != null && authResponse.IsSuccess)
+            {
+                if (authResponse == null)
+                {
+                    Error = "Login failed: empty server response";
+                    return;
+                }
+
+                if (!authResponse.IsSuccess)
+                {
+                    Error = authResponse.Error ?? "Login failed";
+                    return;
+                }
+
+                // Success path
+                await LocalStorage.SetItemAsync("authToken", authResponse.Token);
+                await LocalStorage.SetItemAsync("refreshToken", authResponse.RefreshToken);
+                AuthProvider.MarkUserAsAuthenticated(authResponse.Token);
+                Nav.NavigateTo("/");
+            }
+            else
+            {
+                Error = authResponse?.Error ?? "Login failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+}
