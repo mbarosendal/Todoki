@@ -1,23 +1,19 @@
-# Use the official .NET 8 SDK image to build the app
+# Use the official .NET SDK image
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy csproj and restore as separate layers
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy everything else and build
+# Copy everything
 COPY . ./
+
+# Publish Server project
+WORKDIR /src/Server
 RUN dotnet publish -c Release -o /app/publish
 
-# Use the ASP.NET runtime image for running the app
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Expose default ASP.NET port
+# Expose port
 EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
-
-# Start the application
 ENTRYPOINT ["dotnet", "TickTask.Server.dll"]
