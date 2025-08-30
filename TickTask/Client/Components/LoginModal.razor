@@ -43,7 +43,7 @@
 @code {
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
-    [Inject] private HttpClient Http { get; set; }
+    [Inject] private HttpClientWrapper Http { get; set; }
     [Inject] private ILocalStorageService LocalStorage { get; set; }
     [Inject] private NavigationManager Nav { get; set; }
     [Inject] private JwtAuthenticationStateProvider AuthProvider { get; set; }
