@@ -1,15 +1,39 @@
-﻿@inherits LayoutComponentBase
+﻿@using TickTask.Client.Enums
+@using TickTask.Client.Services
+@inject TimerStateService TimerState
+@implements IDisposable
 
+@inherits LayoutComponentBase
 <div class="page">
-    @* <div class="sidebar"> *@
-    @*     <NavMenu /> *@
-    @* </div> *@
-
     <main>
-        <div class="top-row px-4 auth">
+        <div class="top-row px-4 auth" style="background-color:@GetNavBackgroundColor() !important">
             <LoginDisplay />
         </div>
-
-            @Body
+        @Body
     </main>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        TimerState.OnChange += HandleTimerChanged;
+    }
+
+    private async Task HandleTimerChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string GetNavBackgroundColor() => TimerState.CurrentTimerType switch
+    {
+        TimerType.Pomodoro => "rgba(227, 18, 10, 1)",
+        TimerType.ShortBreak => "rgba(9, 180, 237, 1)",
+        TimerType.LongBreak => "rgba(0, 191, 0, 1)",
+        _ => "rgba(227, 18, 10, 1)"
+    };
+
+    public void Dispose()
+    {
+        TimerState.OnChange -= HandleTimerChanged;
+    }
+}

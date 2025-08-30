@@ -10,6 +10,7 @@
 @inject HttpClient _httpClient
 @inject UserSettingsApiService userSettingsApiService
 @inject UserProjectApiService userProjectApiService
+@inject TimerStateService TimerState
 @implements IDisposable
 
 <PageTitle>
@@ -151,9 +152,6 @@
 		StateHasChanged();
 	}
 
-
-
-
 	private async Task SyncSettingsToDisplay()
 	{
 		var settingsToUse = _settingsExist ? userSettings : defaultSettings;
@@ -256,6 +254,8 @@
 
 	private void SelectAndResetTimer(TimerType timerType, bool userSwitchedTimersUsingTabs = false)
 	{
+		TimerState.SetTimerType(timerType);
+
 		if (userSwitchedTimersUsingTabs)
 			showFinishModal = false;
 
@@ -268,6 +268,8 @@
 
 	private async void HandleTimerFinish(bool timerWasSkipped = false)
 	{
+		TimerState.SetTimerType(timerType);
+
 		if (timerWasSkipped)
 			showFinishModal = false;
 		else
