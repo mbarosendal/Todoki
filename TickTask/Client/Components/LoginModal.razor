@@ -1,4 +1,5 @@
 ﻿@using Blazored.LocalStorage
+@using TickTask.Data.ViewModels
 @using TickTask.Shared.Data.ViewModels
 
 @if (IsOpen)
@@ -6,20 +7,35 @@
     <div class="modal-overlay" @onclick="CloseModal">
         <div class="modal-content" @onclick:stopPropagation>
             <div class="auth-toggle">
-                <button class="@(IsLogin ? "active" : "")" @onclick="() => IsLogin = true">Login</button>
-                <button class="@(IsLogin ? "" : "active")" @onclick="() => IsLogin = false">Register</button>
+                <button class="@(IsLogin ? "active" : "")" @onclick="() => ToggleLogin(true)">Login</button>
+                <button class="@(IsLogin ? "" : "active")" @onclick="() => ToggleLogin(false)">Register</button>
             </div>
+
+            <EditForm Model="@registerModel" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+
+                <InputText placeholder="Email" @bind-Value="registerModel.EmailAddress" />
+                <ValidationMessage For="@(() => registerModel.EmailAddress)" />
+
+                <InputText type="password" placeholder="Password" @bind-Value="registerModel.Password" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+
+                @if (!IsLogin)
+                {
+                    <InputText type="password" placeholder="Confirm Password" @bind-Value="ConfirmPassword" />
+                    @if (!string.IsNullOrEmpty(PasswordMismatchError))
+                    {
+                        <p class="login-error">@PasswordMismatchError</p>
+                    }
+                }
+
+                <button class="auth-btn" type="submit">@((IsLogin) ? "Login" : "Register")</button>
+            </EditForm>
+
             @if (!string.IsNullOrEmpty(Error))
             {
                 <p class="login-error">@Error</p>
             }
-            <input placeholder="Email" @bind="Email" />
-            <input type="password" placeholder="Password" @bind="Password" />
-            @if (!IsLogin)
-            {
-                <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword" />
-            }
-            <button class="auth-btn" @onclick="Submit">@((IsLogin) ? "Login" : "Register")</button>
         </div>
     </div>
 }
@@ -31,25 +47,38 @@
     [Inject] private ILocalStorageService LocalStorage { get; set; }
     [Inject] private NavigationManager Nav { get; set; }
     [Inject] private JwtAuthenticationStateProvider AuthProvider { get; set; }
+
     private bool IsLogin = true;
-    private string Email;
-    private string Password;
+    private RegisterRequest registerModel = new();
     private string ConfirmPassword;
     private string Error;
+    private string PasswordMismatchError;
 
-    private async Task Submit()
+    private void ToggleLogin(bool login)
+    {
+        IsLogin = login;
+        Error = null;
+        PasswordMismatchError = null;
+        registerModel = new();
+        ConfirmPassword = string.Empty;
+    }
+
+    private async Task HandleSubmit()
     {
         Error = null;
-        if (!IsLogin && Password != ConfirmPassword)
+        PasswordMismatchError = null;
+
+        if (!IsLogin && registerModel.Password != ConfirmPassword)
         {
-            Error = "Passwords do not match.";
+            PasswordMismatchError = "Passwords do not match.";
             return;
         }
+
         try
         {
             if (IsLogin)
             {
-                var loginData = new { emailAddress = Email, password = Password };
+                var loginData = new { emailAddress = registerModel.EmailAddress, password = registerModel.Password };
                 var response = await Http.PostAsJsonAsync("api/authentication/login-user", loginData);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -72,17 +101,19 @@
             }
             else
             {
-                var registerData = new { emailAddress = Email, password = Password };
-                var response = await Http.PostAsJsonAsync("api/authentication/register-user", registerData);
+                var response = await Http.PostAsJsonAsync("api/authentication/register-user", registerModel);
                 if (response.IsSuccessStatusCode)
                 {
                     IsLogin = true;
-                    await Submit();
+                    await HandleSubmit(); // login immediately after registration
                 }
                 else
                 {
-                    var errorMsg = await response.Content.ReadAsStringAsync();
-                    Error = $"Registration failed: {errorMsg}";
+                    var errorResponse = await response.Content.ReadFromJsonAsync<ValidationErrorResponse>();
+                    if (errorResponse?.Errors != null)
+                        Error = string.Join("\n", errorResponse.Errors.SelectMany(e => e.Value));
+                    else
+                        Error = "Registration failed. Please try again.";
                 }
             }
         }
@@ -97,7 +128,13 @@
         IsOpen = false;
         await IsOpenChanged.InvokeAsync(IsOpen);
     }
+
+    public class ValidationErrorResponse
+    {
+        public Dictionary<string, string[]> Errors { get; set; } = new();
+    }
 }
+
 
 <style>
     .modal-overlay {
