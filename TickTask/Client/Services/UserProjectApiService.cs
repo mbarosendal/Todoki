@@ -21,7 +21,7 @@ namespace TickTask.Client.Services
 
         public async Task<ProjectDto?> CreateDefaultProjectAsync(ProjectDto project)
         {
-            return await _http.PostAsJsonAsync<ProjectDto>("api/UserProject", project);
+            return await _http.PostAsJsonAsync<ProjectDto, ProjectDto>("api/UserProject", project);
         }
 
         public async Task<bool> UpdateDefaultProjectAsync(ProjectDto project)

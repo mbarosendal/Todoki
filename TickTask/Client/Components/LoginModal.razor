@@ -85,7 +85,7 @@
                     Error = "Invalid credentials";
                     return;
                 }
-                var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
+                var authResponse = await Http.ReadFromJsonAsync<AuthResponse>(response);
                 if (authResponse?.IsSuccess == true)
                 {
                     await LocalStorage.SetItemAsync("authToken", authResponse.Token);
@@ -109,7 +109,7 @@
                 }
                 else
                 {
-                    var errorResponse = await response.Content.ReadFromJsonAsync<ValidationErrorResponse>();
+                    var errorResponse = await Http.ReadFromJsonAsync<ValidationErrorResponse>(response);
                     if (errorResponse?.Errors != null)
                         Error = string.Join("\n", errorResponse.Errors.SelectMany(e => e.Value));
                     else

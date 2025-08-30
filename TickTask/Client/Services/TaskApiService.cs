@@ -36,7 +36,7 @@ namespace TickTask.Client.Services
 
         public async Task<TaskItemDto?> CreateAsync(TaskItemDto task)
         {
-            return await _http.PostAsJsonAsync<TaskItemDto>("api/TaskItems", task);
+            return await _http.PostAsJsonAsync<TaskItemDto, TaskItemDto>("api/TaskItems", task);
         }
 
 

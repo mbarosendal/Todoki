@@ -28,7 +28,7 @@ namespace TickTask.Client.Services
 
         public async Task<UserSettingsDto?> CreateAsync(UserSettingsDto userSettings)
         {
-            return await _http.PostAsJsonAsync<UserSettingsDto>("api/UserSettings", userSettings);
+            return await _http.PostAsJsonAsync<UserSettingsDto, UserSettingsDto>("api/UserSettings", userSettings);
         }
 
         public async Task<bool> DeleteAsync()
