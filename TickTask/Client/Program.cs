@@ -32,10 +32,13 @@ var jsonOptions = new JsonSerializerOptions
 {
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true,
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    // Nuclear option: disable all reflection-based serialization
-    TypeInfoResolver = JsonTypeInfoResolver.Combine()
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 };
+
+// For WASM, configure the default resolver without nullability context
+var resolver = new DefaultJsonTypeInfoResolver();
+jsonOptions.TypeInfoResolver = resolver;
+jsonOptions.TypeInfoResolverChain.Insert(0, resolver);
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {
