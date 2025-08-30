@@ -31,13 +31,11 @@ builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 var jsonOptions = new JsonSerializerOptions
 {
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNameCaseInsensitive = true
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    // Nuclear option: disable all reflection-based serialization
+    TypeInfoResolver = JsonTypeInfoResolver.Combine()
 };
-
-// Completely disable nullability info for WASM
-jsonOptions.TypeInfoResolver = JsonSerializer.IsReflectionEnabledByDefault
-    ? new DefaultJsonTypeInfoResolver()
-    : JsonTypeInfoResolver.Combine();
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {
