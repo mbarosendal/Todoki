@@ -198,7 +198,7 @@
     flex: 0 0 auto;
     position: sticky;
     top: 0;
-    z-index: 20;
+/*    z-index: 20;*/
     background: rgba(10, 137, 18, 1);
     border-radius: 12px 12px 0 0;
     padding: 16px 20px;

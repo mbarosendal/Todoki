@@ -27,6 +27,7 @@ namespace TickTask
             // Retrieve sensitive information from environment variables
             var jwtSecret = builder.Configuration["JWT:SecretKey"];
             var adminPassword = builder.Configuration["Admin:Password"];
+            var adminEmail = builder.Configuration["Admin:Email"];
 
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
@@ -207,7 +208,7 @@ namespace TickTask
                     await AppDbInitializer.SeedRolesAsync(services);
 
                     // Seed default admin
-                    await AppDbInitializer.SeedAdminAsync(services, builder.Configuration, logger);
+                    await AppDbInitializer.SeedAdminAsync(services, adminEmail, adminPassword, logger);
                 }
                 catch (Exception ex)
                 {

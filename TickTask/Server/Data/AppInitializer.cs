@@ -20,7 +20,7 @@ namespace TickTask.Server.Data
         }
 
         // Seed default admin
-        public static async Task SeedAdminAsync(IServiceProvider serviceProvider, IConfiguration configuration, ILogger _logger)
+        public static async Task SeedAdminAsync(IServiceProvider serviceProvider, string adminEmail, string adminPassword, ILogger _logger)
         {
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -34,9 +34,6 @@ namespace TickTask.Server.Data
             if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
 
-            var adminEmail = "admin@admin.com";
-            var adminPassword = configuration["Admin:Password"];
-
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
             //_logger.LogWarning("SeedAdminAsync: Default admin user already exists. Aborting initializer setup...");
 
@@ -44,7 +41,7 @@ namespace TickTask.Server.Data
             {
                 var newAdmin = new ApplicationUser
                 {
-                    //UserName = adminEmail,
+                    UserName = adminEmail,
                     Email = adminEmail,
                     SecurityStamp = Guid.NewGuid().ToString()
                 };

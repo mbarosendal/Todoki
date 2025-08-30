@@ -584,7 +584,7 @@
 	{
 		var newTask = new TaskItemDto
 			{
-				Name = "My first task",
+				Name = "My task",
 				Description = "",
 				ProjectId = 0 // optional, will be replaced with default project
 			};
@@ -599,7 +599,7 @@
 			StateHasChanged();
 
 			await Task.Delay(10);
-			await editInputRef.FocusAsync();
+			await JS.InvokeVoidAsync("selectElementText", editInputRef);
 		}
 	}
 
