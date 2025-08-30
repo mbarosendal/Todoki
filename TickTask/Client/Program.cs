@@ -31,10 +31,13 @@ builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 var jsonOptions = new JsonSerializerOptions
 {
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNameCaseInsensitive = true,
-    // This fixes the WASM nullability issue
-    TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+    PropertyNameCaseInsensitive = true
 };
+
+// Completely disable nullability info for WASM
+jsonOptions.TypeInfoResolver = JsonSerializer.IsReflectionEnabledByDefault
+    ? new DefaultJsonTypeInfoResolver()
+    : JsonTypeInfoResolver.Combine();
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {
