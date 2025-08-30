@@ -1,0 +1,195 @@
+﻿@using Blazored.LocalStorage
+@using TickTask.Shared.Data.ViewModels
+
+<div class="modal-overlay" @onclick="CloseModal" hidden="@( !IsOpen )">
+	<div class="login-modal" @onclick:stopPropagation>
+		<div class="auth-toggle">
+			<button class="@(IsLogin ? "active" : "")" @onclick="() => IsLogin = true">Login</button>
+			<button class="@(IsLogin ? "" : "active")" @onclick="() => IsLogin = false">Register</button>
+		</div>
+
+		@if (!string.IsNullOrEmpty(Error))
+		{
+			<p class="login-error">@Error</p>
+		}
+
+		<input placeholder="Email" @bind="Email" />
+		<input type="password" placeholder="Password" @bind="Password" />
+
+		@if (!IsLogin)
+		{
+			<input type="password" placeholder="Confirm Password" @bind="ConfirmPassword" />
+		}
+
+		<button class="auth-btn" @onclick="Submit">@((IsLogin) ? "Login" : "Register")</button>
+	</div>
+</div>
+
+@code {
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+	[Inject] private HttpClient Http { get; set; }
+	[Inject] private ILocalStorageService LocalStorage { get; set; }
+	[Inject] private NavigationManager Nav { get; set; }
+	[Inject] private JwtAuthenticationStateProvider AuthProvider { get; set; }
+
+	private bool IsLogin = true;
+
+	private string Email;
+	private string Password;
+	private string ConfirmPassword;
+	private string Error;
+
+	private async Task Submit()
+	{
+		Error = null;
+
+		if (!IsLogin && Password != ConfirmPassword)
+		{
+			Error = "Passwords do not match.";
+			return;
+		}
+
+		try
+		{
+			if (IsLogin)
+			{
+				var loginData = new { emailAddress = Email, password = Password };
+				var response = await Http.PostAsJsonAsync("api/authentication/login-user", loginData);
+
+				if (!response.IsSuccessStatusCode)
+				{
+					Error = "Invalid credentials";
+					return;
+				}
+
+				var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
+				if (authResponse?.IsSuccess == true)
+				{
+					await LocalStorage.SetItemAsync("authToken", authResponse.Token);
+					await LocalStorage.SetItemAsync("refreshToken", authResponse.RefreshToken);
+					AuthProvider.MarkUserAsAuthenticated(authResponse.Token);
+					Nav.NavigateTo("/", forceLoad: true);
+
+					await CloseModal();
+				}
+				else
+				{
+					Error = authResponse?.Error ?? "Login failed";
+				}
+			}
+			else
+			{
+				var registerData = new { emailAddress = Email, password = Password };
+				var response = await Http.PostAsJsonAsync("api/authentication/register-user", registerData);
+
+				if (response.IsSuccessStatusCode)
+				{
+					// Auto-login after registration
+					IsLogin = true;
+					await Submit();
+				}
+				else
+				{
+					var errorMsg = await response.Content.ReadAsStringAsync();
+					Error = $"Registration failed: {errorMsg}";
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Error = ex.Message;
+		}
+	}
+
+	private async Task CloseModal()
+	{
+		IsOpen = false;
+		await IsOpenChanged.InvokeAsync(IsOpen);
+	}
+}
+
+<style>
+	.auth-toggle {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+
+		.auth-toggle button {
+			flex: 1;
+			padding: 0.6rem;
+			border-radius: 6px;
+			border: 1px solid #444;
+			background: #121212;
+			color: white;
+			cursor: pointer;
+		}
+
+			.auth-toggle button.active {
+				background: #4cd137;
+				color: black;
+				font-weight: 600;
+			}
+
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background: rgba(0,0,0,0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1000;
+	}
+
+	.login-modal {
+		background: #1e1e1e;
+		color: white;
+		padding: 1.8rem;
+		border-radius: 10px;
+		width: 320px;
+		max-width: 90%;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+	}
+
+		.login-modal input {
+			padding: 0.6rem;
+			border-radius: 6px;
+			border: 1px solid #444;
+			background-color: #121212;
+			color: white;
+			width: 100%;
+			box-sizing: border-box;
+		}
+
+	.login-error {
+		color: #e74c3c;
+		font-size: 0.9rem;
+		margin: 0;
+		text-align: center;
+	}
+
+	.auth-btn {
+		background-color: #4cd137;
+		color: black;
+		border: none;
+		padding: 8px 16px;
+		font-size: 0.95rem;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: background-color 0.3s, transform 0.2s;
+	}
+
+		.auth-btn:hover {
+			background-color: #3ab231;
+			transform: translateY(-1px);
+		}
+
+</style>

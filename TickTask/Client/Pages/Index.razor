@@ -18,6 +18,8 @@
 		: $"🌴 {GetCountdownTimer.RemainingTime}")
 </PageTitle>
 
+<LoginModal @bind-IsOpen="showLogin" />
+
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
 	<div class="timer-container">
 
@@ -127,6 +129,7 @@
 	private UserSettingsDto userSettings = new();
 	private bool _settingsExist = false;
 	private bool showSettings = false;
+	private bool showLogin = false;
 
 	protected override async Task OnInitializedAsync()
 	{

@@ -4,11 +4,21 @@
 @inject NavigationManager Nav
 @inject HttpClient Http
 @inject ILogger<LoginDisplay> _logger
+@using TickTask.Client.Components
 
-<button class="auth-btn" @onclick="GoLogin" hidden="@IsAuthenticated">Login</button>
+<LoginModal @bind-IsOpen="showLogin" />
+
+<span class="user-label">@UserLabel</span>
+<button class="auth-btn" @onclick="() => showLogin = true" hidden="@IsAuthenticated">Login</button>
 <button class="auth-btn" @onclick="Logout" hidden="@( !IsAuthenticated )">Logout</button>
 
 <style>
+    .user-label {
+        margin-right: 8px;
+        font-size: 0.9rem;
+        color: white;
+    }
+
     .auth-btn {
         background-color: rgb(10, 137, 18);
         color: white;
@@ -34,12 +44,20 @@
 </style>
 
 @code {
+    private bool showLogin = false;
     private bool IsAuthenticated;
+    private string UserLabel = "Guest";
 
     protected override async Task OnInitializedAsync()
     {
         var state = await AuthStateProvider.GetAuthenticationStateAsync();
-        IsAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+        var user = state.User;
+        IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
+
+        if (IsAuthenticated)
+        {
+            UserLabel = user.Identity?.Name ?? user.FindFirst(c => c.Type == "email")?.Value ?? "User";
+        }
     }
 
     private void GoLogin() => Nav.NavigateTo("/login");
