@@ -15,16 +15,16 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0.0' # adjust to your version
+        dotnet-version: '8.0.x' # adjust to your version
 
     - name: Restore dependencies
       run: dotnet restore
 
     - name: Build backend
-      run: dotnet publish ./Backend/Backend.csproj -c Release -o ./publish/backend
-
+      run: dotnet publish ./TickTask/Server/TickTask.Server.csproj -c Release -o ./publish/backend
+    
     - name: Build frontend
-      run: dotnet publish ./Frontend/Frontend.csproj -c Release -o ./publish/frontend/wwwroot
+      run: dotnet publish ./TickTask/Client/TickTask.Client.csproj -c Release -o ./publish/frontend/wwwroot
 
     - name: Deploy backend to Render
       run: |
