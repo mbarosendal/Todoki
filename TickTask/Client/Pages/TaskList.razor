@@ -23,12 +23,12 @@
 					</div>
 					<div class="task-info-row tooltip">
 						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes)
-																+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+																					+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
 						<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
 					</div>
 					<div class="task-info-row tooltip">
 						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings)
-						<div class="tooltip-text">Estimated time of current task completion (breaks included)</div>
+						<div class="tooltip-text">The estimated time of current task completion (breaks included)</div>
 					</div>
 				</div>
 			}
@@ -379,9 +379,6 @@
 		StateHasChanged();
 	}
 
-
-
-
 	[Parameter] public CountdownTimerDto CurrentTimer { get; set; } = default!;
 	[Parameter] public PomodoroTimerDto ActivePomodoro { get; set; } = default!;
 	[Parameter] public ShortBreakTimerDto ActiveShortBreakTimer { get; set; } = default!;
@@ -402,6 +399,7 @@
 
 	public bool AreAllTasksDone = false;
 	public bool ShouldPlaySoundAfterAllTasksDone = false;
+	private Timer? _debounceTimer;
 
 	public TaskItemDto? ActiveTask
 	{
@@ -577,6 +575,7 @@
 			_ = TaskApiService.DeleteAsync(task.TaskItemId);
 		}
 		tasks!.Clear();
+		activeTask = null;
 	}
 
 	public async Task AddTask()
@@ -656,13 +655,13 @@
 	private async Task DeleteTask(int taskItemId)
 	{
 		var success = await TaskApiService.DeleteAsync(taskItemId);
+		var task = tasks!.FirstOrDefault(t => t.TaskItemId == taskItemId);
 
 		if (success)
-		{
-			activeTask = null;
-
 			tasks!.RemoveAll(t => t.TaskItemId == taskItemId);
-		}
+
+		if (task != null && task.IsActiveTask)
+			activeTask = null;
 	}
 
 	private async Task HandleOnTime()
@@ -704,20 +703,29 @@
 		int change = deltaY < 0 ? 1 : -1;
 		int newValue = Math.Max(1, task.EstimatedNumberOfPomodoros + change);
 
-		if (newValue != task.EstimatedNumberOfPomodoros)
+		if (newValue == task.EstimatedNumberOfPomodoros) return;
+
+		task.EstimatedNumberOfPomodoros = newValue;
+		StateHasChanged();
+
+		_debounceTimer?.Dispose();
+
+		bool isDone = newValue <= task.PomodorosRanOnTask;
+		task.IsDone = isDone;
+
+		_debounceTimer = new Timer(async _ =>
 		{
-			if (newValue <= task.PomodorosRanOnTask)
+			if (isDone)
 			{
-				await CompleteTaskAsync(task, isDone: true);
+				await CompleteTaskAsync(task, isDone);
 			}
 			else
 			{
-				await CompleteTaskAsync(task, isDone: false);
+				await TaskApiService.UpdateAsync(task);
 			}
-
-			task.EstimatedNumberOfPomodoros = newValue;
-		}
+		}, null, 500, Timeout.Infinite);
 	}
+
 
 	private async Task CompleteTaskAsync(TaskItemDto task, bool isDone)
 	{
@@ -741,7 +749,5 @@
 
 		StateHasChanged();
 	}
-
-
 
 }
