@@ -9,11 +9,8 @@ namespace TickTask.Shared
         [Required]
         [StringLength(200, MinimumLength = 1)]
         public string Title { get; set; } = "";
-
         public string Description { get; set; } = "";
-
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
-
         public string? UserId { get; set; }
         public string? GuestId { get; set; }
         public bool IsValid => !string.IsNullOrEmpty(UserId) ^ !string.IsNullOrEmpty(GuestId);
@@ -23,18 +20,14 @@ namespace TickTask.Shared
     {
         public int TaskItemId { get; set; }
         public int SortOrder { get; set; }
-
         [Required]
-        [StringLength(200, MinimumLength = 1)]
+        [StringLength(100, MinimumLength = 1)]
         public string Name { get; set; } = "";
-
         public string Description { get; set; } = "";
         public bool IsActiveTask { get; set; } = false;
         public bool IsDone { get; set; } = false;
-
         public int EstimatedNumberOfPomodoros { get; set; } = 1;
         public int PomodorosRanOnTask { get; set; } = 0;
-
         [Required]
         public int ProjectId { get; set; }
     }
@@ -42,9 +35,7 @@ namespace TickTask.Shared
     public class UserSettingsDto
     {
         public int UserSettingsId { get; set; }
-        [Required]
-        public string UserId { get; set; } = "";
-
+        public string? UserId { get; set; } = "";
         public TimeSpan PomodoroDurationMinutes { get; set; } = TimeSpan.FromMinutes(25);
         public TimeSpan ShortBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LongBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(15);

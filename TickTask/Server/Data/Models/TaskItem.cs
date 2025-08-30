@@ -8,19 +8,13 @@ namespace TickTask.Server.Data.Models
     {
         [Key]
         public int ProjectId { get; set; }
-
         [Required, StringLength(200)]
         public string Title { get; set; } = "";
-
         public string Description { get; set; } = "";
-
         public DateTime DeadLine { get; set; } = DateTime.Now.AddDays(1);
-
-        public string? UserId { get; set; }  // Remove [Required]
+        public string? UserId { get; set; }
         public string? GuestId { get; set; }
-
         public ApplicationUser? User { get; set; } = null!;
-
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
     }
 
@@ -29,17 +23,13 @@ namespace TickTask.Server.Data.Models
         [Key]
         public int TaskItemId { get; set; }
         public int SortOrder { get; set; }
-
-        [Required, StringLength(200)]
+        [Required, StringLength(100)]
         public string Name { get; set; } = "";
-
         public string Description { get; set; } = "";
         public bool IsActiveTask { get; set; } = false;
         public bool IsDone { get; set; } = false;
-
         public int EstimatedNumberOfPomodoros { get; set; } = 1;
         public int PomodorosRanOnTask { get; set; } = 0;
-
         [Required]
         public int ProjectId { get; set; }
         [ForeignKey("ProjectId")]
@@ -50,12 +40,9 @@ namespace TickTask.Server.Data.Models
     {
         [Key]
         public int UserSettingsId { get; set; }
-
         [Required]
-        public string UserId { get; set; }
-
+        public string? UserId { get; set; }
         public ApplicationUser User { get; set; } = null!;
-
         public TimeSpan PomodoroDurationMinutes { get; set; } = TimeSpan.FromMinutes(25);
         public TimeSpan ShortBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LongBreakDurationMinutes { get; set; } = TimeSpan.FromMinutes(15);

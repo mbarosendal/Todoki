@@ -31,6 +31,7 @@
             _logger.LogInformation("Found refresh token, calling logout endpoint...");
 
             var response = await Http.PostAsJsonAsync("api/authentication/logout", new { RefreshToken = refreshToken });
+            Nav.NavigateTo("/", forceLoad: true);
 
             if (response.IsSuccessStatusCode)
             {

@@ -21,6 +21,13 @@
     <script src="js/notifications.js"></script>
 
     <script>
+        window.selectElementText = (element) => {
+            if (element) {
+                element.focus();
+                element.select();
+            }
+        };
+
         window.playClickSound = () => {
             const sound = document.getElementById("clickSound");
             if (sound) {

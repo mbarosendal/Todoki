@@ -25,7 +25,7 @@ namespace TickTask.Server.Controllers
             _projectService = projectService;
         }
 
-        // GET: api/UserProject - Get current user's default project (guest or user)
+        // GET: api/UserProject
         [HttpGet]
         public async Task<ActionResult<ProjectDto>> GetMyDefaultProject()
         {
@@ -44,7 +44,7 @@ namespace TickTask.Server.Controllers
             return Ok(projectDto);
         }
 
-        // PUT: api/UserProject - Update current user's default project
+        // PUT: api/UserProject
         [HttpPut]
         public async Task<IActionResult> UpdateMyDefaultProject(ProjectDto projectDto)
         {
@@ -68,14 +68,13 @@ namespace TickTask.Server.Controllers
             return NoContent();
         }
 
-        // POST: api/UserProject - Create default project if none exists
+        // POST: api/UserProject
         [HttpPost]
         public async Task<ActionResult<ProjectDto>> CreateMyDefaultProject(ProjectDto projectDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var guestId = Request.Cookies["GuestId"];
 
-            // Ensure guest has an ID
             if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(guestId))
             {
                 guestId = Guid.NewGuid().ToString();

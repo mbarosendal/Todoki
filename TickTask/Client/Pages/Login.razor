@@ -50,11 +50,10 @@
                     return;
                 }
 
-                // Success path
                 await LocalStorage.SetItemAsync("authToken", authResponse.Token);
                 await LocalStorage.SetItemAsync("refreshToken", authResponse.RefreshToken);
                 AuthProvider.MarkUserAsAuthenticated(authResponse.Token);
-                Nav.NavigateTo("/");
+                Nav.NavigateTo("/", forceLoad: true);
             }
             else
             {

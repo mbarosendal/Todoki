@@ -15,14 +15,12 @@ namespace TickTask.Client.Services
             _http = httpFactory.CreateClient("ServerAPI");
         }
 
-        // ✔️ 
         public async Task<UserSettingsDto> GetAsync()
         {
             return await _http.GetFromJsonAsync<UserSettingsDto>("api/UserSettings")
                    ?? new UserSettingsDto();
         }
 
-        // ✔️ 
         public async Task<bool> UpdateAsync(UserSettingsDto userSettings)
         {
             var response = await _http.PutAsJsonAsync($"api/UserSettings", userSettings);
