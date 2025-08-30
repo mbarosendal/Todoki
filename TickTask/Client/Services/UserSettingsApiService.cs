@@ -1,43 +1,40 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Threading.Tasks;
+using TickTask.Client.Shared;
 using TickTask.Shared;
 
 namespace TickTask.Client.Services
 {
     public class UserSettingsApiService : IUserSettingsApiService
     {
+        private readonly HttpClientWrapper _http;
 
-        private readonly HttpClient _http;
-
-        public UserSettingsApiService(IHttpClientFactory httpFactory)
+        public UserSettingsApiService(HttpClientWrapper http)
         {
-            _http = httpFactory.CreateClient("ServerAPI");
+            _http = http;
         }
 
         public async Task<UserSettingsDto> GetAsync()
         {
-            return await _http.GetFromJsonAsync<UserSettingsDto>("api/UserSettings")
+            return await _http.GetJsonAsync<UserSettingsDto>("api/UserSettings")
                    ?? new UserSettingsDto();
         }
 
         public async Task<bool> UpdateAsync(UserSettingsDto userSettings)
         {
-            var response = await _http.PutAsJsonAsync($"api/UserSettings", userSettings);
+            var response = await _http.PutAsJsonAsync("api/UserSettings", userSettings);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<UserSettingsDto?> CreateAsync(UserSettingsDto userSettings)
         {
-            var response = await _http.PostAsJsonAsync("api/UserSettings", userSettings);
-            return await response.Content.ReadFromJsonAsync<UserSettingsDto>();
+            return await _http.PostAsJsonAsync<UserSettingsDto>("api/UserSettings", userSettings);
         }
 
         public async Task<bool> DeleteAsync()
         {
-            var response = await _http.DeleteAsync($"api/UserSettings");
+            var response = await _http.DeleteAsync("api/UserSettings");
             return response.IsSuccessStatusCode;
         }
-
     }
 }

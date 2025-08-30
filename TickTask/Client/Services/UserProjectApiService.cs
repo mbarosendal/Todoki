@@ -1,34 +1,33 @@
-﻿using System.Net.Http.Json;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using TickTask.Client.Shared;
 using TickTask.Shared;
 
 namespace TickTask.Client.Services
 {
     public class UserProjectApiService
     {
-        private readonly HttpClient _http;
+        private readonly HttpClientWrapper _http;
 
-        public UserProjectApiService(IHttpClientFactory httpFactory)
+        public UserProjectApiService(HttpClientWrapper http)
         {
-            _http = httpFactory.CreateClient("ServerAPI");
+            _http = http;
         }
 
         public async Task<ProjectDto> GetDefaultProjectAsync()
         {
-            return await _http.GetFromJsonAsync<ProjectDto>("api/UserProject");
+            return await _http.GetJsonAsync<ProjectDto>("api/UserProject")
+                   ?? new ProjectDto();
         }
 
-        public async Task<ProjectDto> CreateDefaultProjectAsync(ProjectDto project)
+        public async Task<ProjectDto?> CreateDefaultProjectAsync(ProjectDto project)
         {
-            var response = await _http.PostAsJsonAsync("api/UserProject", project);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<ProjectDto>();
+            return await _http.PostAsJsonAsync<ProjectDto>("api/UserProject", project);
         }
 
-        public async Task UpdateDefaultProjectAsync(ProjectDto project)
+        public async Task<bool> UpdateDefaultProjectAsync(ProjectDto project)
         {
             var response = await _http.PutAsJsonAsync("api/UserProject", project);
-            response.EnsureSuccessStatusCode();
+            return response.IsSuccessStatusCode;
         }
     }
 }

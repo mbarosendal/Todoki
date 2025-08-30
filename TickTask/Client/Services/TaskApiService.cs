@@ -1,49 +1,55 @@
-﻿using System.Net.Http.Json;
-using TickTask.Client.Services;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using TickTask.Client.Shared;
 using TickTask.Shared;
 
-public class TaskApiService
+namespace TickTask.Client.Services
 {
-    private readonly HttpClient _http;
-
-    public TaskApiService(IHttpClientFactory httpFactory)
+    public class TaskApiService
     {
-        _http = httpFactory.CreateClient("ServerAPI");
-    }
+        private readonly HttpClientWrapper _http;
 
-    public async Task<List<TaskItemDto>> GetAllAsync(int? projectId = null)
-    {
-        var url = projectId.HasValue ? $"api/TaskItems?projectId={projectId}" : "api/TaskItems";
-        return await _http.GetFromJsonAsync<List<TaskItemDto>>(url) ?? new List<TaskItemDto>();
-    }
+        // Inject the wrapper instead of raw HttpClient
+        public TaskApiService(HttpClientWrapper http)
+        {
+            _http = http;
+        }
 
-    public async Task<TaskItemDto?> GetByIdAsync(int id)
-    {
-        if (id == 0) return null; // don't call backend with ID 0
-        return await _http.GetFromJsonAsync<TaskItemDto>($"api/TaskItems/{id}");
-    }
+        public Task<List<TaskItemDto>> GetAllAsync(int? projectId = null)
+        {
+            var url = projectId.HasValue ? $"api/TaskItems?projectId={projectId}" : "api/TaskItems";
+            return _http.GetJsonAsync<List<TaskItemDto>>(url)
+                        .ContinueWith(t => t.Result ?? new List<TaskItemDto>());
+        }
 
-    public async Task<bool> UpdateAsync(TaskItemDto task)
-    {
-        var response = await _http.PutAsJsonAsync($"api/TaskItems/{task.TaskItemId}", task);
-        return response.IsSuccessStatusCode;
-    }
+        public Task<TaskItemDto?> GetByIdAsync(int id)
+        {
+            if (id == 0) return Task.FromResult<TaskItemDto?>(null);
+            return _http.GetJsonAsync<TaskItemDto>($"api/TaskItems/{id}");
+        }
 
-    public async Task<TaskItemDto?> CreateAsync(TaskItemDto task)
-    {
-        var response = await _http.PostAsJsonAsync("api/TaskItems", task);
-        return await response.Content.ReadFromJsonAsync<TaskItemDto>();
-    }
+        public async Task<bool> UpdateAsync(TaskItemDto task)
+        {
+            var response = await _http.PutAsJsonAsync("api/TaskItems/" + task.TaskItemId, task);
+            return response.IsSuccessStatusCode;
+        }
 
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var response = await _http.DeleteAsync($"api/TaskItems/{id}");
-        return response.IsSuccessStatusCode;
-    }
+        public async Task<TaskItemDto?> CreateAsync(TaskItemDto task)
+        {
+            return await _http.PostAsJsonAsync<TaskItemDto>("api/TaskItems", task);
+        }
 
-    public async Task<bool> SaveTaskOrderAsync(List<TaskItemDto> reorderedTasks)
-    {
-        var response = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
-        return response.IsSuccessStatusCode;
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var response = await _http.DeleteAsync($"api/TaskItems/{id}");
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> SaveTaskOrderAsync(List<TaskItemDto> reorderedTasks)
+        {
+            var response = await _http.PutAsJsonAsync("api/TaskItems/reorder", reorderedTasks);
+            return response.IsSuccessStatusCode;
+        }
     }
 }
