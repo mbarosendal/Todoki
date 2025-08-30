@@ -1,10 +1,14 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace TickTask.Server.Data.Migrations
+#nullable disable
+
+namespace TickTask.Server.Migrations
 {
-    public partial class CreateIdentitySchema : Migration
+    /// <inheritdoc />
+    public partial class InitialSQLServer : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -44,63 +48,6 @@ namespace TickTask.Server.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DeviceCodes",
-                columns: table => new
-                {
-                    UserCode = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    DeviceCode = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    SubjectId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    SessionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    ClientId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Expiration = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Data = table.Column<string>(type: "nvarchar(max)", maxLength: 51110, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DeviceCodes", x => x.UserCode);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Keys",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Version = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Use = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
-                    Algorithm = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    IsX509Certificate = table.Column<bool>(type: "bit", nullable: false),
-                    DataProtected = table.Column<bool>(type: "bit", nullable: false),
-                    Data = table.Column<string>(type: "nvarchar(max)", maxLength: 51110, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Keys", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PersistedGrants",
-                columns: table => new
-                {
-                    Key = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SubjectId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    SessionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    ClientId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Expiration = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ConsumedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Data = table.Column<string>(type: "nvarchar(max)", maxLength: 51110, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PersistedGrants", x => x.Key);
                 });
 
             migrationBuilder.CreateTable(
@@ -149,8 +96,8 @@ namespace TickTask.Server.Data.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -194,8 +141,8 @@ namespace TickTask.Server.Data.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -206,6 +153,114 @@ namespace TickTask.Server.Data.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projects",
+                columns: table => new
+                {
+                    ProjectId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DeadLine = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    GuestId = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projects", x => x.ProjectId);
+                    table.ForeignKey(
+                        name: "FK_Projects_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    JwtId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    DateAdded = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateExpire = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserSettings",
+                columns: table => new
+                {
+                    UserSettingsId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PomodoroDurationMinutes = table.Column<TimeSpan>(type: "time", nullable: false),
+                    ShortBreakDurationMinutes = table.Column<TimeSpan>(type: "time", nullable: false),
+                    LongBreakDurationMinutes = table.Column<TimeSpan>(type: "time", nullable: false),
+                    PomodoroText = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShortBreakText = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LongBreakText = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HideTasks = table.Column<bool>(type: "bit", nullable: false),
+                    HideActiveTask = table.Column<bool>(type: "bit", nullable: false),
+                    IsAutoStart = table.Column<bool>(type: "bit", nullable: false),
+                    IsAutoStartAfterRestart = table.Column<bool>(type: "bit", nullable: false),
+                    AutomaticallyMarkDoneTasks = table.Column<bool>(type: "bit", nullable: false),
+                    AutomaticallyProceedToNextTaskAfterDone = table.Column<bool>(type: "bit", nullable: false),
+                    AutomaticallyClearDoneTasks = table.Column<bool>(type: "bit", nullable: false),
+                    EnableNotifications = table.Column<bool>(type: "bit", nullable: false),
+                    NumberOfPomodorosRun = table.Column<int>(type: "int", nullable: false),
+                    RunsBeforeLongBreak = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSettings", x => x.UserSettingsId);
+                    table.ForeignKey(
+                        name: "FK_UserSettings_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaskItems",
+                columns: table => new
+                {
+                    TaskItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActiveTask = table.Column<bool>(type: "bit", nullable: false),
+                    IsDone = table.Column<bool>(type: "bit", nullable: false),
+                    EstimatedNumberOfPomodoros = table.Column<int>(type: "int", nullable: false),
+                    PomodorosRanOnTask = table.Column<int>(type: "int", nullable: false),
+                    ProjectId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskItems", x => x.TaskItemId);
+                    table.ForeignKey(
+                        name: "FK_TaskItems_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "ProjectId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -249,42 +304,28 @@ namespace TickTask.Server.Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DeviceCodes_DeviceCode",
-                table: "DeviceCodes",
-                column: "DeviceCode",
+                name: "IX_Projects_UserId",
+                table: "Projects",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskItems_ProjectId",
+                table: "TaskItems",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSettings_UserId",
+                table: "UserSettings",
+                column: "UserId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DeviceCodes_Expiration",
-                table: "DeviceCodes",
-                column: "Expiration");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Keys_Use",
-                table: "Keys",
-                column: "Use");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_ConsumedTime",
-                table: "PersistedGrants",
-                column: "ConsumedTime");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_Expiration",
-                table: "PersistedGrants",
-                column: "Expiration");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_SubjectId_ClientId_Type",
-                table: "PersistedGrants",
-                columns: new[] { "SubjectId", "ClientId", "Type" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_SubjectId_SessionId_Type",
-                table: "PersistedGrants",
-                columns: new[] { "SubjectId", "SessionId", "Type" });
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -303,16 +344,19 @@ namespace TickTask.Server.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "DeviceCodes");
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
-                name: "Keys");
+                name: "TaskItems");
 
             migrationBuilder.DropTable(
-                name: "PersistedGrants");
+                name: "UserSettings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
