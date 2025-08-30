@@ -1,0 +1,39 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - master  # or your deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.0' # adjust to your version
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build backend
+      run: dotnet publish ./Backend/Backend.csproj -c Release -o ./publish/backend
+
+    - name: Build frontend
+      run: dotnet publish ./Frontend/Frontend.csproj -c Release -o ./publish/frontend/wwwroot
+
+    - name: Deploy backend to Render
+      run: |
+        curl -X POST https://api.render.com/deploy/srv-RENDER_SERVICE_ID_BACKEND \
+        -H "Accept: application/json" \
+        -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+
+    - name: Deploy frontend to Render
+      run: |
+        curl -X POST https://api.render.com/deploy/srv-RENDER_SERVICE_ID_FRONTEND \
+        -H "Accept: application/json" \
+        -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
