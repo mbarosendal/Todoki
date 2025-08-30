@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using TickTask.Client;
 using TickTask.Client.Services;
 using TickTask.Client.Shared;
@@ -24,14 +25,15 @@ builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(
     sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 builder.Services.AddSingleton<TimerStateService>();
-
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 
-// Configure HttpClient with global JsonSerializerOptions
+// Configure HttpClient with WASM-compatible JsonSerializerOptions
 var jsonOptions = new JsonSerializerOptions
 {
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNameCaseInsensitive = true
+    PropertyNameCaseInsensitive = true,
+    // This fixes the WASM nullability issue
+    TypeInfoResolver = new DefaultJsonTypeInfoResolver()
 };
 
 builder.Services.AddHttpClient("ServerAPI", client =>
@@ -47,7 +49,6 @@ builder.Services.AddScoped(sp =>
 {
     var clientFactory = sp.GetRequiredService<IHttpClientFactory>();
     var client = clientFactory.CreateClient("ServerAPI");
-
     // Wrap client to include JsonOptions globally
     return new HttpClientWrapper(client, jsonOptions);
 });
