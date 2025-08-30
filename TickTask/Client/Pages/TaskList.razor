@@ -311,6 +311,8 @@
 			}
 			else if (e.ShiftKey)
 			{
+				await JS.InvokeVoidAsync("blazorPreventDefault", e.Code);
+
 				// Shift + ArrowUp / ArrowDown
 				if (e.Key == "ArrowUp")
 				{
