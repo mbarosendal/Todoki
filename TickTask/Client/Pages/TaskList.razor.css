@@ -185,24 +185,39 @@
 
 
 /*< Style for the timer tab*/
+/* Container wrapping active task + tasks */
+.tasks-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* fills parent container dynamically */
+}
+
 
 /* Active Task Section */
 .active-task-section {
+    flex: 0 0 auto;
+    position: sticky;
+    top: 0;
+    z-index: 50;
     background: rgba(10, 137, 18, 1);
     border-radius: 12px 12px 0 0;
     padding: 16px 20px;
     margin-top: 20px;
-    position: relative;
 }
+
 
 /* Tasks Section */
 .tasks-section {
-    position: relative;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px 20px 20px 20px;
     background: rgba(89, 8, 8, 0.25);
     border-radius: 0 0 12px 12px;
-    padding: 16px 20px 20px 20px;
-    margin-top: 0;
 }
+
+    .tasks-section > * {
+        margin-bottom: 8px;
+    }
 
 /* Section labels */
 .section-label {

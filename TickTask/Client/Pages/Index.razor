@@ -22,8 +22,8 @@
 
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
 	<div class="timer-container">
-
-		<!-- Timer Tabs -->
+		<div class="timer-header" style="background-color:@GetBackgroundColor();">	
+			<!-- Timer Tabs -->
 		<div class="timer-tabs">
 			@foreach (TimerType type in Enum.GetValues<TimerType>())
 			{
@@ -66,6 +66,7 @@
 			</button>
 		</div>
 
+		    </div>
 		<!-- Task List Component -->
 		<TaskList @ref="taskListRef"
 				  Settings="userSettings"
@@ -117,7 +118,7 @@
 	{
 		TimerType.Pomodoro => "rgba(227, 18, 10, 1)",     // Red
 		TimerType.ShortBreak => "rgba(9, 180, 237, 1)",   // Blue
-		TimerType.LongBreak => "rgba(0, 191, 0, 0.8)",      // Green
+		TimerType.LongBreak => "rgba(0, 191, 0, 1)",      // Green
 		_ => "rgba(227, 18, 10, 1)"
 	};
 

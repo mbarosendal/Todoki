@@ -6,197 +6,199 @@
 @inject ILogger<TaskList> Logger
 
 <!-- Active Task Section -->
-<div class="active-task-section">
-	@if (!Settings.HideActiveTask)
-	{
-		<div class="active-task-content" style="min-height:60px">
-			@if (ActiveTask != null)
-			{
-				<div class="active-task-left">
-					<div class="section-label">Current task</div>
-					<div class="active-task-name">@ActiveTask.Name</div>
-				</div>
-				<div class="active-task-right">
-					<div class="task-info-row tooltip">
-						🍅 @ActiveTask.PomodorosRanOnTask/@ActiveTask.EstimatedNumberOfPomodoros
-						<div class="tooltip-text">Pomodoro progress on current task</div>
-					</div>
-					<div class="task-info-row tooltip">
-						⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes)
-																					+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
-						<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
-					</div>
-					<div class="task-info-row tooltip">
-						🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings)
-						<div class="tooltip-text">The estimated time of current task completion (breaks included)</div>
-					</div>
-				</div>
-			}
-			else
-			{
-				<div class="active-task-left">
-					<div class="active-task-name">@(HasMoreTasks() ? "No current task set" : "All done!")</div>
-				</div>
-			}
-		</div>
-
-		<!-- Active Task Check-in-->
-		@if (IsOnBreak && ActiveTask != null)
+<div class="tasks-wrapper">
+	<div class="active-task-section">
+		@if (!Settings.HideActiveTask)
 		{
-			<div class="checkin-container">
-				<div class="question-label">How is it going?</div>
-				<div class="checkin-buttons">
-					<div class="task-info-row tooltip" @onclick="HandleOnTime" style="cursor: pointer;">
-						👍
-						<div class="tooltip-text">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings))</div>
-					</div>
-					<div class="task-info-row tooltip" @onclick="HandleNeedMoreTime" style="cursor: pointer;">
-						⏰
-						<div class="tooltip-text">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
-					</div>
-					<div class="task-info-row tooltip" @onclick="HandleTaskDone" style="cursor: pointer;">
-						✅
-						<div class="tooltip-text">I'm done with this task (Mark done & move to next)</div>
-					</div>
-				</div>
-			</div>
-		}
-	}
-</div>
-
-<!-- Tasks Section -->
-<div class="tasks-section">
-	@if (!IsOnBreak)
-	{
-		<div class="tasks-header">
-			<div class="section-label">Tasks</div>
-			<button class="menu-btn" @onclick="ToggleMenu">⋮</button>
-		</div>
-	}
-
-	<!-- Popup menu -->
-	@if (showMenu)
-	{
-		<div class="menu-popup" @onclick="() => showMenu = false">
-			<button class="menu-item" @onclick="ClearFinished">Clear finished tasks</button>
-			<button class="menu-item" @onclick="ConfirmClearAll">Clear all tasks</button>
-			<button class="menu-item" @onclick="HideActiveTaskAsync">@(Settings.HideActiveTask ? "Show active task" : "Hide active task")</button>
-			<button class="menu-item" @onclick="HideTasksAsync">@(Settings.HideTasks ? "Show tasks" : "Hide tasks")</button>
-			<button class="menu-item" @onclick="OnResetPomodoros">Reset Pomodoro</button>
-		</div>
-	}
-
-	@if (tasks == null)
-	{
-		<div class="loading">Loading tasks...</div>
-	}
-	else if (IsOnBreak)
-	{
-		<!-- Break display (no tasks, just break) -->
-		<div class="section-label">@(GetBreakText() == "" ? "Take a break" : "Reminder")</div>
-
-		<div class="break-screen">
-			<div class="break-message">
-				@if (GetBreakText() == "")
+			<div class="active-task-content" style="min-height:60px">
+				@if (ActiveTask != null)
 				{
-					<div class="break-icon">🌴</div>
+					<div class="active-task-left">
+						<div class="section-label">Current task</div>
+						<div class="active-task-name">@ActiveTask.Name</div>
+					</div>
+					<div class="active-task-right">
+						<div class="task-info-row tooltip">
+							🍅 @ActiveTask.PomodorosRanOnTask/@ActiveTask.EstimatedNumberOfPomodoros
+							<div class="tooltip-text">Pomodoro progress on current task</div>
+						</div>
+						<div class="task-info-row tooltip">
+							⏳ @((((ActiveTask.EstimatedNumberOfPomodoros - ActiveTask.PomodorosRanOnTask - 1) * ActivePomodoro.Duration.TotalMinutes)
+												+ ActivePomodoro.RemainingTime.TotalMinutes).ToString("0")) min
+							<div class="tooltip-text">Your estimated minutes of work left on current task (breaks excluded)</div>
+						</div>
+						<div class="task-info-row tooltip">
+							🕒 @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings)
+							<div class="tooltip-text">The estimated time of current task completion (breaks included)</div>
+						</div>
+					</div>
 				}
 				else
 				{
-					<p class="break-text">@GetBreakText()</p>
+					<div class="active-task-left">
+						<div class="active-task-name">@(HasMoreTasks() ? "No current task set" : "All done!")</div>
+					</div>
 				}
 			</div>
-		</div>
-	}
-	else if (Settings.HideTasks)
-	{
-		<div class="tasks-hidden">Tasks are hidden.</div>
-	}
-	else
-	{
-		<!-- Tasks display -->
-		@for (int i = 0; i < tasks.Count; i++)
-		{
-			var task = tasks[i];
-			var index = i;
 
-			<div class="task-wrapper"
-			@ondragover="(e) => OnDragOver(e, index)"
-			@ondragover:preventDefault
-			@ondrop="(e) => OnDrop(e, index)"
-			@ondrop:preventDefault
-			@ondragleave="OnDragLeave">
-
-				<!-- Drop indicator line -->
-				<div class="drop-indicator @(dropIndicatorIndex == index ? "visible" : "")"></div>
-
-				<!-- Original task item -->
-				<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
-				draggable="@(editingTaskId == task.TaskItemId ? "false" : "true")"
-				@ondragstart="@(editingTaskId == task.TaskItemId ? null : (e) => OnDragStart(e, index))"
-				@ondragend="@(editingTaskId == task.TaskItemId ? null : OnDragEnd)"
-				@onclick="() => SetActiveTask(task.TaskItemId)"
-				@onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
-				@onwheel:preventDefault="true"
-				@ondblclick="() => StartEdit(task.TaskItemId)">
-
-					<input type="checkbox"
-					class="task-checkbox"
-					checked="@task.IsDone"
-					@onclick="() => FinishTask(task.TaskItemId)"
-					@onclick:stopPropagation="true" />
-
-					<div class="task-info">
-						<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
+			<!-- Active Task Check-in-->
+			@if (IsOnBreak && ActiveTask != null)
+			{
+				<div class="checkin-container">
+					<div class="question-label">How is it going?</div>
+					<div class="checkin-buttons">
+						<div class="task-info-row tooltip" @onclick="HandleOnTime" style="cursor: pointer;">
+							👍
+							<div class="tooltip-text">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings))</div>
+						</div>
+						<div class="task-info-row tooltip" @onclick="HandleNeedMoreTime" style="cursor: pointer;">
+							⏰
+							<div class="tooltip-text">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
+						</div>
+						<div class="task-info-row tooltip" @onclick="HandleTaskDone" style="cursor: pointer;">
+							✅
+							<div class="tooltip-text">I'm done with this task (Mark done & move to next)</div>
+						</div>
 					</div>
+				</div>
+			}
+		}
+	</div>
 
-					@if (editingTaskId == task.TaskItemId)
+	<!-- Tasks Section -->
+	<div class="tasks-section">
+		@if (!IsOnBreak)
+		{
+			<div class="tasks-header">
+				<div class="section-label">Tasks</div>
+				<button class="menu-btn" @onclick="ToggleMenu">⋮</button>
+			</div>
+		}
+
+		<!-- Popup menu -->
+		@if (showMenu)
+		{
+			<div class="menu-popup" @onclick="() => showMenu = false">
+				<button class="menu-item" @onclick="ClearFinished">Clear finished tasks</button>
+				<button class="menu-item" @onclick="ConfirmClearAll">Clear all tasks</button>
+				<button class="menu-item" @onclick="HideActiveTaskAsync">@(Settings.HideActiveTask ? "Show active task" : "Hide active task")</button>
+				<button class="menu-item" @onclick="HideTasksAsync">@(Settings.HideTasks ? "Show tasks" : "Hide tasks")</button>
+				<button class="menu-item" @onclick="OnResetPomodoros">Reset Pomodoro</button>
+			</div>
+		}
+
+		@if (tasks == null)
+		{
+			<div class="loading">Loading tasks...</div>
+		}
+		else if (IsOnBreak)
+		{
+			<!-- Break display (no tasks, just break) -->
+			<div class="section-label">@(GetBreakText() == "" ? "Take a break" : "Reminder")</div>
+
+			<div class="break-screen">
+				<div class="break-message">
+					@if (GetBreakText() == "")
 					{
-						<input class="task-edit-input @(task.IsDone ? "completed" : "")"
-						@bind="task.Name"
-						@bind:event="oninput"
-						@onblur="() => FinishEdit(task)"
-						@onkeydown="(e) => HandleKeyDown(e, task)"
-						@onkeydown:stopPropagation="true"
-						@onclick:stopPropagation="true"
-						draggable="false"
-						@ondragstart:preventDefault
-						@ref="editInputRef"
-						placeholder="What's your task?" />
+						<div class="break-icon">🌴</div>
 					}
 					else
 					{
-						<span class="task-name @(task.IsDone ? "completed" : "")">@task.Name</span>
+						<p class="break-text">@GetBreakText()</p>
 					}
+				</div>
+			</div>
+		}
+		else if (Settings.HideTasks)
+		{
+			<div class="tasks-hidden">Tasks are hidden.</div>
+		}
+		else
+		{
+			<!-- Tasks display -->
+			@for (int i = 0; i < tasks.Count; i++)
+			{
+				var task = tasks[i];
+				var index = i;
 
-					<p> @task.SortOrder </p>
+				<div class="task-wrapper"
+					 @ondragover="(e) => OnDragOver(e, index)"
+				@ondragover:preventDefault
+					 @ondrop="(e) => OnDrop(e, index)"
+				@ondrop:preventDefault
+					 @ondragleave="OnDragLeave">
 
-					<div class="task-actions">
-						<button class="task-btn" @onclick="() => StartEdit(task.TaskItemId)" @onclick:stopPropagation="true">✎</button>
-						<button class="task-btn" @onclick="() => DeleteTask(task.TaskItemId)" @onclick:stopPropagation="true">❌</button>
-						<button class="task-btn" @onclick:stopPropagation="true">⋯</button>
+					<!-- Drop indicator line -->
+					<div class="drop-indicator @(dropIndicatorIndex == index ? "visible" : "")"></div>
+
+					<!-- Original task item -->
+					<div class="task-item @(ActiveTaskId == task.TaskItemId ? "active" : "") @(task.IsDone ? "completed" : "") @(draggedTaskIndex == index ? "dragging" : "")"
+						 draggable="@(editingTaskId == task.TaskItemId ? "false" : "true")"
+						 @ondragstart="@(editingTaskId == task.TaskItemId ? null : (e) => OnDragStart(e, index))"
+						 @ondragend="@(editingTaskId == task.TaskItemId ? null : OnDragEnd)"
+						 @onclick="() => SetActiveTask(task.TaskItemId)"
+						 @onwheel="(e) => AdjustEstimatedPomodoros(task.TaskItemId, e.DeltaY)"
+						 @onwheel:preventDefault="true"
+						 @ondblclick="() => StartEdit(task.TaskItemId)">
+
+						<input type="checkbox"
+							   class="task-checkbox"
+							   checked="@task.IsDone"
+							   @onclick="() => FinishTask(task.TaskItemId)"
+							   @onclick:stopPropagation="true" />
+
+						<div class="task-info">
+							<span class="task-progress">@task.PomodorosRanOnTask/@task.EstimatedNumberOfPomodoros</span>
+						</div>
+
+						@if (editingTaskId == task.TaskItemId)
+						{
+							<input class="task-edit-input @(task.IsDone ? "completed" : "")"
+								   @bind="task.Name"
+								   @bind:event="oninput"
+								   @onblur="() => FinishEdit(task)"
+								   @onkeydown="(e) => HandleKeyDown(e, task)"
+								   @onkeydown:stopPropagation="true"
+								   @onclick:stopPropagation="true"
+								   draggable="false"
+							@ondragstart:preventDefault
+								   @ref="editInputRef"
+								   placeholder="What's your task?" />
+						}
+						else
+						{
+							<span class="task-name @(task.IsDone ? "completed" : "")">@task.Name</span>
+						}
+
+						<p> @task.SortOrder </p>
+
+						<div class="task-actions">
+							<button class="task-btn" @onclick="() => StartEdit(task.TaskItemId)" @onclick:stopPropagation="true">✎</button>
+							<button class="task-btn" @onclick="() => DeleteTask(task.TaskItemId)" @onclick:stopPropagation="true">❌</button>
+							<button class="task-btn" @onclick:stopPropagation="true">⋯</button>
+						</div>
 					</div>
 				</div>
+
+			}
+
+			<!-- Final drop zone for bottom -->
+			<div class="task-wrapper bottom-drop-zone @(IsDragging ? "active" : "")"
+				 @ondragover="(e) => OnDragOver(e, tasks.Count)"
+			@ondragover:preventDefault
+				 @ondrop="(e) => OnDrop(e, tasks.Count)"
+			@ondrop:preventDefault
+				 @ondragleave="OnDragLeave">
+
+				<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
+			</div>
+
+			<div class="add-task-section">
+				<button class="add-task-btn" @onclick="AddTask">Add Task</button>
 			</div>
 
 		}
-
-		<!-- Final drop zone for bottom -->
-		<div class="task-wrapper bottom-drop-zone @(IsDragging ? "active" : "")"
-		@ondragover="(e) => OnDragOver(e, tasks.Count)"
-		@ondragover:preventDefault
-		@ondrop="(e) => OnDrop(e, tasks.Count)"
-		@ondrop:preventDefault
-		@ondragleave="OnDragLeave">
-
-			<div class="drop-indicator @(dropIndicatorIndex == tasks.Count ? "visible" : "")"></div>
-		</div>
-
-		<div class="add-task-section">
-			<button class="add-task-btn" @onclick="AddTask">Add Task</button>
-		</div>
-
-	}
+	</div>
 </div>
 
 @code {

@@ -22,6 +22,7 @@ namespace TickTask.Client
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<JwtAuthenticationStateProvider>();
             builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
+            builder.Services.AddSingleton<TimerStateService>();
 
             builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 

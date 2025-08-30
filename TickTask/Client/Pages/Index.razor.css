@@ -1,4 +1,13 @@
-﻿.timer-container {
+﻿.timer-header {
+    position: sticky;
+    top: 0;
+    background-color: rgb(228, 17, 9);
+    z-index: 100;
+    padding: 20px; /* inside space */
+    margin-bottom: 20px; /* gives space to whatever follows */
+}
+
+.timer-container {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
@@ -8,6 +17,9 @@
 }
 
 .timer-tabs {
+    position: sticky;
+    top: 35px;
+    z-index: 100;
     display: flex;
     justify-content: center;
     gap: 1px;
