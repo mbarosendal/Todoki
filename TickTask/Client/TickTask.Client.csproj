@@ -1,32 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.19" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.8" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.19" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.19" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.8" />
-    <PackageReference Include="System.Text.Json" Version="10.0.0-preview.7.25380.108" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.19" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Shared\TickTask.Shared.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="wwwroot\Sounds\" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Update="wwwroot\Sounds\timer-alarm.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
 </Project>

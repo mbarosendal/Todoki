@@ -27,18 +27,13 @@ builder.Services.AddScoped<AuthenticationStateProvider>(
 builder.Services.AddSingleton<TimerStateService>();
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 
-// Configure HttpClient with WASM-compatible JsonSerializerOptions
+// Configure HttpClient with basic JsonSerializerOptions
 var jsonOptions = new JsonSerializerOptions
 {
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 };
-
-// For WASM, configure the default resolver without nullability context
-var resolver = new DefaultJsonTypeInfoResolver();
-jsonOptions.TypeInfoResolver = resolver;
-jsonOptions.TypeInfoResolverChain.Insert(0, resolver);
 
 builder.Services.AddHttpClient("ServerAPI", client =>
 {
