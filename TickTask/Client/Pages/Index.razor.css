@@ -2,7 +2,7 @@
     position: sticky;
     top: 0;
     background-color: rgb(228, 17, 9);
-    z-index: 0;
+    z-index: 20;
     padding: 20px;
     margin-bottom: 20px;
 }

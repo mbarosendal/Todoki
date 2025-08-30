@@ -1,19 +1,30 @@
-﻿@using TickTask.Client.Enums
+﻿@using TickTask.Client.Components
+@using TickTask.Client.Enums
 @using TickTask.Client.Services
 @inject TimerStateService TimerState
 @implements IDisposable
-
 @inherits LayoutComponentBase
+
 <div class="page">
     <main>
         <div class="top-row px-4 auth" style="background-color:@GetNavBackgroundColor() !important">
-            <LoginDisplay />
+            <LoginDisplay OnLoginRequested="ShowLoginModal" />
         </div>
         @Body
     </main>
 </div>
 
+<LoginModal @bind-IsOpen="showLoginModal" />
+
 @code {
+    private bool showLoginModal = false;
+
+    private void ShowLoginModal()
+    {
+        showLoginModal = true;
+        StateHasChanged();
+    }
+
     protected override void OnInitialized()
     {
         TimerState.OnChange += HandleTimerChanged;

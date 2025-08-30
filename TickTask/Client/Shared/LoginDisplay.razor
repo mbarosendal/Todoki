@@ -4,13 +4,67 @@
 @inject NavigationManager Nav
 @inject HttpClient Http
 @inject ILogger<LoginDisplay> _logger
-@using TickTask.Client.Components
-
-<LoginModal @bind-IsOpen="showLogin" />
 
 <span class="user-label">@UserLabel</span>
-<button class="auth-btn" @onclick="() => showLogin = true" hidden="@IsAuthenticated">Login</button>
+<button class="auth-btn" @onclick="RequestLogin" hidden="@IsAuthenticated">Login</button>
 <button class="auth-btn" @onclick="Logout" hidden="@( !IsAuthenticated )">Logout</button>
+
+@code {
+    [Parameter] public EventCallback OnLoginRequested { get; set; }
+
+    private bool IsAuthenticated;
+    private string UserLabel = "Guest";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        if (IsAuthenticated)
+        {
+            UserLabel = user.Identity?.Name ?? user.FindFirst(c => c.Type == "email")?.Value ?? "User";
+        }
+    }
+
+    private async Task RequestLogin()
+    {
+        await OnLoginRequested.InvokeAsync();
+    }
+
+    private async Task Logout()
+    {
+        _logger.LogInformation("Attempting to log out...");
+        var refreshToken = await LocalStorage.GetItemAsync<string>("refreshToken");
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            _logger.LogInformation("Found refresh token, calling logout endpoint...");
+            var response = await Http.PostAsJsonAsync("api/authentication/logout", new { RefreshToken = refreshToken });
+            Nav.NavigateTo("/", forceLoad: true);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Logout success, clearing tokens...");
+                await LocalStorage.RemoveItemAsync("authToken");
+                await LocalStorage.RemoveItemAsync("refreshToken");
+            }
+            else
+            {
+                _logger.LogWarning("Logout HTTP failed: " + response.StatusCode);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("No refresh token found, just clearing local JWT");
+            await LocalStorage.RemoveItemAsync("authToken");
+        }
+
+        if (AuthStateProvider is JwtAuthenticationStateProvider jwtAuth)
+        {
+            jwtAuth.MarkUserAsLoggedOut();
+        }
+        IsAuthenticated = false;
+        Nav.NavigateTo("/");
+    }
+}
 
 <style>
     .user-label {
@@ -39,67 +93,4 @@
         .auth-btn:active {
             transform: translateY(0);
         }
-
-
 </style>
-
-@code {
-    private bool showLogin = false;
-    private bool IsAuthenticated;
-    private string UserLabel = "Guest";
-
-    protected override async Task OnInitializedAsync()
-    {
-        var state = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = state.User;
-        IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
-
-        if (IsAuthenticated)
-        {
-            UserLabel = user.Identity?.Name ?? user.FindFirst(c => c.Type == "email")?.Value ?? "User";
-        }
-    }
-
-    private void GoLogin() => Nav.NavigateTo("/login");
-
-    private async Task Logout()
-    {
-        _logger.LogInformation("Attempting to log out...");
-
-        // Get refresh token from local storage
-        var refreshToken = await LocalStorage.GetItemAsync<string>("refreshToken");
-
-        if (!string.IsNullOrEmpty(refreshToken))
-        {
-            _logger.LogInformation("Found refresh token, calling logout endpoint...");
-
-            var response = await Http.PostAsJsonAsync("api/authentication/logout", new { RefreshToken = refreshToken });
-            Nav.NavigateTo("/", forceLoad: true);
-
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Logout success, clearing tokens...");
-                await LocalStorage.RemoveItemAsync("authToken");
-                await LocalStorage.RemoveItemAsync("refreshToken");
-            }
-            else
-            {
-                _logger.LogWarning("Logout HTTP failed: " + response.StatusCode);
-            }
-        }
-        else
-        {
-            _logger.LogInformation("No refresh token found, just clearing local JWT");
-            await LocalStorage.RemoveItemAsync("authToken");
-        }
-
-        // Notify auth provider
-        if (AuthStateProvider is JwtAuthenticationStateProvider jwtAuth)
-        {
-            jwtAuth.MarkUserAsLoggedOut();
-        }
-
-        IsAuthenticated = false;
-        Nav.NavigateTo("/"); // redirect after logout
-    }
-}
