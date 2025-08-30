@@ -56,6 +56,7 @@
     padding: 15px;
     word-wrap: break-word;
     border-radius: 10px;
+    white-space: pre-wrap;
 }
 
 .checkin-container {

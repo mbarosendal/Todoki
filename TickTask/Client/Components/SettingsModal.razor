@@ -55,11 +55,17 @@
 					<!-- Break Texts -->
 					<div>
 						<label>Reminder for short breaks</label>
-						<input type="text" @bind="Settings.ShortBreakText" placeholder="E.g. stretch, drink water..." />
+						<textarea
+							   @bind="Settings.ShortBreakText"
+							   placeholder="E.g. stretch, get a snack, drink water..."
+							   class="reminder-input" />
 					</div>
 					<div>
 						<label>Reminder for long breaks</label>
-						<input type="text" @bind="Settings.LongBreakText" placeholder="E.g. snack, walk the dog..." />
+						<textarea
+							   @bind="Settings.LongBreakText"
+							   placeholder="E.g. start the laundry, walk the dog..."
+							   class="reminder-input" />
 					</div>
 
 					<!-- Auto-start options -->
@@ -91,7 +97,7 @@
 					<!-- Reset Button -->
 					<div class="reset-section">
 						<button class="reset-btn" @onclick="ResetToDefaults">
-							🔄 Reset to Defaults
+							Reset to default Pomodoro
 						</button>
 					</div>
 				</div>
@@ -124,7 +130,7 @@
 					<!-- Reset Button -->
 					<div class="reset-section">
 						<button class="reset-btn" @onclick="ResetToDefaults">
-							🔄 Reset to Defaults
+							Reset to default Pomodoro
 						</button>
 					</div>
 				</div>
@@ -315,15 +321,19 @@
 	}
 
 	input[type="number"],
-	input[type="text"] {
-		background-color: #1e1e1e;
-		border: 1px solid #444;
-		color: white;
-		padding: 0.6rem;
-		border-radius: 6px;
+	textarea.reminder-input {
 		width: 100%;
-		box-sizing: border-box;
+		min-height: 40px;
+		max-height: 200px;
+		padding: 0.6rem;
 		font-size: 1rem;
+		border-radius: 6px;
+		border: 1px solid #444;
+		background-color: #1e1e1e;
+		color: white;
+		box-sizing: border-box;
+		overflow-y: hidden;
+		resize: vertical;
 	}
 
 	.switch-row {
@@ -434,6 +444,28 @@
 			text-align: left;
 			line-height: 1.4;
 			margin-bottom: 10px;
+		}
+
+	.reset-section {
+		display: flex;
+		justify-content: center; /* centers children horizontally */
+	}
+
+	.reset-btn {
+		background-color: #e74c3c;
+
+		color: white;
+		border: none;
+		padding: 8px 14px;
+		border-radius: 6px;
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: background-color 0.3s, transform 0.2s;
+	}
+
+		.reset-btn:hover {
+			background-color: #c0392b;
+			transform: translateY(-1px);
 		}
 
 </style>

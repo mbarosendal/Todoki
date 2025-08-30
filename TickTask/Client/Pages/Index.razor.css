@@ -175,6 +175,13 @@
         transition: opacity 0.3s ease;
     }
 
+.settings-btn {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .timer-info {
     display: flex;
     justify-content: flex-start;

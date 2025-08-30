@@ -20,7 +20,6 @@
 
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
 	<div class="timer-container">
-		<button class="control-btn" @onclick="OpenSettings">⚙️Settings</button>
 
 		<!-- Timer Tabs -->
 		<div class="timer-tabs">
@@ -35,6 +34,7 @@
 					}
 				</button>
 			}
+			<button class="control-btn settings-btn" @onclick="OpenSettings">⚙️</button>
 		</div>
 
 		<!-- Timer Display -->
