@@ -154,6 +154,34 @@
         white-space: nowrap;
     }
 
+.tooltip-btn {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+    .tooltip-btn .tooltip-text {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        top: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    .tooltip-btn:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+
 .tooltip {
     position: relative;
     display: inline-block;
@@ -213,10 +241,16 @@
     padding: 16px 20px 20px 20px;
     background: rgba(89, 8, 8, 0.25);
     border-radius: 0 0 12px 12px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
     .tasks-section > * {
         margin-bottom: 8px;
+    }
+
+    .tasks-section::-webkit-scrollbar {
+        display: none;
     }
 
 /* Section labels */
@@ -280,39 +314,24 @@
 }
 
 /* Menu and buttons */
-.menu-btn, .task-btn, .add-task-btn {
+.menu-btn {
+    background: rgba(255,255,255,0.1);
     border: none;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.menu-btn {
-    background: rgba(255,255,255,0.1);
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 1.2rem;
+    transition: all 0.3s ease;
 }
 
     .menu-btn:hover {
         background: rgba(255,255,255,0.2);
     }
 
-.menu-popup {
-    position: absolute;
-    right: 0%;
-    top: 15%;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-    padding: 8px 0;
-    width: 180px;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.menu-item {
+.menu-popup .menu-item {
     width: 100%;
-    background: none;
+    background: rgba(0, 0, 0, 0.8);
     border: none;
     color: white;
     padding: 10px 16px;
@@ -321,8 +340,95 @@
     transition: background 0.2s ease;
 }
 
-    .menu-item:hover {
+    .menu-popup .menu-item:hover {
         background: rgba(255,255,255,0.1);
+    }
+
+.menu-btn, .task-btn, .add-task-btn {
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Menu container */
+.menu-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Horizontal menu */
+.horizontal-menu {
+    display: flex;
+    gap: 6px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.horizontal-menu .menu-item {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+    .horizontal-menu .menu-item:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+/* Updated menu button */
+.menu-btn.active {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Updated popup menu */
+.menu-popup {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 8px;
+    padding: 8px 0;
+    width: 180px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    margin-top: 4px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+    /* Show on hover or force visible */
+    .menu-container:not(.toggled):hover .menu-popup,
+    .menu-popup.force-visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .menu-popup:hover {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
     }
 
 /* Loading and hidden states */

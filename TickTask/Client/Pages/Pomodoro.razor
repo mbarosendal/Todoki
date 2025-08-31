@@ -38,7 +38,9 @@
 						}
 					</button>
 				}
-				<button class="control-btn settings-btn" @onclick="OpenSettings">⚙️</button>
+				<button class="control-btn settings-btn" @onclick="OpenSettings">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sliders-horizontal-icon lucide-sliders-horizontal"><path d="M10 5H3" /><path d="M12 19H3" /><path d="M14 3v4" /><path d="M16 17v4" /><path d="M21 12h-9" /><path d="M21 19h-5" /><path d="M21 5h-7" /><path d="M8 10v4" /><path d="M8 12H3" /></svg>
+				</button>
 			</div>
 
 			<!-- Timer Display -->
@@ -55,7 +57,7 @@
 
 			<!-- Timer Control Buttons -->
 			<div class="timer-controls">
-				<button class="secondary-btn" @onclick="() => RestartTimer(GetCountdownTimer)" title="Restart the current timer">⟲</button>
+				<button class="secondary-btn" @onclick="() => RestartTimer(GetCountdownTimer)">⟲</button>
 
 				<button class="btn-primary timer-main-btn @(GetCountdownTimer.IsRunning ? "running" : "")"
 					@onclick="() => ToggleStartStopTimer(_timerType, GetCountdownTimer)">
@@ -64,7 +66,7 @@
 
 				<button class="secondary-btn"
 				@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
-					→
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-big-right-icon lucide-arrow-big-right"><path d="M11 9a1 1 0 0 0 1-1V5.061a1 1 0 0 1 1.811-.75l6.836 6.836a1.207 1.207 0 0 1 0 1.707l-6.836 6.835a1 1 0 0 1-1.811-.75V16a1 1 0 0 0-1-1H5a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" /></svg>
 				</button>
 			</div>
 

@@ -1,6 +1,6 @@
 ﻿.timer-header {
     position: sticky;
-    top: 0;
+    top: 40px;
     background-color: rgb(228, 17, 9);
     z-index: 20;
     padding: 20px;

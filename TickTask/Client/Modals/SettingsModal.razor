@@ -6,7 +6,6 @@
 @inject ILogger<SettingsModal> Logger
 @inject UserSettingsApiService userSettingsApiService
 
-
 <BaseModal IsOpen="@IsOpen"
 		   IsOpenChanged="@IsOpenChanged"
 		   Title="Settings"
@@ -17,22 +16,32 @@
 		<div class="settings-tabs">
 			<button class="@(ActiveTab == "Timer" ? "active" : "")"
 					@onclick="@(() => ActiveTab = "Timer")">
-				🕒<br /> Timer
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock-icon lucide-clock"><path d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
+				<br /> Timers
 			</button>
 
 			<button class="@(ActiveTab == "Task" ? "active" : "")"
 					@onclick="@(() => ActiveTab = "Task")">
-				📝<br /> Task
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark-check-icon lucide-bookmark-check"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z" /><path d="m9 10 2 2 4-4" /></svg>
+				<br /> Tasks
 			</button>
 
 			<button class="@(ActiveTab == "Shortcuts" ? "active" : "")"
 					@onclick="@(() => ActiveTab = "Shortcuts")">
-				⌨️<br /> Shortcuts
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-keyboard-icon lucide-keyboard"><path d="M10 8h.01" /><path d="M12 12h.01" /><path d="M14 8h.01" /><path d="M16 12h.01" /><path d="M18 8h.01" /><path d="M6 8h.01" /><path d="M7 16h10" /><path d="M8 12h.01" /><rect width="20" height="16" x="2" y="4" rx="2" /></svg>
+				<br /> Shortcuts
+			</button>
+
+			<button class="@(ActiveTab == "Sounds" ? "active" : "")"
+					@onclick="@(() => ActiveTab = "Sounds")">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring-icon lucide-bell-ring"><path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M22 8c0-2.3-.8-4.3-2-6" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /><path d="M4 2C2.8 3.7 2 5.7 2 8" /></svg>
+				<br /> Sounds
 			</button>
 
 			<!-- Reset Button -->
 			<button class="reset-btn" @onclick="ResetToDefaults">
-				↺<br /> Reset
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw-icon lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+				<br /> Reset
 			</button>
 		</div>
 
@@ -95,18 +104,29 @@
 					<div class="switch-row">
 						<span>
 							Enable browser notifications
-							<span class="info-icon" data-title="If notifications are not showing, check that you are allowing them in your OS for your browser">❔</span>
+							<span class="notifications-info-icon" data-title="If notifications are not showing, check that you are allowing them for your browser in your OS">❔</span>
 						</span>
 						<button class="notify-btn @(Settings.EnableNotifications ? "enabled" : "")"
 								@onclick="RequestNotificationPermission"
 								title="@(Settings.EnableNotifications ? "Managed via browser settings" : "")">
 						</button>
 					</div>
+					<AuthorizeView Roles="Admin">
+						<Authorized>
+							<button @onclick="SetToTestTimer">Admin Only: Set test timers</button>
+						</Authorized>
+					</AuthorizeView>
 				</div>
 			}
+
 			@if (ActiveTab == "Task")
 			{
 				<div class="settings-section">
+					<div class="section-header">
+						<h3>Tasks</h3>
+						<p class="section-description">Configure how tasks are automatically managed during your sessions</p>
+					</div>
+
 					<div class="switch-row">
 						<span>Proceed to next task automatically</span>
 						<label class="switch">
@@ -122,7 +142,7 @@
 						</label>
 					</div>
 					<div class="switch-row">
-						<span>Automatically clear finished tasks</span>
+						<span>Automatically delete finished tasks</span>
 						<label class="switch">
 							<input type="checkbox" @bind="Settings.AutomaticallyClearDoneTasks" />
 							<span class="slider"></span>
@@ -130,39 +150,85 @@
 					</div>
 				</div>
 			}
-			@if (ActiveTab == "Shortcuts")
+
+			@if (ActiveTab == "Sounds")
 			{
-				<div class="settings-section shortcuts-section">
-					<div class="shortcut-group">
-						<h3>General</h3>
-						<div class="shortcut-item">
-							<span class="shortcut-key">Space</span>
-							<span class="shortcut-desc">Start/stop timer</span>
-						</div>
-						<div class="shortcut-item">
-							<span class="shortcut-key">Tab</span>
-							<span class="shortcut-desc">Add new task (or edit next task)</span>
-						</div>
-						<div class="shortcut-item">
-							<span class="shortcut-key">Mouse Wheel</span>
-							<span class="shortcut-desc">Scroll over task to adjust pomodoros</span>
-						</div>
+				<div class="settings-section">
+					<div class="section-header">
+						<h3>Sound Previews</h3>
+						<p class="section-description">Preview the app sounds to familiarize yourself with them</p>
 					</div>
 
-					<div class="shortcut-group">
+					<div class="sound-item">
+						<span class="sound-label">Timer finished alarm</span>
+						<button class="sound-btn" @onclick="PlayAlarmSound" title="Play alarm sound">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"></polygon>
+								<path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+								<path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div class="sound-item">
+						<span class="sound-label">Break is over</span>
+						<button class="sound-btn" @onclick="PlayBreakOverSound" title="Play break over sound">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"></polygon>
+								<path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+								<path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div class="sound-item">
+						<span class="sound-label">All tasks completed</span>
+						<button class="sound-btn" @onclick="PlayTasksDoneSound" title="Play tasks done sound">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"></polygon>
+								<path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+								<path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
+			}
+
+			@if (ActiveTab == "Shortcuts")
+			{
+				<div class="settings-section">
+					<div class="section-header">
+						<h3>General</h3>
+						<p class="section-description">These shortcuts are available while on the general page</p>
+					</div>
+					<div class="shortcut-item">
+						<span class="shortcut-key">Space</span>
+						<span class="shortcut-desc">Start/stop timer</span>
+					</div>
+					<div class="shortcut-item">
+						<span class="shortcut-key">Tab</span>
+						<span class="shortcut-desc">Add new task (or edit next task)</span>
+					</div>
+					<div class="shortcut-item">
+						<span class="shortcut-key">Mouse Wheel</span>
+						<span class="shortcut-desc">Scroll over task to adjust pomodoros</span>
+					</div>
+
+					<div class="section-header">
 						<h3>While editing tasks</h3>
-						<div class="shortcut-item">
-							<span class="shortcut-key">↑ ↓</span>
-							<span class="shortcut-desc">Adjust pomodoros for task</span>
-						</div>
-						<div class="shortcut-item">
-							<span class="shortcut-key">Shift + ↑ ↓</span>
-							<span class="shortcut-desc">Edit previous/next task</span>
-						</div>
-						<div class="shortcut-item">
-							<span class="shortcut-key">Ctrl + ↑ ↓</span>
-							<span class="shortcut-desc">Move task up/down</span>
-						</div>
+						<p class="section-description">These shortcuts are available while editing the text for a task</p>
+					</div>
+					<div class="shortcut-item">
+						<span class="shortcut-key">↑ ↓</span>
+						<span class="shortcut-desc">Adjust pomodoros for task</span>
+					</div>
+					<div class="shortcut-item">
+						<span class="shortcut-key">Shift + ↑ ↓</span>
+						<span class="shortcut-desc">Edit previous/next task</span>
+					</div>
+					<div class="shortcut-item">
+						<span class="shortcut-key">Ctrl + ↑ ↓</span>
+						<span class="shortcut-desc">Move task up/down</span>
 					</div>
 				</div>
 			}
@@ -198,6 +264,15 @@
 			ShortBreakText = "",
 			LongBreakText = ""
 		};
+
+	public void SetToTestTimer()
+	{
+		Settings.PomodoroDurationMinutes = TimeSpan.FromSeconds(2);
+		Settings.ShortBreakDurationMinutes = TimeSpan.FromSeconds(3);
+		Settings.LongBreakDurationMinutes = TimeSpan.FromSeconds(5);
+
+		StateHasChanged();
+	}
 
 	private void ResetToDefaults()
 	{
@@ -261,7 +336,20 @@
 		StateHasChanged();
 	}
 
+	private async Task PlayAlarmSound()
+	{
+		await JS.InvokeVoidAsync("playAlarmSound");
+	}
 
+	private async Task PlayBreakOverSound()
+	{
+		await JS.InvokeVoidAsync("playBreakOverSound");
+	}
+
+	private async Task PlayTasksDoneSound()
+	{
+		await JS.InvokeVoidAsync("playTasksDoneSound");
+	}
 }
 
 <style>
@@ -337,6 +425,56 @@
 		flex-direction: column;
 		gap: 1rem;
 	}
+
+	.section-header h3 {
+		color: white;
+		font-size: 1.1rem;
+		margin: 0 0 0.8rem 0;
+		border-bottom: 1px solid #333;
+		padding-bottom: 0.4rem;
+	}
+
+	.section-description {
+		color: #bbb;
+		font-size: 0.9rem;
+		margin: -0.8rem 0 1rem 0;
+		line-height: 1.4;
+	}
+
+	.sound-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.6rem 0;
+	}
+
+	.sound-label {
+		color: white;
+		font-size: 0.95rem;
+	}
+
+	.sound-btn {
+		background: #4cd137;
+		color: black;
+		border: none;
+		border-radius: 50%;
+		width: 40px;
+		height: 40px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s;
+	}
+
+		.sound-btn:hover {
+			background: #45b82e;
+			transform: scale(1.05);
+		}
+
+		.sound-btn:active {
+			transform: scale(0.95);
+		}
 
 	.timer-inputs {
 		display: flex;
@@ -453,22 +591,21 @@
 				color: black;
 			}
 
-	.info-icon {
+	.notifications-info-icon {
 		margin-left: 5px;
 		position: relative;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
-		color: #ccc;
-		filter: brightness(0.25);
+		color: white;
 	}
 
-		.info-icon:hover::after {
+		.notifications-info-icon:hover::after {
 			content: attr(data-title);
 			position: absolute;
 			background: #333;
-			color: white;
+			color: white !important;
 			padding: 8px 12px;
 			border-radius: 4px;
 			font-size: 0.8rem;
@@ -483,13 +620,13 @@
 		}
 
 	.reset-btn {
-		flex: 1; /* keeps equal size with the others */
+		flex: 1;
 		background-color: #e74c3c;
 		color: white;
 		border: none;
 		padding: 0.7rem 0;
 		font-size: 1rem;
-		border-radius: 0; /* match tab style */
+		border-radius: 0;
 		cursor: pointer;
 		transition: background-color 0.3s, transform 0.2s;
 	}
@@ -498,18 +635,6 @@
 			background-color: #c0392b;
 			transform: translateY(-1px);
 		}
-
-	.shortcuts-section {
-		gap: 1.5rem;
-	}
-
-	.shortcut-group h3 {
-		color: white;
-		font-size: 1.1rem;
-		margin: 0 0 0.8rem 0;
-		border-bottom: 1px solid #333;
-		padding-bottom: 0.4rem;
-	}
 
 	.shortcut-item {
 		display: flex;
@@ -520,7 +645,7 @@
 
 	.shortcut-key {
 		background: rgb(192, 57, 43);
-		color: #4cd137;
+		color: white;
 		padding: 0.3rem 0.6rem;
 		border-radius: 4px;
 		font-family: monospace;
@@ -537,5 +662,4 @@
 		flex: 1;
 		margin-left: 1rem;
 	}
-
 </style>

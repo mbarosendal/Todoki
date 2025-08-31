@@ -7,8 +7,12 @@
     <div class="login-overlay" @onclick="CloseModal">
         <div class="login-content" @onclick:stopPropagation>
             <div class="auth-toggle">
-                <button class="@(IsLogin ? "active" : "")" @onclick="() => ToggleLogin(true)">Login</button>
-                <button class="@(IsLogin ? "" : "active")" @onclick="() => ToggleLogin(false)">Register</button>
+                <button class="@(IsLogin ? "active" : "")" @onclick="() => ToggleLogin(true)">Login
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in-icon lucide-log-in"><path d="m10 17 5-5-5-5" /><path d="M15 12H3" /><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /></svg>
+                </button>
+                <button class="@(IsLogin ? "" : "active")" @onclick="() => ToggleLogin(false)">Register
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /><circle cx="16.5" cy="7.5" r=".5" fill="currentColor" style="--darkreader-inline-fill: currentColor;" data-darkreader-inline-fill="" /></svg>
+                </button>
             </div>
 
             <EditForm Model="@registerModel" OnValidSubmit="@HandleSubmit">
@@ -206,8 +210,8 @@
     }
 
     .auth-btn {
-        background-color: #4cd137;
-        color: black;
+        background-color: rgb(30, 122, 30);
+        color: white;
         border: none;
         padding: 8px 16px;
         font-size: 0.95rem;
