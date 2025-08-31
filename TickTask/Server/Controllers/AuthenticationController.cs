@@ -276,6 +276,8 @@
             {
                 var jti = Guid.NewGuid().ToString();
 
+                _logger.LogInformation("User has Id: " + user.Id);
+
                 var authClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),

@@ -75,6 +75,16 @@ namespace TickTask.Server.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var guestId = Request.Cookies["GuestId"];
 
+            //////
+            _logger.LogInformation("DEBUG - UserId: '{UserId}', GuestId: '{GuestId}', IsAuthenticated: {IsAuth}",
+                userId, guestId, User.Identity?.IsAuthenticated);
+
+            foreach (var claim in User.Claims)
+            {
+                _logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+            }
+            ///////
+            ///
             if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(guestId))
             {
                 guestId = Guid.NewGuid().ToString();
