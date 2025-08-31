@@ -24,7 +24,6 @@ namespace TickTask
 
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
-            // Retrieve sensitive information from environment variables
             var jwtSecret = builder.Configuration["JWT:SecretKey"];
             var adminPassword = builder.Configuration["Admin:Password"];
             var adminEmail = builder.Configuration["Admin:Email"];
@@ -62,7 +61,6 @@ namespace TickTask
             };
             builder.Services.AddSingleton(tokenValidationParameters);
 
-            // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -72,7 +70,7 @@ namespace TickTask
             {
                 // Password settings
                 //options.Password.RequireDigit = false;
-                //options.Password.RequiredLength = 4;
+                options.Password.RequiredLength = 8;
                 //options.Password.RequireNonAlphanumeric = false;
                 //options.Password.RequireUppercase = false;
                 //options.Password.RequireLowercase = false;
@@ -93,7 +91,6 @@ namespace TickTask
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                // Add JWT Bearer
                 .AddJwtBearer(options =>
                 {
                     options.SaveToken = true;
@@ -169,7 +166,6 @@ namespace TickTask
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -180,7 +176,6 @@ namespace TickTask
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -196,7 +191,6 @@ namespace TickTask
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Seed roles and admin in database:
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -204,10 +198,8 @@ namespace TickTask
 
                 try
                 {
-                    // Seed roles
                     await AppDbInitializer.SeedRolesAsync(services);
 
-                    // Seed default admin
                     await AppDbInitializer.SeedAdminAsync(services, adminEmail, adminPassword, logger);
                 }
                 catch (Exception ex)

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TickTask.Client.Shared;
-using TickTask.Shared;
+using TickTask.Shared.Data;
 
 namespace TickTask.Client.Services
 {

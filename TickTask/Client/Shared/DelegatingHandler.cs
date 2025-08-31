@@ -12,10 +12,8 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Try to get token from local storage
         var token = await _localStorage.GetItemAsync<string>("authToken");
 
-        // Only add Authorization header if token exists
         if (!string.IsNullOrWhiteSpace(token))
         {
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);

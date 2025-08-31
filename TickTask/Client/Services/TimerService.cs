@@ -1,5 +1,5 @@
 ﻿using TickTask.Client.Enums;
-using TickTask.Shared;
+using TickTask.Shared.Data;
 
 namespace TickTask.Client.Services
 {

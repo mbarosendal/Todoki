@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TickTask.Server.Data;
 using TickTask.Server.Data.Models;
 using TickTask.Server.Services;
-using TickTask.Shared;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+using TickTask.Shared.Data;
 
 namespace TickTask.Server.Controllers
 {

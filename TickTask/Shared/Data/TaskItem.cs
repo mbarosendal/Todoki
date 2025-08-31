@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace TickTask.Shared
+namespace TickTask.Shared.Data
 {
     public class ProjectDto
     {

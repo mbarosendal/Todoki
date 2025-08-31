@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TickTask.Server.Data.Models;
-using TickTask.Shared;
+using TickTask.Shared.Data;
 
 namespace TickTask.Server.Controllers
 {
@@ -32,7 +27,6 @@ namespace TickTask.Server.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
-                // Return default settings for anonymous users
                 return Ok(GetDefaultSettingsDto());
             }
 
@@ -97,7 +91,6 @@ namespace TickTask.Server.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
-                // For anonymous users, just return success without persisting
                 return Ok(settingsDto);
             }
 

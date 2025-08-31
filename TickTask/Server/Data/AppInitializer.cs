@@ -35,7 +35,6 @@ namespace TickTask.Server.Data
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
 
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
-            //_logger.LogWarning("SeedAdminAsync: Default admin user already exists. Aborting initializer setup...");
 
             if (adminUser == null)
             {

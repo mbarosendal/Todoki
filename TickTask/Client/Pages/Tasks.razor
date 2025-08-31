@@ -1,9 +1,10 @@
-﻿@using TickTask.Client.Services
+﻿@using TickTask.Shared.Data
+@using TickTask.Client.Services
 @using TickTask.Shared
 @inject TaskApiService TaskApiService
 @inject TimerService TimerService
 @inject IJSRuntime JS
-@inject ILogger<TaskList> Logger
+@inject ILogger<Tasks> Logger
 
 <!-- Active Task Section -->
 <div class="tasks-wrapper">

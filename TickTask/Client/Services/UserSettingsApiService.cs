@@ -1,10 +1,16 @@
-﻿using System.Net.Http.Json;
-using System.Threading.Tasks;
-using TickTask.Client.Shared;
-using TickTask.Shared;
+﻿using TickTask.Client.Shared;
+using TickTask.Shared.Data;
 
 namespace TickTask.Client.Services
 {
+    public interface IUserSettingsApiService
+    {
+        Task<UserSettingsDto> GetAsync();
+        Task<bool> UpdateAsync(UserSettingsDto userSettings);
+        Task<UserSettingsDto> CreateAsync(UserSettingsDto userSettings);
+        Task<bool> DeleteAsync();
+    }
+
     public class UserSettingsApiService : IUserSettingsApiService
     {
         private readonly HttpClientWrapper _http;
