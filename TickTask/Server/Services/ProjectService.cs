@@ -42,7 +42,7 @@ namespace TickTask.Server.Services
         public async Task<Project> GetOrCreateDefaultProjectAsync(ClaimsPrincipal user, HttpRequest request, HttpResponse response)
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            var guestId = userId == null ? GetOrCreateGuestId(request, response) : null;
+            var guestId = GetOrCreateGuestId(request, response);
 
             _logger.LogInformation("Looking for project with userId: {UserId}, guestId: {GuestId}", userId, guestId);
 
@@ -52,11 +52,29 @@ namespace TickTask.Server.Services
             {
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    // For authenticated users, find by UserId
+                    // 1. For authenticated users, first try to find by UserId
                     project = await _context.Projects
                         .Where(p => p.UserId == userId)
                         .OrderBy(p => p.ProjectId)
                         .FirstOrDefaultAsync();
+
+                    // 2. If no user project found, check for guest projects to migrate
+                    if (project == null && !string.IsNullOrEmpty(guestId))
+                    {
+                        var guestProject = await _context.Projects
+                            .Where(p => p.GuestId == guestId && p.UserId == null)
+                            .FirstOrDefaultAsync();
+
+                        if (guestProject != null)
+                        {
+                            // Migrate guest project to user
+                            guestProject.UserId = userId;
+                            guestProject.GuestId = null;
+                            await _context.SaveChangesAsync();
+                            project = guestProject;
+                            _logger.LogInformation("Migrated guest project {ProjectId} to user {UserId}", project.ProjectId, userId);
+                        }
+                    }
                 }
                 else if (!string.IsNullOrEmpty(guestId))
                 {
@@ -71,14 +89,13 @@ namespace TickTask.Server.Services
                     {
                         _logger.LogInformation("Found existing project with ID {ProjectId}", projectData.ProjectId);
 
-                        // Create a Project object manually to avoid EF loading issues
                         project = new Project
                         {
                             ProjectId = projectData.ProjectId,
                             Title = projectData.Title ?? "Default Project",
                             Description = projectData.Description ?? "",
                             DeadLine = projectData.DeadLine,
-                            UserId = null,  // Explicitly set to null for guests
+                            UserId = null,
                             GuestId = guestId
                         };
                     }

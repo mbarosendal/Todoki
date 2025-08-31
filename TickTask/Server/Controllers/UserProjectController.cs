@@ -97,7 +97,7 @@ namespace TickTask.Server.Controllers
                 Description = projectDto.Description,
                 DeadLine = projectDto.DeadLine,
                 UserId = userId,
-                GuestId = userId == null ? guestId : null
+                GuestId = guestId
             };
 
             _context.Projects.Add(project);
