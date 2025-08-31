@@ -7,17 +7,15 @@
 
 <AuthorizeView>
     <Authorized>
-        @if (!context.User.IsInRole("Admin") && !context.User.IsInRole("User"))
+        @if (!context.User.IsInRole("Admin") || !context.User.IsInRole("User"))
         {
             <div class="tooltip-btn">
-                <!-- Eye / Guest Icon SVG -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert-icon lucide-shield-alert"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert-icon lucide-shield-alert"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
 
-                <!-- Tooltip text -->
                 <div class="tooltip-text">
-                    Welcome guest! Please be aware that changes to your settings are not persisted (resets on refresh).<br />
-                    Tasks for guest profiles are also automatically cleaned after 30 days of inactivity.<br />
-                    However, feel free to make an account and everything will be persisted without a time limit.
+                    Welcome guest! <br /><br />Please be aware that changes to your settings are not persisted <br />(resets on refresh).
+                    Tasks for guest profiles are also <br /> automatically cleaned after 30 days of inactivity.
+                    <br /> <br />Feel free to make an account and everything will be persisted <br /> without a time limit.
                 </div>
             </div>
         }
@@ -116,5 +114,33 @@
 
         .auth-btn:active {
             transform: translateY(0);
+        }
+
+    .tooltip-btn {
+        position: relative;
+        display: inline-block;
+        z-index: 1;
+    }
+
+        .tooltip-btn .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .tooltip-btn:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
 </style>
