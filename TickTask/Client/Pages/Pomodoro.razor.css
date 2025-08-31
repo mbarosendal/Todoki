@@ -107,47 +107,69 @@
 .timer-main-btn, .btn-primary {
     background: rgba(10, 137, 18, 1) !important;
     border: none;
+    outline: none; /* Remove blue outline */
     color: white;
     padding: 12px 24px;
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
     .timer-main-btn:hover, .btn-primary:hover {
         background: #1e7a1e !important;
+        outline: none;
     }
 
     .timer-main-btn:active, .btn-primary:active {
         background: #1a6b1a !important;
+        outline: none;
         transform: translateY(1px);
     }
 
+    .timer-main-btn:focus, .btn-primary:focus {
+        outline: none !important; /* Remove focus outline */
+        box-shadow: 0 0 0 2px rgba(10, 137, 18, 0.3);
+    }
+
+    /* "Pressed in" effect when paused/running */
     .timer-main-btn.running, .btn-primary.running {
         background: #1e7a1e !important;
+        transform: translateY(2px);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
 /* Secondary button styles (skip and restart) */
-.timer-control-btn, .btn-secondary, .restart-btn {
+.timer-control-btn, .secondary-btn {
     background: none;
     border: none;
+    outline: none !important; /* Remove blue outline */
     color: white;
     cursor: pointer;
     opacity: 0.7;
     transition: all 0.3s ease;
 }
 
-.timer-control-btn, .btn-secondary {
+.timer-control-btn {
     font-size: 2rem;
 }
 
-.restart-btn {
+.secondary-btn {
     font-size: 1.8rem;
 }
 
-    .timer-control-btn:hover, .btn-secondary:hover, .restart-btn:hover {
+    .timer-control-btn:hover, .secondary-btn:hover {
         opacity: 1;
         transform: scale(1.1);
+        outline: none;
+    }
+
+    .timer-control-btn:focus, .secondary-btn:focus {
+        outline: none !important;
+    }
+
+    .timer-control-btn:active, .secondary-btn:active {
+        outline: none;
     }
 
 /* Control buttons (settings, etc.) */

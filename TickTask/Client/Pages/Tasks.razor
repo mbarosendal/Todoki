@@ -37,7 +37,7 @@
 				else
 				{
 					<div class="active-task-left">
-						<div class="active-task-name">@(HasMoreTasks() ? "No current task set" : "All done!")</div>
+						<div class="active-task-name">@(tasks.Count() == 0 ? "No tasks" : "No active task")</div>
 					</div>
 				}
 			</div>
@@ -48,13 +48,13 @@
 				<div class="checkin-container">
 					<div class="question-label">How is it going?</div>
 					<div class="checkin-buttons">
-						<div class="task-info-row tooltip" @onclick="HandleOnTime" style="cursor: pointer;">
+						<div class="task-info-row tooltip" @onclick="HandleNeedLessTime" style="cursor: pointer;">
 							👍
-							<div class="tooltip-text">I'll have it done on time (Around @TimerService.CalculateEstimatedTimeOfTaskCompletion(ActivePomodoro, ActiveShortBreakTimer, ActiveLongBreakTimer, ActiveTask, Settings))</div>
+							<div class="tooltip-text">I'll be done earlier! (- @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
 						</div>
 						<div class="task-info-row tooltip" @onclick="HandleNeedMoreTime" style="cursor: pointer;">
 							⏰
-							<div class="tooltip-text">I need more time (Add @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
+							<div class="tooltip-text">I need more time (+ @((int)ActivePomodoro.Duration.TotalMinutes) min)</div>
 						</div>
 						<div class="task-info-row tooltip" @onclick="HandleTaskDone" style="cursor: pointer;">
 							✅
@@ -195,7 +195,6 @@
 			<div class="add-task-section">
 				<button class="add-task-btn" @onclick="AddTask">Add Task</button>
 			</div>
-
 		}
 	</div>
 </div>
@@ -667,9 +666,14 @@
 			activeTask = null;
 	}
 
-	private async Task HandleOnTime()
+	private async Task HandleNeedLessTime()
 	{
-		// positive effect to mark task as on time ? toggle other buttons when one is selected?
+		if (ActiveTask != null)
+		{
+			ActiveTask.EstimatedNumberOfPomodoros--;
+			await TaskApiService.UpdateAsync(ActiveTask);
+			StateHasChanged();
+		}
 		await JS.InvokeVoidAsync("playClickSound");
 	}
 

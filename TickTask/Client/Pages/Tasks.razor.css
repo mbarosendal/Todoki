@@ -344,7 +344,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     gap: 12px;
-    min-height: 50px;
+    min-height: 65px;
 }
 
     .task-item:hover {
@@ -425,7 +425,6 @@
 
     .task-edit-input:focus {
         outline: none;
-        border-color: rgba(255,255,255,0.4);
     }
 
 /* Task info and actions */

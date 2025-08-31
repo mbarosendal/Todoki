@@ -17,12 +17,22 @@
 		<div class="settings-tabs">
 			<button class="@(ActiveTab == "Timer" ? "active" : "")"
 					@onclick="@(() => ActiveTab = "Timer")">
-				🕒 Timer
+				🕒<br /> Timer
 			</button>
 
 			<button class="@(ActiveTab == "Task" ? "active" : "")"
 					@onclick="@(() => ActiveTab = "Task")">
-				📝 Task
+				📝<br /> Task
+			</button>
+
+			<button class="@(ActiveTab == "Shortcuts" ? "active" : "")"
+					@onclick="@(() => ActiveTab = "Shortcuts")">
+				⌨️<br /> Shortcuts
+			</button>
+
+			<!-- Reset Button -->
+			<button class="reset-btn" @onclick="ResetToDefaults">
+				↺<br /> Reset
 			</button>
 		</div>
 
@@ -56,17 +66,15 @@
 					<!-- Break Texts -->
 					<div>
 						<label>Reminder for short breaks</label>
-						<textarea
-							   @bind="Settings.ShortBreakText"
-							   placeholder="E.g. stretch, get a snack, drink water..."
-							   class="reminder-input" />
+						<textarea @bind="Settings.ShortBreakText"
+								  placeholder="E.g. stretch, get a snack, drink water..."
+								  class="reminder-input" />
 					</div>
 					<div>
 						<label>Reminder for long breaks</label>
-						<textarea
-							   @bind="Settings.LongBreakText"
-							   placeholder="E.g. start the laundry, walk the dog..."
-							   class="reminder-input" />
+						<textarea @bind="Settings.LongBreakText"
+								  placeholder="E.g. start the laundry, walk the dog..."
+								  class="reminder-input" />
 					</div>
 
 					<!-- Auto-start options -->
@@ -94,16 +102,9 @@
 								title="@(Settings.EnableNotifications ? "Managed via browser settings" : "")">
 						</button>
 					</div>
-
-					<!-- Reset Button -->
-					<div class="reset-section">
-						<button class="reset-btn" @onclick="ResetToDefaults">
-							Reset to default Pomodoro
-						</button>
-					</div>
 				</div>
 			}
-			else
+			@if (ActiveTab == "Task")
 			{
 				<div class="settings-section">
 					<div class="switch-row">
@@ -127,12 +128,41 @@
 							<span class="slider"></span>
 						</label>
 					</div>
+				</div>
+			}
+			@if (ActiveTab == "Shortcuts")
+			{
+				<div class="settings-section shortcuts-section">
+					<div class="shortcut-group">
+						<h3>General</h3>
+						<div class="shortcut-item">
+							<span class="shortcut-key">Space</span>
+							<span class="shortcut-desc">Start/stop timer</span>
+						</div>
+						<div class="shortcut-item">
+							<span class="shortcut-key">Tab</span>
+							<span class="shortcut-desc">Add new task (or edit next task)</span>
+						</div>
+						<div class="shortcut-item">
+							<span class="shortcut-key">Mouse Wheel</span>
+							<span class="shortcut-desc">Scroll over task to adjust pomodoros</span>
+						</div>
+					</div>
 
-					<!-- Reset Button -->
-					<div class="reset-section">
-						<button class="reset-btn" @onclick="ResetToDefaults">
-							Reset to default Pomodoro
-						</button>
+					<div class="shortcut-group">
+						<h3>While editing tasks</h3>
+						<div class="shortcut-item">
+							<span class="shortcut-key">↑ ↓</span>
+							<span class="shortcut-desc">Adjust pomodoros for task</span>
+						</div>
+						<div class="shortcut-item">
+							<span class="shortcut-key">Shift + ↑ ↓</span>
+							<span class="shortcut-desc">Edit previous/next task</span>
+						</div>
+						<div class="shortcut-item">
+							<span class="shortcut-key">Ctrl + ↑ ↓</span>
+							<span class="shortcut-desc">Move task up/down</span>
+						</div>
 					</div>
 				</div>
 			}
@@ -155,19 +185,19 @@
 
 	[Parameter]
 	public UserSettingsDto DefaultSettings { get; set; } = new UserSettingsDto
-	{
-		PomodoroDurationMinutes = TimeSpan.FromMinutes(25),
-		ShortBreakDurationMinutes = TimeSpan.FromMinutes(5),
-		LongBreakDurationMinutes = TimeSpan.FromMinutes(15),
-		RunsBeforeLongBreak = 4,
-		IsAutoStart = false,
-		IsAutoStartAfterRestart = true,
-		AutomaticallyProceedToNextTaskAfterDone = true,
-		AutomaticallyMarkDoneTasks = true,
-		AutomaticallyClearDoneTasks = false,
-		ShortBreakText = "",
-		LongBreakText = ""
-	};
+		{
+			PomodoroDurationMinutes = TimeSpan.FromMinutes(25),
+			ShortBreakDurationMinutes = TimeSpan.FromMinutes(5),
+			LongBreakDurationMinutes = TimeSpan.FromMinutes(15),
+			RunsBeforeLongBreak = 4,
+			IsAutoStart = false,
+			IsAutoStartAfterRestart = true,
+			AutomaticallyProceedToNextTaskAfterDone = true,
+			AutomaticallyMarkDoneTasks = true,
+			AutomaticallyClearDoneTasks = false,
+			ShortBreakText = "",
+			LongBreakText = ""
+		};
 
 	private void ResetToDefaults()
 	{
@@ -254,11 +284,15 @@
 		color: white;
 		padding: 1.5rem;
 		border-radius: 12px;
-		width: 440px;
+		width: 500px;
 		max-width: 95vw;
 		font-family: sans-serif;
 		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 		position: relative;
+	}
+
+	.modal-header {
+		border-bottom: 0;
 	}
 
 	.settings-container {
@@ -291,10 +325,11 @@
 			}
 
 	.settings-content {
-		min-height: 300px;
+		min-height: 400px;
+		height: 600px;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
+		justify-content: flex-start;
 	}
 
 	.settings-section {
@@ -447,19 +482,14 @@
 			margin-bottom: 10px;
 		}
 
-	.reset-section {
-		display: flex;
-		justify-content: center; /* centers children horizontally */
-	}
-
 	.reset-btn {
+		flex: 1; /* keeps equal size with the others */
 		background-color: #e74c3c;
-
 		color: white;
 		border: none;
-		padding: 8px 14px;
-		border-radius: 6px;
-		font-size: 0.9rem;
+		padding: 0.7rem 0;
+		font-size: 1rem;
+		border-radius: 0; /* match tab style */
 		cursor: pointer;
 		transition: background-color 0.3s, transform 0.2s;
 	}
@@ -468,5 +498,44 @@
 			background-color: #c0392b;
 			transform: translateY(-1px);
 		}
+
+	.shortcuts-section {
+		gap: 1.5rem;
+	}
+
+	.shortcut-group h3 {
+		color: white;
+		font-size: 1.1rem;
+		margin: 0 0 0.8rem 0;
+		border-bottom: 1px solid #333;
+		padding-bottom: 0.4rem;
+	}
+
+	.shortcut-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.5rem 0;
+	}
+
+	.shortcut-key {
+		background: rgb(192, 57, 43);
+		color: #4cd137;
+		padding: 0.3rem 0.6rem;
+		border-radius: 4px;
+		font-family: monospace;
+		font-size: 0.9rem;
+		font-weight: 600;
+		min-width: 80px;
+		text-align: center;
+	}
+
+	.shortcut-desc {
+		color: white;
+		font-size: 0.95rem;
+		text-align: right;
+		flex: 1;
+		margin-left: 1rem;
+	}
 
 </style>

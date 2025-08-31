@@ -47,7 +47,6 @@
 				@if (GetCountdownTimer.RemainingTime.TotalMinutes + 1 <= GetCountdownTimer.Duration.TotalMinutes)
 				{
 					<button class="plus-one-btn"
-					title="Add one minute to the current timer (not above max duration set in settings)"
 					@onclick="() => AddTimeToTimer()">
 						+1
 					</button>
@@ -56,14 +55,15 @@
 
 			<!-- Timer Control Buttons -->
 			<div class="timer-controls">
-				<button class="restart-btn" @onclick="() => RestartTimer(GetCountdownTimer)" title="Restart the current timer">⟲</button>
+				<button class="secondary-btn" @onclick="() => RestartTimer(GetCountdownTimer)" title="Restart the current timer">⟲</button>
+
 				<button class="btn-primary timer-main-btn @(GetCountdownTimer.IsRunning ? "running" : "")"
-				@onclick="() => ToggleStartStopTimer(_timerType, GetCountdownTimer)">
-					@(GetCountdownTimer.IsRunning ? "PAUSE" : "START")
+					@onclick="() => ToggleStartStopTimer(_timerType, GetCountdownTimer)">
+						@(GetCountdownTimer.IsRunning ? "PAUSE" : "START")
 				</button>
-				<button class="btn-secondary timer-control-btn"
-				@onclick="() => HandleTimerFinish(timerWasSkipped : true)"
-				title="Skip the current timer">
+
+				<button class="secondary-btn"
+				@onclick="() => HandleTimerFinish(timerWasSkipped : true)">
 					→
 				</button>
 			</div>
@@ -269,8 +269,6 @@
 		else
 			_showFinishModal = true;
 
-		bool timeForLongBreak = _numberOfPomodorosRun >= _userSettings.RunsBeforeLongBreak;
-
 		switch (_timerType)
 		{
 			case TimerType.Pomodoro:
@@ -292,7 +290,7 @@
 							: $"Take a short break ({(int)_shortBreakTimer.Duration.TotalMinutes} min)");
 				}
 
-				if (timeForLongBreak)
+				if (_numberOfPomodorosRun >= _userSettings.RunsBeforeLongBreak)
 				{
 					SelectAndResetTimer(TimerType.LongBreak);
 					_numberOfPomodorosRun = 0;
