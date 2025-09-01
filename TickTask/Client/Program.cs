@@ -26,7 +26,12 @@ builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(
     sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 builder.Services.AddSingleton<TimerStateService>();
-builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
+builder.Services.AddScoped<JwtAuthorizationMessageHandler>(sp =>
+    new JwtAuthorizationMessageHandler(
+        sp.GetRequiredService<ILocalStorageService>(),
+        sp.GetRequiredService<IHttpClientFactory>(),
+        builder.HostEnvironment.BaseAddress
+    ));
 
 var jsonOptions = new JsonSerializerOptions
 {
