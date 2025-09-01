@@ -166,6 +166,8 @@ namespace TickTask
 
             var app = builder.Build();
 
+            app.MapGet("/checkin", () => "Check in confirmed");                
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

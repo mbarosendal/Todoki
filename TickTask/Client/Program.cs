@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -48,5 +49,18 @@ builder.Services.AddScoped(sp =>
     var client = clientFactory.CreateClient("ServerAPI");
     return new HttpClientWrapper(client, jsonOptions);
 });
+
+// A timed checkin that runs every 10 minutes (600,000 ms)
+var timer = new System.Threading.Timer(async _ =>
+{
+    try
+    {
+        using var client = new HttpClient();
+        await client.GetAsync("https://ticktask-6g3z.onrender.com//checkin");
+    }
+    catch
+    {
+    }
+}, null, 0, 600_000);
 
 await builder.Build().RunAsync();
