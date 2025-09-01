@@ -144,6 +144,7 @@
             }
 
             [HttpPost("logout")]
+            [AllowAnonymous]
             public async Task<IActionResult> Logout([FromBody] LogoutRequest logoutRequest)
             {
                 if (!ModelState.IsValid)
