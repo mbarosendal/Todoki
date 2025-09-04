@@ -14,7 +14,7 @@ The name **Todoki** comes from a play on words:
 
 Together, it reflects the idea of focusing your energy on tasks.  
 
-I am an avid user of Pomodoro timers, and this project gave me the chance to explore full-stack development while experimenting with clean architecture and UX patterns.  
+I am an avid user of Pomodoro timers, and this project gave me the chance to explore full-stack development while experimenting with clean architecture and UX patterns. I am still learning, and there is still a lot of room for improvement.
 
 If you’re new to the Pomodoro technique, you can read more about it [here](https://en.wikipedia.org/wiki/Pomodoro_Technique).  
 
