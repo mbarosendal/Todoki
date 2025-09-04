@@ -1,5 +1,9 @@
 name: Build and deploy .NET Core app to Azure Web App - TodokiServer
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   push:
     branches:
@@ -94,4 +98,5 @@ jobs:
 
       - name: Logout
         run: az logout
+
 
