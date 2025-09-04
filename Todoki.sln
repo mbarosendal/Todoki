@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTask.Server", "TickTask\Server\TickTask.Server.csproj", "{4F171392-00CF-441E-9927-09A66EDCBB2F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Todoki.Server", "TickTask\Server\Todoki.Server.csproj", "{4F171392-00CF-441E-9927-09A66EDCBB2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTask.Client", "TickTask\Client\TickTask.Client.csproj", "{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Todoki.Client", "TickTask\Client\Todoki.Client.csproj", "{DCF0F7DA-7E70-4C21-80D7-9612F8BDC533}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTask.Shared", "TickTask\Shared\TickTask.Shared.csproj", "{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Todoki.Shared", "TickTask\Shared\Todoki.Shared.csproj", "{ABB451DA-C8E4-4F31-ADB0-8E5353A6F586}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

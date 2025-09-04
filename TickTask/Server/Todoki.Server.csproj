@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Client\TickTask.Client.csproj" />
-    <ProjectReference Include="..\Shared\TickTask.Shared.csproj" />
+    <ProjectReference Include="..\Client\Todoki.Client.csproj" />
+    <ProjectReference Include="..\Shared\Todoki.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

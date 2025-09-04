@@ -61,7 +61,7 @@ var timer = new System.Threading.Timer(async _ =>
     try
     {
         using var client = new HttpClient();
-        await client.GetAsync("https://ticktask-6g3z.onrender.com//checkin");
+        await client.GetAsync(builder.HostEnvironment.BaseAddress + "/checkin");
     }
     catch
     {
