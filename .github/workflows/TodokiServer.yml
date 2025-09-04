@@ -69,10 +69,13 @@ jobs:
           name: webapp
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-      - name: Azure Login
+      - name: Login to Azure
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.TodokiServerapi_SPN }}
+          auth-type: SERVICE_PRINCIPAL
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_173F722D5A454A27AB9D161CCF762F6F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C444B57B51794C50B2F6789D025D681E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2EF98F2B314C4FC5B75708B7B662E2AC }}
 
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
