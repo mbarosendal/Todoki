@@ -1,24 +1,24 @@
-name: Build and deploy .NET Core application to Web App TodokiServer20250904092807 with API Management Service TodokiServerapi-TodokiServer
+name: Build and deploy .NET Core application to Web App TodokiServer with API Management Service TodokiServerapi-TodokiServer
 on:
   push:
     branches:
     - master
 env:
-  AZURE_WEBAPP_NAME: TodokiServer20250904092807
-  AZURE_WEBAPP_PACKAGE_PATH: TickTask/Server/publish
+  AZURE_WEBAPP_NAME: TodokiServer
+  AZURE_WEBAPP_PACKAGE_PATH: Todoki/Server/publish
   AZURE_APIM_RESOURCE_PATH: /
   AZURE_APIM_RESOURCEGROUP: MichaelR
   AZURE_APIM_SERVICENAME: TodokiServerapi
   AZURE_APIM_API_ID: TodokiServer
-  AZURE_APIM_APPSERVICEURL: ''
+  AZURE_APIM_APPSERVICEURL: https://todokiserver.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 5.6.3
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
-  API_IMPORT_SPECIFICATION_PATH: TickTask/Server/publish/swagger.json
-  API_IMPORT_DLL: TickTask/Server/bin/Release/net8.0/Todoki.Server.dll
+  API_IMPORT_SPECIFICATION_PATH: Todoki/Server/publish/swagger.json
+  API_IMPORT_DLL: Todoki/Server/bin/Release/net8.0/Todoki.Server.dll
   API_IMPORT_VERSION: v1
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
-  WORKING_DIRECTORY: TickTask/Server
+  WORKING_DIRECTORY: Todoki/Server
 jobs:
   build:
     runs-on: ubuntu-latest
