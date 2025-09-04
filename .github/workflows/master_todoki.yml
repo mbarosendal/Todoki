@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - Todoki
+name: Build and deploy .NET Core app to Azure Web App - TodokiServer
 
 on:
   push:
@@ -9,57 +6,91 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: TodokiServer
+  AZURE_WEBAPP_PACKAGE_PATH: Todoki/Server/publish
+  AZURE_APIM_RESOURCE_PATH: /
+  AZURE_APIM_RESOURCEGROUP: MichaelR
+  AZURE_APIM_SERVICENAME: TodokiServerapi
+  AZURE_APIM_API_ID: TodokiServer
+  AZURE_APIM_APPSERVICEURL: https://todokiserver.azurewebsites.net
+  API_IMPORT_SPECIFICATION_PATH: Todoki/Server/publish/swagger.json
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: Todoki/Server
+
 jobs:
   build:
-    runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Restore
+        run: dotnet restore ${{ env.WORKING_DIRECTORY }}
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build
+        run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
 
-      - name: Upload artifact for deployment job
+      - name: Test
+        run: dotnet test ${{ env.WORKING_DIRECTORY }} --no-build
+
+      - name: Publish
+        run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Generate Swagger JSON at runtime
+        run: |
+          dotnet ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/Todoki.Server.dll &
+          APP_PID=$!
+          sleep 5
+          curl -s http://localhost:5000/swagger/v1/swagger.json -o ${{ env.API_IMPORT_SPECIFICATION_PATH }}
+          kill $APP_PID
+
+      - name: Publish Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: webapp
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   deploy:
-    runs-on: windows-latest
+    runs-on: windows-latest   # Use Windows runner like Azure template
     needs: build
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: webapp
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_173F722D5A454A27AB9D161CCF762F6F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C444B57B51794C50B2F6789D025D681E }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2EF98F2B314C4FC5B75708B7B662E2AC }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Todoki'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: Production
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Import API into Azure API Management
+        run: |
+          az apim api import \
+            --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" \
+            --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" \
+            --service-name "${{ env.AZURE_APIM_SERVICENAME }}" \
+            --api-id "${{ env.AZURE_APIM_API_ID }}" \
+            --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" \
+            --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" \
+            --specification-format OpenApi \
+            --subscription-required false
+
+      - name: Logout
+        run: az logout
