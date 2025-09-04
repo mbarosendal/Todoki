@@ -69,9 +69,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_173F722D5A454A27AB9D161CCF762F6F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C444B57B51794C50B2F6789D025D681E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2EF98F2B314C4FC5B75708B7B662E2AC }}
 
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v3
@@ -94,3 +94,4 @@ jobs:
 
       - name: Logout
         run: az logout
+
