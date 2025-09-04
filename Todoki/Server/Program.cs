@@ -44,6 +44,11 @@ namespace Todoki
                               ?? Environment.GetEnvironmentVariable("JWT_AUDIENCE")
                               ?? "dummyAudience";
 
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                                   ?? Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")
+                                   ?? "Server=(localdb)\\MSSQLLocalDB;Database=DummyDb;Trusted_Connection=True;";
+
+
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
@@ -77,7 +82,6 @@ namespace Todoki
             };
             builder.Services.AddSingleton(tokenValidationParameters);
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
