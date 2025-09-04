@@ -36,6 +36,14 @@ namespace Todoki
                              ?? Environment.GetEnvironmentVariable("ADMIN_EMAIL")
                              ?? "admin@dummy.com";
 
+            var jwtIssuer = builder.Configuration["JWT:Issuer"]
+                ?? Environment.GetEnvironmentVariable("JWT_ISSUER")
+                ?? "dummyIssuer";
+
+            var jwtAudience = builder.Configuration["JWT:Audience"]
+                              ?? Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+                              ?? "dummyAudience";
+
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
@@ -52,13 +60,13 @@ namespace Todoki
             var tokenValidationParameters = new TokenValidationParameters()
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
 
                 ValidateIssuer = true,
-                ValidIssuer = builder.Configuration["JWT:Issuer"],
+                ValidIssuer = jwtIssuer,
 
                 ValidateAudience = true,
-                ValidAudience = builder.Configuration["JWT:Audience"],
+                ValidAudience = jwtAudience,
 
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromMinutes(1),
