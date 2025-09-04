@@ -6,7 +6,7 @@
 
 ## Overview  
 
-Todoki is a **Pomodoro timer with task management features**, built as a summer project to challenge myself to create something I would actually use.  
+Todoki is a **Pomodoro timer with task management features**, built as a summer project to challenge myself to create something I would use myself.  
 
 The name **Todoki** comes from a play on words:  
 - **Todo** (a to-do list, tasks)  
