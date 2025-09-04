@@ -89,11 +89,11 @@ namespace Todoki
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 // Password settings
-                //options.Password.RequireDigit = false;
+                options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
-                //options.Password.RequireNonAlphanumeric = false;
-                //options.Password.RequireUppercase = false;
-                //options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
 
                 // Lockout settings for wrong password attempts
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);

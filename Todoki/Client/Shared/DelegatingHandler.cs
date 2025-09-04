@@ -2,7 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Todoki.Shared.Data.ViewModels;
+using Todoki.Data.Shared.ViewModels;
 
 public class JwtAuthorizationMessageHandler : DelegatingHandler
 {

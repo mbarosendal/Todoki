@@ -1,4 +1,4 @@
-﻿namespace Todoki.Data.ViewModels
+﻿namespace Todoki.Data.Shared.ViewModels
 {
     public class LogoutRequest
     {

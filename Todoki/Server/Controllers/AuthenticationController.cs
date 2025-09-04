@@ -1,9 +1,9 @@
 ﻿namespace Todoki.Server.Controllers
 {
+    using global::Todoki.Data.Shared.ViewModels;
     using global::Todoki.Data.ViewModels;
     using global::Todoki.Server.Data.Helpers;
     using global::Todoki.Server.Data.Models;
-    using global::Todoki.Shared.Data.ViewModels;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-﻿namespace Todoki.Shared.Data.ViewModels
+﻿namespace Todoki.Data.Shared.ViewModels
 {
     public class AuthResponse
     {

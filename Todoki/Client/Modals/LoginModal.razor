@@ -1,44 +1,85 @@
 ﻿@using Blazored.LocalStorage
+@using System.Text.Json
+@using Todoki.Data.Shared.ViewModels
 @using Todoki.Data.ViewModels
-@using Todoki.Shared.Data.ViewModels
 
 @if (IsOpen)
 {
     <div class="login-overlay" @onclick="CloseModal">
         <div class="login-content" @onclick:stopPropagation>
             <div class="auth-toggle">
-                <button class="@(IsLogin ? "active" : "")" @onclick="() => ToggleLogin(true)">Login
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in-icon lucide-log-in"><path d="m10 17 5-5-5-5" /><path d="M15 12H3" /><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /></svg>
-                </button>
-                <button class="@(IsLogin ? "" : "active")" @onclick="() => ToggleLogin(false)">Register
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /><circle cx="16.5" cy="7.5" r=".5" fill="currentColor" style="--darkreader-inline-fill: currentColor;" data-darkreader-inline-fill="" /></svg>
-                </button>
+                <button class="@(IsLogin ? "active" : "")" @onclick="() => ToggleLogin(true)">Login</button>
+                <button class="@(IsLogin ? "" : "active")" @onclick="() => ToggleLogin(false)">Register</button>
             </div>
 
-            <EditForm Model="@registerModel" OnValidSubmit="@HandleSubmit">
+            <EditForm EditContext="editContext" OnValidSubmit="@HandleSubmit">
                 <DataAnnotationsValidator />
 
-                <InputText placeholder="Email" @bind-Value="registerModel.EmailAddress" />
-                <ValidationMessage For="@(() => registerModel.EmailAddress)" />
+                <div class="input-group">
+                    <InputText placeholder="Email" @bind-Value="registerModel.EmailAddress" />
+                    <ValidationMessage For="@(() => registerModel.EmailAddress)" />
+                </div>
 
-                <InputText type="password" placeholder="Password" @bind-Value="registerModel.Password" />
-                <ValidationMessage For="@(() => registerModel.Password)" />
+                <div class="input-group">
+                    <InputText type="password"
+                               placeholder="Password"
+                               @bind-Value="registerModel.Password"
+                               @oninput="HandlePasswordChanged" />
+                    <ValidationMessage For="@(() => registerModel.Password)" />
+                </div>
 
                 @if (!IsLogin)
                 {
-                    <InputText type="password" placeholder="Confirm Password" @bind-Value="ConfirmPassword" />
-                    @if (!string.IsNullOrEmpty(PasswordMismatchError))
+                    <div class="input-group">
+                        <InputText type="password"
+                                   placeholder="Confirm Password"
+                                   @bind-Value="ConfirmPassword" />
+                        @if (!string.IsNullOrEmpty(PasswordMismatchError))
+                        {
+                            <p class="login-error">@PasswordMismatchError</p>
+                        }
+                    </div>
+
+                    <!-- Show password requirements only when user starts typing -->
+                    @if (showRequirements)
                     {
-                        <p class="login-error">@PasswordMismatchError</p>
+                        <div class="password-requirements">
+                            <div class="requirement @(requirements["minLength"] ? "valid" : "invalid")">
+                                ● At least 8 characters
+                            </div>
+                            <div class="requirement @(requirements["lowercase"] ? "valid" : "invalid")">
+                                ● One lowercase letter (a-z)
+                            </div>
+                            <div class="requirement @(requirements["uppercase"] ? "valid" : "invalid")">
+                                ● One uppercase letter (A-Z)
+                            </div>
+                            <div class="requirement @(requirements["digit"] ? "valid" : "invalid")">
+                                ● One number (0-9)
+                            </div>
+                        </div>
                     }
                 }
 
-                <button class="auth-btn" type="submit">@((IsLogin) ? "Login" : "Register")</button>
+                <button class="auth-btn" type="submit" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span>Processing...</span>
+                    }
+                    else
+                    {
+                        @(IsLogin ? "Login" : "Register")
+                    }
+                </button>
             </EditForm>
 
             @if (!string.IsNullOrEmpty(Error))
             {
-                <p class="login-error">@Error</p>
+                <div class="login-error">
+                    @foreach (var line in Error.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        <div>@line</div>
+                    }
+                </div>
             }
         </div>
     </div>
@@ -53,28 +94,82 @@
     [Inject] private JwtAuthenticationStateProvider AuthProvider { get; set; }
 
     private bool IsLogin = true;
+    private bool isSubmitting = false;
+    private EditContext editContext = default!;
     private RegisterRequest registerModel = new();
-    private string ConfirmPassword;
-    private string Error;
-    private string PasswordMismatchError;
+    private string ConfirmPassword = string.Empty;
+    private string Error = string.Empty;
+    private string PasswordMismatchError = string.Empty;
+
+    // Track if user has started typing (to show requirements)
+    private bool showRequirements = false;
+
+    // Real-time password feedback
+    private Dictionary<string, bool> requirements = new()
+    {
+        { "minLength", false },
+        { "lowercase", false },
+        { "uppercase", false },
+        { "digit", false }
+    };
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(registerModel);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen)
+        {
+            editContext = new EditContext(registerModel);
+        }
+    }
 
     private void ToggleLogin(bool login)
     {
         IsLogin = login;
-        Error = null;
-        PasswordMismatchError = null;
+        Error = string.Empty;
+        PasswordMismatchError = string.Empty;
         registerModel = new();
         ConfirmPassword = string.Empty;
+        showRequirements = false;
+        requirements = requirements.ToDictionary(k => k.Key, v => false);
+        editContext = new EditContext(registerModel);
+    }
+
+    private void HandlePasswordChanged(ChangeEventArgs e)
+    {
+        var pwd = e.Value?.ToString() ?? "";
+        registerModel.Password = pwd;
+
+        // Only show requirements after user starts typing
+        showRequirements = !string.IsNullOrEmpty(pwd);
+
+        // Evaluate requirements
+        requirements["minLength"] = pwd.Length >= 8;
+        requirements["lowercase"] = pwd.Any(c => c >= 'a' && c <= 'z');
+        requirements["uppercase"] = pwd.Any(c => c >= 'A' && c <= 'Z');
+        requirements["digit"] = pwd.Any(char.IsDigit);
     }
 
     private async Task HandleSubmit()
     {
-        Error = null;
-        PasswordMismatchError = null;
+        if (isSubmitting) return;
+        isSubmitting = true;
+        Error = string.Empty;
+        PasswordMismatchError = string.Empty;
+
+        if (!editContext.Validate())
+        {
+            isSubmitting = false;
+            return;
+        }
 
         if (!IsLogin && registerModel.Password != ConfirmPassword)
         {
-            PasswordMismatchError = "Passwords do not match.";
+            PasswordMismatchError = "Passwords do not match";
+            isSubmitting = false;
             return;
         }
 
@@ -84,11 +179,14 @@
             {
                 var loginData = new { emailAddress = registerModel.EmailAddress, password = registerModel.Password };
                 var response = await Http.PostAsJsonAsync("api/authentication/login-user", loginData);
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    Error = "Invalid credentials";
+                    var text = await response.Content.ReadAsStringAsync();
+                    Error = FormatErrorResponse(text);
                     return;
                 }
+
                 var authResponse = await Http.ReadFromJsonAsync<AuthResponse>(response);
                 if (authResponse?.IsSuccess == true)
                 {
@@ -106,25 +204,104 @@
             else
             {
                 var response = await Http.PostAsJsonAsync("api/authentication/register-user", registerModel);
+
                 if (response.IsSuccessStatusCode)
                 {
+                    // Auto-login after successful registration
                     IsLogin = true;
-                    await HandleSubmit(); // login immediately after registration
+                    await HandleSubmit();
+                    return;
                 }
-                else
-                {
-                    var errorResponse = await Http.ReadFromJsonAsync<ValidationErrorResponse>(response);
-                    if (errorResponse?.Errors != null)
-                        Error = string.Join("\n", errorResponse.Errors.SelectMany(e => e.Value));
-                    else
-                        Error = "Registration failed. Please try again.";
-                }
+
+                var errorText = await response.Content.ReadAsStringAsync();
+                Error = FormatErrorResponse(errorText);
             }
         }
         catch (Exception ex)
         {
-            Error = ex.Message;
+            Error = "An error occurred. Please try again.";
+            Console.Error.WriteLine(ex);
         }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private string FormatErrorResponse(string errorText)
+    {
+        if (string.IsNullOrWhiteSpace(errorText)) return "Operation failed.";
+
+        // Trim and clean up
+        errorText = errorText.Trim();
+
+        // If it's a quoted string
+        if (errorText.StartsWith("\"") && errorText.EndsWith("\""))
+        {
+            return errorText[1..^1];
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(errorText);
+            var root = doc.RootElement;
+
+            // Case 1: { "errors": { "Field": [ "msg" ] } }
+            if (root.TryGetProperty("errors", out var errorsElement) && errorsElement.ValueKind == JsonValueKind.Object)
+            {
+                var allErrors = new List<string>();
+                foreach (var prop in errorsElement.EnumerateObject())
+                {
+                    foreach (var msg in prop.Value.EnumerateArray())
+                    {
+                        allErrors.Add(HumanizeMessage(msg.GetString() ?? ""));
+                    }
+                }
+                return string.Join("\n", allErrors.Distinct());
+            }
+
+            // Case 2: { "error": "..." }
+            if (root.TryGetProperty("error", out var errorProp))
+            {
+                return HumanizeMessage(errorProp.GetString() ?? "");
+            }
+
+            // Case 3: Problem Details (title/detail)
+            string title = root.TryGetProperty("title", out var t) ? t.GetString() : null;
+            string detail = root.TryGetProperty("detail", out var d) ? d.GetString() : null;
+
+            if (!string.IsNullOrEmpty(title) || !string.IsNullOrEmpty(detail))
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(title)) parts.Add(HumanizeMessage(title));
+                if (!string.IsNullOrEmpty(detail) && !title?.Contains(detail, StringComparison.OrdinalIgnoreCase) == true)
+                    parts.Add(HumanizeMessage(detail));
+                return string.Join("\n", parts);
+            }
+
+            // Fallback
+            return errorText.Split('\n').First().Trim().Replace("\"", "");
+        }
+        catch (JsonException)
+        {
+            return errorText.Split('\n').First().Trim().Replace("\"", "");
+        }
+    }
+
+    private string HumanizeMessage(string msg)
+    {
+        return msg switch
+        {
+            string m when m.Contains("uppercase", StringComparison.OrdinalIgnoreCase)
+                => "Password must contain at least one uppercase letter (A-Z)",
+            string m when m.Contains("lowercase", StringComparison.OrdinalIgnoreCase)
+                => "Password must contain at least one lowercase letter (a-z)",
+            string m when m.Contains("digit", StringComparison.OrdinalIgnoreCase)
+                => "Password must contain at least one number (0-9)",
+            string m when m.Contains("length") || (m.Contains("8") && m.Contains("character", StringComparison.OrdinalIgnoreCase))
+                => "Password must be at least 8 characters long",
+            _ => msg
+        };
     }
 
     private async Task CloseModal()
@@ -132,13 +309,7 @@
         IsOpen = false;
         await IsOpenChanged.InvokeAsync(IsOpen);
     }
-
-    public class ValidationErrorResponse
-    {
-        public Dictionary<string, string[]> Errors { get; set; } = new();
-    }
 }
-
 
 <style>
     .login-overlay {
@@ -170,6 +341,12 @@
         gap: 1rem;
     }
 
+        .login-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
     .auth-toggle {
         display: flex;
         gap: 0.5rem;
@@ -184,6 +361,11 @@
             background: #121212;
             color: white;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
         }
 
             .auth-toggle button.active {
@@ -192,36 +374,63 @@
                 font-weight: 600;
             }
 
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
     .login-content input {
-        padding: 0.6rem;
+        padding: 0.75rem;
         border-radius: 6px;
         border: 1px solid #444;
         background-color: #121212;
         color: white;
         width: 100%;
         box-sizing: border-box;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+        .login-content input:focus {
+            outline: none;
+            border-color: #4cd137;
+        }
+
+    .validation-message {
+        color: #e74c3c;
+        font-size: 0.8rem;
+        margin: 0;
     }
 
     .login-error {
         color: #e74c3c;
         font-size: 0.9rem;
-        margin: 0;
+        margin: 0.5rem 0 0 0;
         text-align: center;
+        white-space: pre-line;
     }
 
-    .auth-btn {
-        background-color: rgb(30, 122, 30);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        font-size: 0.95rem;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s;
+    .password-requirements {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: #1a1a1a;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 
-        .auth-btn:hover {
-            background-color: #3ab231;
-            transform: translateY(-1px);
+    .requirement {
+        margin: 0.25rem 0;
+        color: #ccc;
+        transition: color 0.2s ease;
+    }
+
+        .requirement.valid {
+            color: #4cd137; /* Sleek green */
+        }
+
+        .requirement.invalid {
+            color: #666; /* Subtle gray when not met */
         }
 </style>
