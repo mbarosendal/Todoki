@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: rgb(227, 18, 10) !important;
+        }
+
+        #app {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column; /* stack children vertically */
+            justify-content: flex-start; /* start at top */
+            align-items: stretch; /* let children fill width */
+            background-color: rgb(227, 18, 10);
+        }
+
+        .app-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            margin-top: 16px;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #4cd137;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Todoki</title>
+    <base href="/" />
+
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="Todoki.Client.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@latest/font/lucide.css" />
+</head>
+
+
+<body>
+    <audio id="clickSound" src="Sounds/click-sound.mp3" preload="auto"></audio>
+    <audio id="alarmSound" src="Sounds/timer-alarmv2.mp3" preload="auto"></audio>
+    <audio id="breakOverSound" src="Sounds/back-to-work-alarm.mp3" preload="auto"></audio>
+    <audio id="tasksDoneSound" src="Sounds/tasks-done.mp3" preload="auto"></audio>
+
+    <script src="js/notifications.js"></script>
+
+    <script>
+        window.selectElementText = (element) => {
+            if (element) {
+                element.focus();
+                element.select();
+            }
+        };
+
+        window.blazorPreventDefault = (keyCode) => {
+            document.addEventListener('keydown', function handler(e) {
+                if (e.code === keyCode && e.shiftKey) {
+                    e.preventDefault();
+                    document.removeEventListener('keydown', handler);
+                }
+            });
+        };
+
+        window.playClickSound = () => {
+            const sound = document.getElementById("clickSound");
+            if (sound) {
+                sound.play();
+            }
+        };
+
+        window.playAlarmSound = () => {
+            const sound = document.getElementById("alarmSound");
+            if (sound) {
+                sound.play();
+            }
+        };
+
+        window.playBreakOverSound = () => {
+            const sound = document.getElementById("breakOverSound");
+            if (sound) {
+                sound.play();
+            }
+        };
+
+        window.playTasksDoneSound = () => {
+            const sound = document.getElementById("tasksDoneSound");
+            if (sound) {
+                sound.play();
+            }
+        };
+
+        window.stopAlarmSound = () => {
+            const sound = document.getElementById("alarmSound");
+            if (sound) {
+                sound.pause();
+                sound.currentTime = 0;
+            }
+        };
+
+        window.registerGlobalKeyHandler = function (dotNetHelper) {
+            document.addEventListener("keydown", function (e) {
+                if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+
+                if (e.code === "Space") {
+                    e.preventDefault(); // prevent page scroll
+                    dotNetHelper.invokeMethodAsync("OnSpacePressed");
+                }
+
+                if (e.code === "Tab") {
+                    e.preventDefault();
+                    dotNetHelper.invokeMethodAsync("OnTabPressed");
+                }
+            });
+        };
+    </script>
+
+    <div id="app">
+        <div class="app-loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>
+
+
