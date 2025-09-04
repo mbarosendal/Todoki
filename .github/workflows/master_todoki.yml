@@ -13,12 +13,6 @@ on:
 env:
   AZURE_WEBAPP_NAME: Todoki
   AZURE_WEBAPP_PACKAGE_PATH: Todoki/Server/publish
-  AZURE_APIM_RESOURCE_PATH: /
-  AZURE_APIM_RESOURCEGROUP: MichaelR
-  AZURE_APIM_SERVICENAME: TodokiServerapi
-  AZURE_APIM_API_ID: TodokiServer
-  AZURE_APIM_APPSERVICEURL: https://todokiserver.azurewebsites.net
-  API_IMPORT_SPECIFICATION_PATH: Todoki/Server/publish/swagger.json
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: Todoki/Server
@@ -45,14 +39,6 @@ jobs:
 
       - name: Publish
         run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-      - name: Generate Swagger JSON at runtime
-        run: |
-          dotnet ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/Todoki.Server.dll &
-          APP_PID=$!
-          sleep 5
-          curl -s http://localhost:5000/swagger/v1/swagger.json -o ${{ env.API_IMPORT_SPECIFICATION_PATH }}
-          kill $APP_PID
 
       - name: Publish Artifacts
         uses: actions/upload-artifact@v4
@@ -84,20 +70,9 @@ jobs:
           slot-name: Production
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-      - name: Import API into Azure API Management
-        run: |
-          az apim api import `
-            --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" `
-            --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" `
-            --service-name "${{ env.AZURE_APIM_SERVICENAME }}" `
-            --api-id "${{ env.AZURE_APIM_API_ID }}" `
-            --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" `
-            --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" `
-            --specification-format OpenApi `
-            --subscription-required false
-
       - name: Logout
         run: az logout
+
 
 
 
