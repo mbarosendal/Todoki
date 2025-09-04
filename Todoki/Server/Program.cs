@@ -24,9 +24,17 @@ namespace Todoki
 
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
-            var jwtSecret = builder.Configuration["JWT:SecretKey"];
-            var adminPassword = builder.Configuration["Admin:Password"];
-            var adminEmail = builder.Configuration["Admin:Email"];
+            var jwtSecret = builder.Configuration["JWT:SecretKey"]
+                            ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+                            ?? "dummykeyforbuild";
+
+            var adminPassword = builder.Configuration["Admin:Password"]
+                                ?? Environment.GetEnvironmentVariable("ADMIN_PASSWORD")
+                                ?? "dummyadminpass";
+
+            var adminEmail = builder.Configuration["Admin:Email"]
+                             ?? Environment.GetEnvironmentVariable("ADMIN_EMAIL")
+                             ?? "admin@dummy.com";
 
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
