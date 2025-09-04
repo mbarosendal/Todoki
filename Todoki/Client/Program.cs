@@ -55,17 +55,4 @@ builder.Services.AddScoped(sp =>
     return new HttpClientWrapper(client, jsonOptions);
 });
 
-// A timed checkin that runs every 10 minutes (600,000 ms)
-var timer = new System.Threading.Timer(async _ =>
-{
-    try
-    {
-        using var client = new HttpClient();
-        await client.GetAsync(builder.HostEnvironment.BaseAddress + "/checkin");
-    }
-    catch
-    {
-    }
-}, null, 0, 600_000);
-
 await builder.Build().RunAsync();

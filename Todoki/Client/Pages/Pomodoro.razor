@@ -20,8 +20,6 @@
 			: $"🌴 {GetCountdownTimer.RemainingTime}")
 </PageTitle>
 
-<LoginModal @bind-IsOpen="_showLogin" />
-
 <div style="background-color:@GetBackgroundColor(); min-height: 100vh; margin: 0">
 	<div class="timer-container">
 		<div class="timer-header" style="background-color:@GetBackgroundColor();">
@@ -101,7 +99,7 @@
 
 @code
 {
-	private ProjectDto _defaultProject = new(); // to be expanded with multiple projects for each user - each with own tasks, timers and settings
+	private ProjectDto _defaultProject = new();
 	private PomodoroTimerDto _pomodoroTimer = new PomodoroTimerDto();
 	private ShortBreakTimerDto _shortBreakTimer = new ShortBreakTimerDto();
 	private LongBreakTimerDto _longBreakTimer = new LongBreakTimerDto();
@@ -231,7 +229,6 @@
 		if (timer.IsRunning)
 		{
 			timerService.Stop(timer);
-			// timerFinish = true;
 		}
 		else
 		{

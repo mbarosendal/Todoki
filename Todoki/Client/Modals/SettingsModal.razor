@@ -111,11 +111,6 @@
 								title="@(Settings.EnableNotifications ? "Managed via browser settings" : "")">
 						</button>
 					</div>
-					<AuthorizeView Roles="Admin">
-						<Authorized>
-							<button @onclick="SetToTestTimer">Admin Only: Set test timers</button>
-						</Authorized>
-					</AuthorizeView>
 				</div>
 			}
 
@@ -264,15 +259,6 @@
 			ShortBreakText = "",
 			LongBreakText = ""
 		};
-
-	public void SetToTestTimer()
-	{
-		Settings.PomodoroDurationMinutes = TimeSpan.FromSeconds(2);
-		Settings.ShortBreakDurationMinutes = TimeSpan.FromSeconds(3);
-		Settings.LongBreakDurationMinutes = TimeSpan.FromSeconds(5);
-
-		StateHasChanged();
-	}
 
 	private void ResetToDefaults()
 	{

@@ -115,7 +115,7 @@ namespace Todoki
                 {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // true if not development
-                    options.TokenValidationParameters = tokenValidationParameters; // https://www.linkedin.com/learning/asp-dot-net-core-token-based-authentication/injecting-tokenvalidationparameters?autoSkip=true&resume=false&u=57075649
+                    options.TokenValidationParameters = tokenValidationParameters; 
                     options.Events = new JwtBearerEvents
                     {
                         OnTokenValidated = async context =>
