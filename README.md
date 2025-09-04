@@ -77,5 +77,5 @@ This project is for learning and demonstration purposes. Feel free to explore, b
 
 ## Acknowledgements  
 
-- UI and UX inspired by [Pomofocus]([https://example.com](https://pomofocus.io/)), which has been one of my favorite productivity tools. I highly recommend it if you are looking for a similar, stable experience.
+UI and UX inspired by [Pomofocus]([https://example.com](https://pomofocus.io/)), which has been one of my favorite productivity tools. I highly recommend it if you are looking for a similar, stable experience.
 
