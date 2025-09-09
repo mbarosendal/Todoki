@@ -2,7 +2,7 @@
 
 ---
 
-[**Live Demo**](https://todoki-a5chhfeqgwcwfab2.swedencentral-01.azurewebsites.net/)  
+[**Live Demo**](https://todoki.up.railway.app/)  
 
 ## Overview  
 
@@ -35,7 +35,7 @@ If you’re new to the Pomodoro technique, you can read more about it [here](htt
 - **Frontend**: Blazor WebAssembly
 - **Backend**: ASP.NET Core Hosted
 - **Authentication**: JWT with refresh tokens
-- **Hosting**: Azure App Service
+- **Hosting**: Railway App Service
 
 ---
 
