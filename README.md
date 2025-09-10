@@ -43,10 +43,11 @@ If you’re new to the Pomodoro technique, you can read more about it [here](htt
 
 This project helped me practice and gain experience in:  
 
-- Building a full-stack Blazor WASM + ASP.NET Core application  
-- Implementing secure JWT authentication with refresh tokens  
-- Designing and maintaining a clean architecture  
-- Deploying and maintaining a small hosted web app  
+- Building a full-stack Blazor WASM + ASP.NET Core application
+- Designing and maintaining a clean architecture
+- Deploying and maintaining a small hosted web app
+- Implementing secure JWT authentication with refresh tokens
+- Managing both guests without accounts and logged-in users
 
 ---
 
