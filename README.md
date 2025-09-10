@@ -35,7 +35,7 @@ If you’re new to the Pomodoro technique, you can read more about it [here](htt
 - **Frontend**: Blazor WebAssembly
 - **Backend**: ASP.NET Core Hosted
 - **Authentication**: JWT with refresh tokens
-- **Hosting**: Railway App Service
+- **Hosting**: Railway App Service and PostgreSQL
 
 ---
 
