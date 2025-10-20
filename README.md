@@ -1,6 +1,6 @@
 ![Todoki](https://github.com/user-attachments/assets/d5fdfd06-38f0-46d7-bd49-a42a4e9dbbc4)  
 ---
-[10-20-2025 Update - Pending Migration to new host]
+[10-20-2025 Update] - Pending Migration to new host
 
 # [**Live Demo**](https://todoki.up.railway.app/)  
 
