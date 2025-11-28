@@ -2,8 +2,6 @@
 ---
 [10-20-2025 Update] - Pending Migration to new host
 
-# [**Live Demo**](https://todoki.up.railway.app/)  
-
 ## Overview  
 
 Todoki is a **Pomodoro timer with task management features**, built as a summer project to challenge myself to create something I would use myself.  
